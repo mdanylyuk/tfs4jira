@@ -1,0 +1,692 @@
+﻿@using synchronizer.Domain
+@using synchronizer.Domain.Entity
+@model synchronizer.Domain.Entity.SyncProfile
+
+<script src="@Url.Content("~/Scripts/fieldselectors/jquery.fieldsel.js")" type="text/javascript"> </script>
+ 
+<div id="profileguid" style="display: none;">@Model.Guid</div>           
+
+<div id="messages"></div>
+
+<form>
+    <div id="syncprofileform" class="profileform">
+        @* Ugly hack for Chrome - it prevents autocompletion on JIRA User Login and Password fields. *@
+        <input style="display:none">
+        <input type="password" style="display:none">
+        
+        <h2 class="headerh2">General Settings</h2>
+        <div class="row">
+            <div class="field">
+                <div class="label">Profile Name</div>
+                <div class="editbox">@Html.TextBox("name", Model.Name)</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Synchronization Interval</div>
+                <div class="editbox">@Html.TextBox("interval", Model.SyncInterval)</div>
+            </div>
+            <div class="field-description">TFS and JIRA querying interval in seconds.</div>           
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label"></div>
+                <div class="editbox"><span id="checkins_setup"><a href="#">Configure Check-ins Scanning</a></span></div>
+            </div>
+        </div>
+
+        <div class="row" style="display: none;">
+            <!--<div class="row">-->
+            <div class="label">Enabled</div>
+            <div class="editbox">
+                @*what with draft?*@
+                @if (Model.State == SyncProfileState.Enabled)
+                {
+                    <input type="checkbox" checked id="enabled" />
+                }
+                else
+                {
+                    <input type="checkbox" id="enabled" />
+                }
+            </div>
+        </div>
+                <h2 class="headerh2">JIRA Configuration</h2>
+                <div class="row">
+                    <div class="field">
+                        <div class="label">JIRA Cloud</div>
+                        <div class="editbox">@Html.CheckBox("jiraondemand", Model.OnDemandJira)</div>
+                    </div>
+                    <div class="field-description">Check this option if you want to connect with JIRA Cloud.</div>
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <div class="label">URL</div>
+                        <div class="editbox">@Html.TextBox("jiraurl", Model.JiraUrl, new {@class = "jira-auth"})</div>
+                    </div>
+                    <div class="field-description">JIRA server base URL including scheme name, with optional port number, e.g. http://myjira:8080</div>
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <div class="label">User Login</div>
+                        <div class="editbox">@Html.TextBox("jirauser", Model.JiraUser, new {@class = "jira-auth"})</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <div class="label">Password</div>
+                        <div class="editbox">@Html.Password("jirapassword", Model.JiraPassword, new {@class = "jira-auth"})</div>
+                    </div>
+                </div>
+                <div class="row" style="padding-bottom: 1em;">
+                    <div class="field">
+                        <div class="label"></div>
+                        <div class="getter" id="jiratestgetter"><input type="button" id="jiratestgetterbtn" value="Test connection..." /></div>
+                        <div class="worker" id="jiratestworker">
+                            <div class="worker-throbber"></div>
+                            <div class="worker-label">Testing connection with JIRA server...</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <div class="label">Project</div>
+                        <div class="editbox">@Html.TextBox("jiraproject", Model.JiraProject, new {@class = "input"})</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <div class="label">TFS Custom Field Name</div>
+                        <div class="editbox">@Html.TextBox("jiratfscustomfield", Model.JiraTfsCustomFieldId, new { @class = "input" })</div>
+                    </div>
+                    <div class="field-description">Name of JIRA issue custom field that will be used to store paired TFS work item data. See @HelpHelpers.LinkToOnlineDocumentation("new_profile", "online help") for details.</div>
+                </div>
+                <h2 class="headerh2">TFS Configuration</h2>
+        <div class="row">
+            <div class="field">
+                <div class="label">Visual Studio Online</div>
+                <div class="editbox">@Html.CheckBox("hostedtfs")</div>
+            </div>
+            <div class="field-description">Check this option if you want to connect with Visual Studio Online (cloud version of TFS). Paired JIRA issue will be stored in work item's history (it's currently impossible to create custom field in Visual Studio Online).</div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">URL</div>
+                <div class="editbox">@Html.TextBox("tfsurl", Model.TfsUrl, new {@class = "tfs-auth"})</div>
+            </div>
+            <div class="field-description">TFS server base URL including scheme name, with optional port number, e.g.  http://mytfs:8080/tfs.</div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">User Login</div>
+                <div class="editbox">@Html.TextBox("tfsuser", Model.TfsUser, new {@class = "tfs-auth"})</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Password</div>
+                <div class="editbox">@Html.Password("tfspassword", Model.TfsPassword, new { @class = "tfs-auth" })</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Domain</div>
+                <div class="editbox">@Html.TextBox("tfsdomain", Model.TfsDomain, new {@class = "tfs-auth"})</div>
+            </div>
+            <div class="field-description">Leave the field empty, if your TFS server is not in any domain.</div>
+        </div>
+        <div class="row" style="padding-bottom: 1em;">
+                    <div class="field">
+                        <div class="label"></div>
+                        <div class="getter" id="tfstestgetter"><input type="button" id="tfstestgetterbtn" value="Test connection..." /></div>
+                        <div class="worker" id="tfstestworker">
+                            <div class="worker-throbber"></div>
+                            <div class="worker-label">Testing connection with TFS server...</div>
+                        </div>
+                    </div>
+                </div>
+       
+                <div class="row">
+                    <div class="field">
+                    <div class="label">Project Collection</div>
+                    <div class="editbox">@Html.TextBox("tfscollection", Model.TfsCollection, new { @class = "input" })</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field">
+                    <div class="label">Project</div>
+                    <div class="editbox">@Html.TextBox("tfsproject", Model.TfsProject, new {@class = "input"})</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <div class="label">JIRA Custom Field Name</div>
+                        <div class="editbox">@Html.TextBox("tfsjiracustomfield", Model.TfsJiraCustomFieldName, new {@class = "input"})</div>
+                    </div>
+                    <div class="field-description">Name of TFS work item custom field that will be used to store paired JIRA issue key. See @HelpHelpers.LinkToOnlineDocumentation("new_profile", "online help") for details.</div>
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <div class="label">Store JIRA Issue Key in History</div>
+                        <div class="editbox">@Html.CheckBox("isissueinhistory")</div>
+                    </div>
+                    <div class="field-description">If you check this option then paired JIRA issue key will be stored in work item History instead of a custom field.</div>
+                </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Map JIRA Reporter To</div>
+                <div class="editbox">@Html.TextBox("tfsjirareporter", Model.TfsJiraReporter, new {@class = "input"})</div>
+            </div>
+            <div class="field-description">Optional. TFS work item field to be set to JIRA issue reporter name during synchronization.</div>
+        </div>
+        <h2 class="headerh2"></h2>
+                <div class="row">
+        <div class="field">
+                        <div class="label"></div>
+                        <div class="getter" id="apply"><input type="button" id="applybutton" value="@(Model == SyncProfile.Empty ? "Create Profile " : "Save Profile")" /></div>
+                        <div class="worker" id="applyworker">
+                            <div class="worker-throbber"></div>
+                            <div class="worker-label">Saving the profile...</div>
+                        </div>
+                    </div>
+                </div>
+    </div>
+@*    <div style="clear: left"></div>*@
+</form>
+
+<div id="tfsspehelp" style="display: none;">
+    @if (Model == SyncProfile.Empty)
+    {
+       Html.RenderPartial("Help/Help_NewProfile");
+    }
+    else
+    {
+       Html.RenderPartial("Help/Help_EditProfileSettings");
+    }
+</div>
+
+<script type="text/javascript">
+    var profileguid = $('#profileguid').html();
+    var newprofile = profileguid === '00000000-0000-0000-0000-000000000000';
+    
+    $(document).ready(function () {
+        showSpinner();
+
+        $('#interval').jStepper({ minValue: 1, defaultValue: 60, allowDecimals: false });
+        if ($('#interval').val() === '0') $('#interval').val('60');
+
+        $('#name').focus();
+
+        if (!newprofile) {
+            $('#jiraproject').val('');
+            $('#jiratfscustomfield').val('');
+            $('#tfscollection').val('');
+            $('#tfsproject').val('');
+            $('#tfsjiracustomfield').val('');
+            $('#tfsjirareporter').val('');
+            $('#hostedtfs').attr('disabled', true);
+            $('#isissueinhistory').attr('disabled', true);
+            $('#jiraproject').attr('disabled', true);
+            $('#jiratfscustomfield').attr('disabled', true);
+            $('#tfscollection').attr('disabled', true);
+            $('#tfsproject').attr('disabled', true);
+            $('#tfsjiracustomfield').attr('disabled', true);
+            $('#tfsjirareporter').attr('disabled', true);
+            $('#applybutton').attr('disabled', true);
+
+            var useTfsHistory;
+
+            jQuery.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetProfileDetails", "Tfs")?_=' + new Date().getTime(),
+                data: 'guid=' + profileguid,
+                success: function(data) {
+                    if (data.success) {
+                        hideSpinner();
+
+                        useTfsHistory = data.result.values.usehistory == "true";
+//                        $('#jiraondemand')[0].checked = data.result.values.jiraondemand == "true" ? true : false;
+                        $('#jiraproject').fieldsel("setSel", data.result.values.jiraproject.Key, data.result.values.jiraproject.Value);
+                        $('#jiratfscustomfield').fieldsel("setSel", data.result.values.jiracf.Key, data.result.values.jiracf.Value);
+                        $('#tfscollection').fieldsel("setSel", data.result.values.tfscollection.Key, data.result.values.tfscollection.Value);
+                        $('#tfsproject').fieldsel("setSel", data.result.values.tfsproject.Key, data.result.values.tfsproject.Value);
+                        $('#hostedtfs')[0].checked = data.result.values.hostedtfs == "true" ? true : false;
+                        if (!useTfsHistory) {
+                            $('#tfsjiracustomfield').fieldsel("setSel", data.result.values.tfscf.Key, data.result.values.tfscf.Value);
+                        } else {
+                            $('#isissueinhistory')[0].checked = true;
+                        }
+                        if (data.result.values.tfsjirareporter) {
+                            $('#tfsjirareporter').fieldsel("setSel", data.result.values.tfsjirareporter.Key, data.result.values.tfsjirareporter.Value);
+                        }
+                        clearMessages();
+                    } else {
+                        showErrorMessage(data.error);
+                    }
+                },
+                error: function(xhr) {
+                    showErrorMessage(getXhrErrorResponse(xhr));
+                },
+                complete: function() {
+                    $('#jiraproject').removeAttr('disabled');
+                    $('#jiratfscustomfield').removeAttr('disabled');
+                    $('#tfscollection').removeAttr('disabled');
+                    $('#tfsproject').removeAttr('disabled');
+                    $('#isissueinhistory').removeAttr('disabled');
+                    $('#hostedtfs').removeAttr('disabled');
+                    if (!useTfsHistory) {
+                        $('#tfsjiracustomfield').removeAttr('disabled');
+                    }
+                    $('#tfsjirareporter').removeAttr('disabled');
+                    $('#applybutton').removeAttr('disabled');
+                }
+            });
+        } else {
+            @{
+                if (!SyncProfile.isRelease)
+                {
+                    @: fillInDebugValues();
+                }
+            }
+        }
+
+        fillHelp('#tfsspehelp');
+        setCheckinsScanningUrl();
+    });
+    
+    @{
+        if (!SyncProfile.isRelease)
+        {
+            @: fillInDebugValues = function() {
+
+                @: $('#jiraurl').val('http://localhost:2990/jira');
+                @: $('#jirauser').val('admin');
+                @: $('#jirapassword').val('admin');
+                @: $('#tfsurl').val('http://localhost:9081/tfs');
+                @: $('#tfsuser').val('test');
+                @: $('#tfsdomain').val('');
+                @: $('#tfspassword').val('test');
+            @: }
+        }
+    }
+    
+    getTfsCustomFields = function (complt, succ, err) {
+        var hostedTfs = $('#hostedtfs')[0].checked ? "true" : "false";
+        var url = encodeURIComponent($('#tfsurl').val());
+        var user = encodeURIComponent($('#tfsuser').val());
+        var domain = encodeURIComponent($('#tfsdomain').val());
+        var pwd = encodeURIComponent($('#tfspassword').val());
+        var coll = $('#tfscollection').fieldsel('getSel');
+        var proj = $('#tfsproject').fieldsel('getSel');
+
+        if (!coll || !coll.id) {
+            showInfoMessage('Select a project collection first');
+            err();
+            complt();
+            return;
+        }
+        if (!proj || !proj.id) {
+            showInfoMessage('Select a project first');
+            err();
+            complt();
+            return;
+        }
+
+        showInfoMessage('Loading TFS custom fields...');
+        getKvps(
+            '@Url.Action("GetTfsCustomFields", "Tfs")?_=' + new Date().getTime(),
+            'hostedtfs=' + hostedTfs + '&user=' + user + '&domain=' + domain + '&password=' + pwd + '&url=' + url + '&collection=' + coll.id + '&project=' + proj.id,
+            function(data) { succ(data.customfields); }, err, complt
+        );
+    };
+
+
+    $('#jiratestgetterbtn').click(function() {
+        var button = this;
+        $(this).parent().hide();
+        $('#jiratestworker').show();
+
+        var url = encodeURIComponent($('#jiraurl').val());
+        var user = encodeURIComponent($('#jirauser').val());
+        var pwd = encodeURIComponent($('#jirapassword').val());
+
+        clearMessages();
+
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("TestJira", "Tfs")?_=' + new Date().getTime(),
+            data: 'user=' + user + '&password=' + pwd + '&url=' + url,
+            complete: function() {
+                $(button).parent().show();
+                $('#jiratestworker').hide();
+            },
+            success: function(data) {
+                var onClose = function() {
+                    $('#jirapassword').focus();
+                };
+                if (data.success) {
+                    infoDialog('body', 'Success! JIRA server location and credentials seem to be fine.', onClose);
+                } else {
+                    errorDialog('body', data.error, onClose);
+                }
+            },
+            error: function(xhr) {
+                console.log(xhr);
+                errorDialog('body', getXhrErrorResponse(xhr), null);
+            }
+        });
+    });
+
+    $('#tfstestgetterbtn').click(function() {
+        var button = this;
+        $(this).parent().hide();
+        $('#tfstestworker').show();
+
+        var hostedTfs = $('#hostedtfs')[0].checked ? "true" : "false";
+        var url = encodeURIComponent($('#tfsurl').val());
+        var user = encodeURIComponent($('#tfsuser').val());
+        var domain = encodeURIComponent($('#tfsdomain').val());
+        var pwd = encodeURIComponent($('#tfspassword').val());
+
+        clearMessages();
+
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("TestTfs", "Tfs")?_=' + new Date().getTime(),
+            data: 'hostedtfs=' + hostedTfs + '&user=' + user + '&domain=' + domain + '&password=' + pwd + '&url=' + url,
+            complete: function() {
+                $(button).parent().show();
+                $('#tfstestworker').hide();
+            },
+            success: function(data) {
+                var onClose = function() {
+                    $('#tfspassword').focus();
+                };
+                if (data.success) {
+                    infoDialog('body', 'Success! TFS server location and credentials seem to be fine.', onClose);
+                } else {
+                    errorDialog('body', data.error, onClose);
+                }
+            },
+            error: function(xhr) {
+                console.log(xhr);
+                errorDialog('body', getXhrErrorResponse(xhr), null);
+            }
+        });
+    });
+
+    $('#jiraproject').fieldsel({
+        getvalues: function(complt, succ, err) {
+            var url = encodeURIComponent($('#jiraurl').val());
+            var user = encodeURIComponent($('#jirauser').val());
+            var pwd = encodeURIComponent($('#jirapassword').val());
+            showInfoMessage('Loading projects...');
+
+            getKvps(
+                '@Url.Action("GetJiraProjects", "Tfs")?_=' + new Date().getTime(),
+                'user=' + user + '&password=' + pwd + '&url=' + url,
+                function(data) { succ(data.projects); }, err, complt
+            );
+        }
+    });
+
+    $('#jiratfscustomfield').fieldsel({
+        getvalues: function(complt, succ, err) {
+            showInfoMessage('Loading custom fields...');
+            var hostedTfs = $('#hostedtfs')[0].checked ? "true" : "false";
+            var url = encodeURIComponent($('#jiraurl').val());
+            var user = encodeURIComponent($('#jirauser').val());
+            var pwd = encodeURIComponent($('#jirapassword').val());
+            var proj = $('#jiraproject').fieldsel('getSel');
+
+            if (!proj || !proj.id) {
+                showInfoMessage('Select a project first');
+                err();
+                complt();
+                return;
+            }
+
+            getKvps(
+                '@Url.Action("GetJiraCustomFields", "Tfs")?_=' + new Date().getTime(),
+                'hostedtfs=' + hostedTfs + '&user=' + user + '&password=' + pwd + '&url=' + url + '&project=' + encodeURIComponent(proj.id),
+                function(data) { succ(data.customfields); }, err, complt
+            );
+        }
+    });
+
+    $('#tfscollection').fieldsel({
+        hidekey: true,
+        getvalues: function (complt, succ, err) {
+            var hostedTfs = $('#hostedtfs')[0].checked ? "true" : "false";
+            var url = encodeURIComponent($('#tfsurl').val());
+            var user = encodeURIComponent($('#tfsuser').val());
+            var domain = encodeURIComponent($('#tfsdomain').val());
+            var pwd = encodeURIComponent($('#tfspassword').val());
+            showInfoMessage('Loading project collections...');
+
+            getKvps(
+                '@Url.Action("GetTfsProjectCollections", "Tfs")?_=' + new Date().getTime(),
+                'hostedtfs=' + hostedTfs + '&user=' + user + '&domain=' + domain + '&password=' + pwd + '&url=' + url,
+                function(data) { succ(data.collections); }, err, complt
+            );
+        }
+    });
+
+    $('#tfsproject').fieldsel({
+        hidekey: true,
+        getvalues: function (complt, succ, err) {
+            var hostedTfs = $('#hostedtfs')[0].checked ? "true" : "false";
+            var url = encodeURIComponent($('#tfsurl').val());
+            var user = encodeURIComponent($('#tfsuser').val());
+            var domain = encodeURIComponent($('#tfsdomain').val());
+            var pwd = encodeURIComponent($('#tfspassword').val());
+            var coll = $('#tfscollection').fieldsel('getSel');
+
+            if (!coll || !coll.id) {
+                showInfoMessage('Select a project collection first');
+                err();
+                complt();
+                return;
+            }
+
+            showInfoMessage('Loading TFS projects...');
+            getKvps(
+                '@Url.Action("GetTfsProjects", "Tfs")?_=' + new Date().getTime(),
+                'hostedtfs=' + hostedTfs + '&user=' + user + '&domain=' + domain + '&password=' + pwd + '&url=' + url + '&collection=' + coll.id,
+                function(data) { succ(data.projects); }, err, complt
+            );
+        }
+    });
+
+    var tfsJiraCustomField = $('#tfsjiracustomfield');
+    tfsJiraCustomField.fieldsel({
+        hidekey: false,
+        getvalues: getTfsCustomFields
+    });
+
+    var isIssueInHistory = $('#isissueinhistory');
+    isIssueInHistory.change(function () {
+        if (isIssueInHistory[0].checked) {
+            tfsJiraCustomField.attr('disabled', true);
+        } else {
+            tfsJiraCustomField.removeAttr('disabled');
+        }
+    });
+
+    var hostedTfs = $('#hostedtfs');
+    hostedTfs.change(function () {
+        if (hostedTfs[0].checked) {
+            isIssueInHistory[0].checked = true;
+            isIssueInHistory.attr('disabled', true);
+            tfsJiraCustomField.attr('disabled', true);
+        } else {
+            isIssueInHistory[0].checked = false;
+            isIssueInHistory.removeAttr('disabled');
+            tfsJiraCustomField.removeAttr('disabled');
+        }
+    });
+
+    $('#tfsjirareporter').fieldsel({
+        hidekey: false,
+        getvalues: getTfsCustomFields
+    });
+
+    $('#commentsyncdirection').change(function (e) {
+        console.log('change');
+    });
+
+    $('#applybutton').click(function() {
+        var button = this;
+        $(this).parent().hide();
+        $('#applyworker').show();
+
+        var name = encodeURIComponent($('#name').val());
+        var interval = encodeURIComponent($('#interval').val());
+        var errorMode = encodeURIComponent($('#errormode').val());
+        var enabled = $('#enabled').val();
+        var jiraurl = encodeURIComponent($('#jiraurl').val());
+        var jiraondemand = $('#jiraondemand')[0].checked ? "true" : "false";
+        var jirauser = encodeURIComponent($('#jirauser').val());
+        var jirapwd = encodeURIComponent($('#jirapassword').val());
+        var jiraproj = $('#jiraproject').fieldsel('getSel');
+        jiraproj = jiraproj != null ? jiraproj.id : '';
+        var jiracf = $('#jiratfscustomfield').fieldsel('getSel');
+        jiracf = jiracf != null ? jiracf.id : '';
+        var hostedtfs = $('#hostedtfs')[0].checked ? "true" : "false";
+        var usehistory = isIssueInHistory[0].checked ? "true" : "false";
+        var tfsurl = encodeURIComponent($('#tfsurl').val());
+        var tfsuser = encodeURIComponent($('#tfsuser').val());
+        var tfsdomain = encodeURIComponent($('#tfsdomain').val());
+        var tfspwd = encodeURIComponent($('#tfspassword').val());
+        var tfscoll = $('#tfscollection').fieldsel('getSel');
+        tfscoll = tfscoll != null ? tfscoll.id : '';
+        var tfsproj = $('#tfsproject').fieldsel('getSel');
+        tfsproj = tfsproj != null ? tfsproj.id : '';
+        var tfscf = $('#tfsjiracustomfield').fieldsel('getSel');
+        tfscf = tfscf != null ? tfscf.id : '';
+        var tfsjirareporter = $('#tfsjirareporter').fieldsel('getSel');
+        tfsjirareporter = tfsjirareporter != null ? '&tfsjirareporter=' + tfsjirareporter.id : '';
+        var guid = newprofile ? '' : '&guid=' + profileguid;
+
+        clearMessages();
+
+        jQuery.ajax({
+            type: 'POST',
+            url: newprofile ? '@Url.Action("AddNewSyncProfile", "Tfs")?_=' + new Date().getTime() : '@Url.Action("UpdateSyncProfile", "Tfs")?_=' + new Date().getTime(),
+            data:
+                'name=' + name +
+                    '&interval=' + interval +
+                    '&errormode=' + errorMode +
+                    '&enabled=' + enabled +
+                    '&jirauser=' + jirauser +
+                    '&jirapassword=' + jirapwd +
+                    '&jiraproject=' + jiraproj +
+                    '&jiratfscfid=' + jiracf +
+                    '&hostedtfs=' + hostedtfs +
+                    '&usehistory=' + usehistory +
+                    '&jiraurl=' + jiraurl +
+                    '&jiraondemand=' + jiraondemand +
+                    '&tfsurl=' + tfsurl +
+                    '&tfsuser=' + tfsuser +
+                    '&tfsdomain=' + tfsdomain +
+                    '&tfspassword=' + tfspwd +
+                    '&tfscollectionid=' + tfscoll +
+                    '&tfsproject=' + tfsproj +
+                    '&tfsjiracfname=' + tfscf +
+                    tfsjirareporter +
+                    guid,
+            complete: function() {
+                $(button).parent().show();
+                $('#applyworker').hide();
+            },
+            success: function(data) {
+                //console.log(data);
+                if (data.success) {
+                    if (newprofile) {
+                        location.href = '../Index/' + data.guid + '?mappings=1';
+                    } else {
+                        location.reload(true);
+                    }
+                } else {
+                    errorDialog('body', data.error, null);
+                }
+            },
+            error: function(xhr) {
+                console.log(xhr);
+                errorDialog('body', getXhrErrorResponse(xhr), null);
+            }
+        });
+    });
+
+    getKvps = function(url, data, success, error, complete) {
+        jQuery.ajax({
+            type: 'POST',
+            url: url,
+            data: data,
+            complete: function() {
+                complete();
+            },
+            success: function(data) {
+                if (data.success) {
+                    clearMessages();
+                    success(data.result);
+                } else {
+                    console.log(data);
+                    showErrorMessage(data.error);
+                    error();
+                }
+            },
+            error: function(xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+                error();
+            }
+        });
+    }
+
+    clearJiraFields = function() {
+        $('#jiraproject').fieldsel('clearCache');
+        $('#jiraproject').fieldsel('clearSel');
+        $('#jiratfscustomfield').fieldsel('clearCache');
+        $('#jiratfscustomfield').fieldsel('clearSel');
+    };
+
+    clearTfsFields = function() {
+        $('#tfscollection').fieldsel('clearCache');
+        $('#tfscollection').fieldsel('clearSel');
+        $('#tfsproject').fieldsel('clearCache');
+        $('#tfsproject').fieldsel('clearSel');
+        $('#tfsjiracustomfield').fieldsel('clearCache');
+        $('#tfsjiracustomfield').fieldsel('clearSel');
+        $('#tfsjirareporter').fieldsel('clearCache');
+        $('#tfsjirareporter').fieldsel('clearSel');
+
+        if ($('#isissueinhistory')[0].checked) {
+            $('#tfsjiracustomfield').attr('disabled', true);
+        }
+    };
+
+    setCheckinsScanningUrl = function () {
+        if (!newprofile) {
+            $('#checkins_setup').show();
+            $('#checkins_setup a').attr('href', '../../Checkins/Config?jiraUrl=' + encodeURIComponent($('#jiraurl').val()) + '&syncProfileGuid=@Model.Guid');
+        } else {
+            $('#checkins_setup').hide();
+        }
+    };
+    
+    $('.jira-auth').change(function() {
+        clearJiraFields();
+    });
+
+    $('.tfs-auth').change(function() {
+        clearTfsFields();
+    });
+
+    $('#jiraondemand').change(function() {
+        setCheckinsScanningUrl();
+    });
+    
+    $('#jiraurl').change(function() {
+        setCheckinsScanningUrl();
+    });
+</script>

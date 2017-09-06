@@ -1,0 +1,948 @@
+﻿@using synchronizer.Domain.Entity
+@using synchronizer.Mapping
+@using synchronizer.Services
+@model synchronizer.Domain.Entity.SyncProfile
+
+<script src="@Url.Content("~/Scripts/fieldselectors/jquery.fieldsel.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.jeditable.js")" type="text/javascript"></script>
+
+@{
+    var id = Request.Params["mappingid"];
+    var mapping = Model.GetMappingById(int.Parse(id));
+    var jiraFieldMeta = ViewBag.JiraService.GetFieldMetadata(Model, mapping);
+}
+
+<div id="messages"></div>
+
+<h4>Mapping Between</h4>
+<ul>
+    <li>JIRA: <span class="fieldname" id="jirafieldname">"@mapping.JiraField"</span></li>
+    <li>TFS: <span class="fieldname" id="tfsfieldname">"@mapping.TfsField"</span> <span id="tfsfieldnamechange">(<a href="#">Change</a>)</span>
+        <span id="tfsfieldnamenote" style="font-size:smaller"><br />
+            <strong>Note:</strong>
+            Value of this field should be changed only if you use service like CodePlex as your TFS server
+            (Default: '@SyncProfileService.DefaultTfsWorkItemTypeField').
+        </span>
+    </li>
+</ul>
+
+
+<h5>Mapping Mode</h5>
+<p style="margin-left: 2em;">
+    @{
+        const int convert = FieldMapping.MAPPING_MODE_CONVERT_TYPES;
+        const int mapvalues = FieldMapping.MAPPING_MODE_VALUEMAP;
+        const int copypathend = FieldMapping.MAPPING_MODE_COPY_LAST_PATH_PART;
+        const int withoutconversion = FieldMapping.MAPPING_MODE_WITHOUT_CONVERSION;
+
+        if (jiraFieldMeta.IsSprintField) {
+            <span class="message-box info">
+                <span class="message-icon"></span>
+                Because of performance reasons JIRA Sprints are cached.<br />
+                If you've added or renamed some sprint you should <a class="clear-jira-sprints-cache-button" href="#">refresh sprints cache</a>
+            </span>
+        }
+
+        if (mapping.IsTreePathMapping) {
+            <span class="message-box info">
+                <span class="message-icon"></span>
+                Synchronization of TFS Tree Path fields like <i>Iteration Path</i> and <i>Area Path</i> is handled differently compared to other fields.<br />
+                Ensure that you are familiar with
+                <a href="https://confluence.spartez.com/pages/viewpage.action?pageId=25758526">documentation regarding this topic</a>
+                before changing the settings below.
+           </span>
+            <label>
+                <input type="radio" class="mappingtype" id="mappingtype_convert" name="mappingtype" value="@(convert)" @Html.Raw(mapping.MappingMode == convert ? "checked=\"checked\"" : "")/>
+                Copy full TFS tree path<br/>
+            </label>
+            <label>
+                <input type="radio" class="mappingtype" id="mappingtype_copypathend" name="mappingtype" value="@(copypathend)" @Html.Raw(mapping.MappingMode == copypathend ? "checked=\"checked\"" : "")/>
+                Copy last part of TFS tree path<br/>
+            </label>
+            <label>
+                <input type="radio" class="mappingtype" id="mappingtype_valuemapmode" name="mappingtype" value="@(mapvalues)" @Html.Raw(mapping.MappingMode == mapvalues ? "checked=\"checked\"" : "") @Html.Raw(jiraFieldMeta.AllowedValues == null ? "disabled=\"disabled\"" : "")/>
+                Map values
+            </label>
+        } else {
+            <label>
+                <input type="radio" class="mappingtype" id="mappingtype_convert" name="mappingtype" value="@(convert)" @Html.Raw(mapping.MappingMode == convert ? "checked=\"checked\"" : "" ) @Html.Raw(mapping.JiraField.Equals(SyncProfileService.JiraIssueTypeSubtaskField) ? "disabled=\"disabled\"" : "" )/>
+                Copy value (attempt type conversion)<br/>
+            </label>
+            if (mapping.IsHtmlMapping) {
+                <label>
+                    <input type="radio" class="mappingtype" id="mappingtype_withoutconversion" name="mappingtype" value="@(withoutconversion)" @Html.Raw(mapping.MappingMode == withoutconversion ? "checked=\"checked\"" : "")/>
+                    Copy value (without conversion)<br/>
+                </label>
+            }
+            <label>
+                <input type="radio" class="mappingtype" id="mappingtype_valuemapmode" name="mappingtype" value="@(mapvalues)" @Html.Raw(mapping.MappingMode == mapvalues ? "checked=\"checked\"" : "") @Html.Raw(jiraFieldMeta.AllowedValues == null ? "disabled=\"disabled\"" : "")/>
+                Map values
+            </label>
+        }
+    }
+</p>
+
+@{
+
+    const int toJira = FieldMapping.MAPPING_DIRECTION_TO_JIRA;
+    const int toTfs = FieldMapping.MAPPING_DIRECTION_TO_TFS;
+    const int both = FieldMapping.MAPPING_DIRECTION_BOTH;
+    const int whenCreate = FieldMapping.MAPPING_DIRECTION_FOR_CREATE_ONLY;
+
+    int mappingDirection = (mapping.MappingDirection & both);
+    bool mappingWhenCreatingOnly = ((mapping.MappingDirection & whenCreate) != 0);
+}
+
+
+@if (!mapping.JiraField.Equals("###TFS4JIRA###.JIRA.subtask.issuetype"))
+{
+    <h5>Mapping Direction</h5>
+    <p style="margin-left:2em;">
+
+        @{
+            bool disable_j2t = false;
+            bool disable_t2j = false;
+            bool disable_co = false;
+
+            if (!mapping.IsMappableToTfs())
+            {
+                disable_j2t = true;
+            }
+
+            if (!mapping.IsMappableToJira(jiraFieldMeta))
+            {
+                disable_t2j = true;
+            }
+
+            if (mapping.IsMappableOnlyOnCreate(jiraFieldMeta))
+            {
+                disable_co = true;
+            }
+
+            if (mapping.IsIssueTypeMapping)
+            {
+                disable_j2t = true;
+                disable_t2j = true;
+                disable_co = true;
+            }
+        }
+
+        <input type="radio" class="mappingdirection" id="mappingdirection_tojira" name="mappingdirection" value="@(toJira)" @Html.Raw(mappingDirection == toJira ? "checked=\"checked\"" : "") @Html.Raw(disable_t2j ? "disabled=\"disabled\"" : "") />
+        <label for="mappingdirection_tojira">TFS to JIRA</label><br />
+        <input type="radio" class="mappingdirection" id="mappingdirection_totfs" name="mappingdirection" value="@(toTfs)" @Html.Raw(mappingDirection == toTfs ? "checked=\"checked\"" : "") @Html.Raw(disable_j2t ? "disabled=\"disabled\"" : "") />
+        <label for="mappingdirection_totfs">JIRA to TFS</label><br />
+        <input type="radio" class="mappingdirection" id="mappingdirection_both" name="mappingdirection" value="@(both)" @Html.Raw(mappingDirection == both ? "checked=\"checked\"" : "") @Html.Raw((disable_t2j || disable_j2t) ? "disabled=\"disabled\"" : "") />
+        <label for="mappingdirection_both">Both directions</label><br />
+        <input type="checkbox" class="mappingdirection" id="mappingdirection_whencreate" @Html.Raw(mappingWhenCreatingOnly ? "checked=\"checked\"" : "") @Html.Raw(disable_co ? "disabled=\"disabled\"" : "") />
+        <label for="mappingdirection_whencreate">Map value only when creating new Work Item or Issue</label>
+        @if (mapping.IsIssueTypeMapping)
+        {
+            <br />
+            <span style="font-size:smaller"><strong>Note:</strong> TFS Work Item Type field cannot be modified after create item, so the only reasonable setting is "Both Direction, when creating new item only".</span>
+        }
+        else if (disable_j2t || disable_t2j)
+        {
+            <br />
+            <span style="font-size:smaller"><strong>Note:</strong> Because of technical reasons this field cannot be mapped in both directions.</span>
+        }
+        else if (disable_co)
+        {
+            <br />
+            <span style="font-size:smaller"><strong>Note:</strong> Because of technical reasons this field can be mapped only upon Work Item or Issue creation.</span>
+        }
+    </p>
+ }
+
+<div class="hidden-on-load" id="tfs-use-custom-list-separator">
+    @if ((mapping.IsTextMapping || mapping.IsHtmlMapping) && jiraFieldMeta.IsArrayType) {
+        <h5>Alternate TFS list items separator</h5>
+        <p style="margin-left: 2em;">
+            <label>
+                <input type="checkbox"
+                       id="tfs-use-custom-list-separator"
+                       name="tfs-use-custom-list-separator"
+                       @Html.Raw(mapping.TfsListSeparator == ";" ? "checked=\"checked\"" : "")/>
+                Use alternate (";") TFS list items separator
+            </label>
+            <span class="helpcontainer">
+                <span class="helplink">?</span>
+                <span class="helpinfo">
+                    If you are using a custom TFS/VSTS plugin which requires the multivalue list items to be separated
+                    by a different separator (like "Multivalue control", or "Custom Controls for TFS Work Item Tracking")
+                    please mark this checkbox. It changes the separator during synchronization from ", " to ";".
+                </span>
+            </span>
+        </p>
+    }
+</div>
+
+<div class="fieldlistwrap hidden-on-load" id="valuesinfo">
+    <div class="fieldlistcontent @((mapping.IsTreePathMapping || mapping.IsStatusMapping) ? "fieldlist-wide" : "")">
+        <div class="mappingrow">
+            <div class="fieldlistleft fieldlisthead">
+                JIRA values
+                @if (mapping.JiraType == "user")
+                {
+                    <div class="fieldlistheadnote">Only JIRA users with permission <i>assignable user</i> are shown in the list below.</div>
+                }
+            </div>
+            <div class="fieldlistmiddle"> </div>
+            <div class="fieldlistright fieldlisthead">
+                <div class="fieldlisthead" id="valuesinfotfs">TFS values</div>
+            </div>
+            <div class="fieldslistrightmost"> </div>
+        </div>
+
+        <div class="mappingrow">
+            <div class="fieldlistleft">
+                <select id="jiravalues" size="10" class="fieldlist"></select>
+            </div>
+            <div class="fieldlistmiddle"><input type="button" value="Map" id="mapvalues" class="mapbutton" /></div>
+            <div class="fieldlistright">
+                <select id="tfsvalues" size="10" class="fieldlist"></select>
+            </div>
+            <div class="fieldslistrightmost"></div>
+        </div>
+
+        <div id="mappings">
+        </div>
+
+        <p></p>
+
+        <div id="default-mappings-tfs">
+            <div class="mappingrow">
+                <div class="fieldlistleft">
+                    <select class="defaultvalue" id="tfsvaluedefault"></select>
+                </div>
+                <div class="fieldlistmiddle mappingdirectionarrow">&lArr;</div>
+                <div class="fieldlistright"><i>anything else</i></div>
+                <div class="fieldslistrightmost"></div>
+            </div>
+        </div>
+
+        <div id="default-mappings-jira">
+            <div class="mappingrow">
+                <div class="fieldlistleft"><i>anything else</i></div>
+                <div class="fieldlistmiddle mappingdirectionarrow">&rArr;</div>
+                <div class="fieldlistright">
+                    <select class="defaultvalue" id="jiravaluedefault"></select>
+                </div>
+                <div class="fieldslistrightmost"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script type="text/template" id="value-inline-menu">
+    <% if (allMappingIds.length > 1) { %>
+        <img src="@VirtualPathUtility.ToAbsolute("~/Content/Images/delete-icon.svg")" class="value-inline-menu-remove-button" data-value-mapping-id="<%- id %>">
+
+        <% if (!isDefault) { %>
+            <span class="value-inline-menu-default-button value-inline-link-button" data-value-mapping-id="<%- id %>">set as default</span>
+        <% } %>
+    <% } %>
+
+    <div class="value-inline-menu-add-button value-inline-link-button" data-value-mapping-id="<%- id %>" data-type="<%- type %>" style="display: none;">+ add selected value</div>
+</script>
+
+
+<div id="tfsvmehelp" style="display:none;">
+    @{Html.RenderPartial("Help/Help_EditProfileValuesMappings");}
+</div>
+
+<script type="text/javascript">
+    $('#backlink').attr('href', '@Url.Action("Index", "Tfs", @Model.Guid)?mappings=1');
+    var mappingId = '@Request.Params["mappingid"]';
+
+    var isStatusesMapping = "@mapping.IsStatusMapping" === "True";
+    var valueInlineMenuTemplate = _.template($("#value-inline-menu").html());
+
+    var mappings = [];
+    var availableValues = {};
+    var availableDefaultValuesWithLabels = {};
+    var showGroupedJiraAvailableValues = false;
+    var defaults = { jira: null, tfs: null };
+    var mappingDirection = '@(mappingDirection)';
+    var mapWhenCreatingOnly = @(mappingWhenCreatingOnly ? "true" : "false");
+
+    var tfsField = "@mapping.TfsField";
+
+    getValueDisplayName = function(valuesArray, value) {
+
+        var label = value;
+        for (var j = 0; j < valuesArray.length; j++) {
+            if (valuesArray[j] && valuesArray[j].Value === value) {
+                label = valuesArray[j].Label;
+            }
+        }
+        return label.replace('<', '&lt;').replace('>', '&gt;');
+    };
+
+    getRawName = function(val) {
+        return val.replace('&lt;', '<').replace('&gt;', '>').replace(/"/g, '&quot;');
+    };
+
+    defaults.jira = '@Html.Raw(HttpUtility.JavaScriptStringEncode(String.IsNullOrEmpty(mapping.JiraDefaultValue)? "" : mapping.JiraDefaultValue))';
+    defaults.tfs = '@Html.Raw(HttpUtility.JavaScriptStringEncode(String.IsNullOrEmpty(mapping.TfsDefaultValue)? "" : mapping.TfsDefaultValue))';
+
+    if (defaults.jira.length === 0) defaults.jira = null;
+    if (defaults.tfs.length === 0) defaults.tfs = null;
+
+    updateMapButton = function(enabled) {
+        if (enabled) {
+            $('#mapvalues').removeAttr('disabled');
+        } else {
+            $('#mapvalues').attr('disabled', 'disabled');
+        }
+    };
+    showHideValues = function() {
+        if ($('#mappingtype_valuemapmode').is(':checked')) {
+            $('#valuesinfo').slideDown(setHelpSizePos);
+        } else {
+            $('#valuesinfo').slideUp(setHelpSizePos);
+        }
+    };
+    showMappings = function() {
+        if (availableValues.jiraValues === undefined || availableValues.tfsValues === undefined) {
+            return;
+        }
+
+        var arrowSign = (mappingDirection == '@toJira' ? '&lArr;' : (mappingDirection == '@toTfs' ? '&rArr;' : '&hArr;'));
+
+        var mergedMappings = getMergedMappings(mappings);
+
+        var $mappings = $('#mappings').empty();
+
+        for (var i = 0; i < mergedMappings.length; ++i) {
+            var $row = $(
+                '<div class="mappingrow" id="mappingrow_' + mergedMappings[i].id + '">' +
+                '<div class="fieldlistleft">' +
+                (isStatusesMapping ? getMergedValues(mergedMappings[i].jira, mergedMappings[i].tfs.length > 1, mergedMappings[i].id, "jira") : getValueDisplayName(availableValues.jiraValues, mergedMappings[i].jira[0].value)) +
+                '</div>' +
+                '<div class="fieldlistmiddle mappingdirectionarrow">' + arrowSign + '</div>' +
+                '<div class="fieldlistright">' +
+                (isStatusesMapping ? getMergedValues(mergedMappings[i].tfs, mergedMappings[i].jira.length > 1, mergedMappings[i].id, "tfs") : getValueDisplayName(availableValues.tfsValues, mergedMappings[i].tfs[0].value)) +
+                '</div>' +
+                '<div class="fieldslistrightmost"><a href="#" class="removemapping" data-value-mappings-id="' + mergedMappings[i].id + '">Remove</a></div>' +
+                '</div>'
+            );
+
+            if (showGroupedJiraAvailableValues) {
+                addMappedValueTooltip($row.find('.fieldlistleft'), mergedMappings[i].jira[0].value);
+            }
+
+            $mappings.append($row);
+        }
+        setHelpSizePos();
+    };
+
+    addMappedValueTooltip = function($target, value) {
+        var $tooltip = $('<div>');
+
+        _.chain(availableValues.jiraValues)
+            .filter(function(option) {
+                return option.value !== null && option.Value === value;
+            })
+            .sortBy(function(option) {
+                return option.Group.toLocaleUpperCase();
+            })
+            .each(function(option) {
+                $tooltip.append($('<div>', { 'class': 'mappingrowtooltip', 'text': option.Group + '\\' + option.Label }));
+            });
+
+        $target.tooltipster({
+            content: $tooltip,
+            position: 'left'
+        });
+    }
+
+    getMergedValues = function(values, disableValueInlineMenu, allMappingIds, type) {
+        var mergedValues = "";
+
+        for (var i = 0; i < values.length; ++i) {
+            mergedValues += "<div class='value-mapping-merged-value'>";
+            mergedValues += "<span class='value-mapping-merged-value-label'>";
+            mergedValues += values[i].isDefault ? ("<strong>" + values[i].value + "</strong>") : values[i].value;
+            mergedValues += "</span>";
+            if (!disableValueInlineMenu) {
+                mergedValues += getValueInlineMenu(values[i].id, values[i].isDefault, allMappingIds, type);
+            }
+            mergedValues += "</div>";
+        }
+
+        return mergedValues;
+    }
+
+    getValueInlineMenu = function(id, isDefault, allMappingIds, type) {
+        return valueInlineMenuTemplate({
+            id: id,
+            type: type,
+            allMappingIds: allMappingIds,
+            isDefault: isDefault
+        });
+    }
+
+    highlightMapping = function(mappingId) {
+        var row = $('#mappingrow_' + mappingId);
+        row.css('backgroundColor', '#ffff00');
+        row.animate({ backgroundColor: '#eeeeee' }, 2000);
+    };
+    isInMappings = function(field, which) {
+        for (var i = 0; i < mappings.length; ++i) {
+            if (encodeURIComponent(mappings[i][which]) === encodeURIComponent(field)) return true;
+            //if (mappings[i][which] === field) return true;
+        }
+        return false;
+    };
+    selectDefault = function(what) {
+        var sel = what === 'jira' ? '#jiravaluedefault' : '#tfsvaluedefault';
+        $(sel).unbind('change');
+        $(sel).find('option').each(function(i, o) {
+            if ($(o).val() === defaults[what]) {
+                $(o).attr('selected', 'selected');
+            }
+        });
+        $(sel).change(function() {
+            var val = $(this).find('option:selected').val();
+            val = (val === '-error-') ? null : val;
+            jQuery.ajax({
+                type: 'POST',
+                url: '@Url.Action("SetFieldDefault", "Tfs")?_=' + new Date().getTime(),
+                data: 'guid=@Model.Guid' + '&mappingid=' + mappingId + '&what=' + what + (val != null ? '&value=' + encodeURIComponent(val) : ''),
+                success: function(data) {
+                    if (data.success) {
+                        defaults[what] = val;
+                        selectDefault(what);
+                    } else {
+                        showErrorMessage(data.error);
+                    }
+                },
+                error: function(xhr) {
+                    console.log(xhr);
+                    showErrorMessage(getXhrErrorResponse(xhr));
+                }
+            });
+        });
+    };
+    fillAvailableValues = function() {
+
+        $('#jiravalues').html('');
+        $('#tfsvalues').html('');
+
+        $('#jiravaluedefault').html('');
+        $('#tfsvaluedefault').html('');
+
+        var i;
+        if (availableValues.jiraValues) {
+            var $tfsDefActionGroup = $('<optgroup label="Action">');
+            $('#tfsvaluedefault').append($tfsDefActionGroup);
+
+            if (availableDefaultValuesWithLabels.jiraValues) {
+                for (i = 0; i < availableDefaultValuesWithLabels.jiraValues.length; ++i) {
+                    var $option = $("<option>", { value: availableDefaultValuesWithLabels.jiraValues[i].Value }).text(availableDefaultValuesWithLabels.jiraValues[i].Label);
+                    $tfsDefActionGroup.append($option);
+                }
+            }
+
+            var $tfsDefValuesGroup = $('<optgroup label="Set value">');
+            $('#tfsvaluedefault').append($tfsDefValuesGroup);
+
+            fillAvailableJiraValues();
+
+            _.chain(availableValues.jiraValues)
+                .filter(function(jiraValue) {
+                    return jiraValue.Value !== null;
+                })
+                .groupBy('Value')
+                .each(function(group) {
+                    var groups = _.pluck(group, 'Group').join(', ');
+
+                    $tfsDefValuesGroup.append($("<option>", {
+                        value: group[0].Value,
+                        text: group[0].Label,
+                        title: groups
+                    }));
+                });
+        }
+
+        if (availableValues.tfsValues) {
+
+            var $jiraDefActionGroup = $('<optgroup label="Action">');
+            $('#jiravaluedefault').append($jiraDefActionGroup);
+
+            if (availableDefaultValuesWithLabels.tfsValues) {
+                for (i = 0; i < availableDefaultValuesWithLabels.tfsValues.length; ++i) {
+                    var $option = $("<option>", { value: availableDefaultValuesWithLabels.tfsValues[i].Value }).text(availableDefaultValuesWithLabels.tfsValues[i].Label);
+                    $jiraDefActionGroup.append($option);
+                }
+            }
+
+            var $jiraDefValuesGroup = $('<optgroup label="Set value">');
+            $('#jiravaluedefault').append($jiraDefValuesGroup);
+
+            for (i = 0; i < availableValues.tfsValues.length; ++i) {
+                if (availableValues.tfsValues[i].Value === null) {
+                    // todo: TFS-80
+                    continue;
+                }
+
+                var isAlreadyMapped = isInMappings(availableValues.tfsValues[i].Value, 'tfs');
+
+                var $option = $("<option>", {
+                    value: availableValues.tfsValues[i].Value,
+                    'data-is-already-mapped': isAlreadyMapped
+                });
+
+                if ('@mapping.IsTreePathMapping' === '@false') {
+                    $option.text(availableValues.tfsValues[i].Label);
+                    if (!isAlreadyMapped) {
+                        $('#tfsvalues').append($option);
+                    }
+                }
+
+                if ('@mapping.IsTreePathMapping' === '@true') {
+                    var escapedValue = $('<div>').text(availableValues.tfsValues[i].Label).html();
+                    var value = escapedValue.replace(/^.*?\\/, ' ').replace(/.*?\\/g, '&nbsp;&nbsp;');
+                    $option.html(value);
+                    $('#tfsvalues').append($option);
+
+                    $option.tooltipster({
+                        position: 'left',
+                        content: availableValues.tfsValues[i].Label + (isAlreadyMapped ? ' - value already mapped' : '')
+                    });
+                }
+
+                $jiraDefValuesGroup.append($option.clone());
+            }
+        }
+
+        selectDefault('tfs');
+        selectDefault('jira');
+    };
+
+    fillAvailableJiraValues = function() {
+        _.chain(availableValues.jiraValues)
+                .filter(function(jiraValue) {
+                    return jiraValue.Value !== null;
+                })
+                .groupBy('Group')
+                .sortBy(function(options, groupName) {
+                    return groupName.toLocaleUpperCase();
+                })
+                .each(addOptionsGroup);
+
+        function addOptionsGroup(options) {
+            var groupName = options[0].Group;
+            var $optGroup = $("<optgroup>", { label: groupName });
+
+            _.chain(options)
+                .sortBy(function(option) {
+                    return option.Label.toLocaleUpperCase();
+                })
+                .each(function addSingleOption(item) {
+                    var isValueAlreadyMapped = isInMappings(item.Value, 'jira');
+
+                    if (showGroupedJiraAvailableValues) {
+                        $optGroup.append($("<option>", {
+                            value: item.Value,
+                            text: item.Label,
+                            'data-is-already-mapped': isValueAlreadyMapped
+                        }).tooltipster({
+                            position: 'left',
+                            content: groupName + '\\' + item.Label + (isValueAlreadyMapped ? ' - value already mapped' : '')
+                        }));
+                    } else if (!isValueAlreadyMapped) {
+                        $optGroup.append($("<option>", { value: item.Value, text: item.Label }));
+                    }
+                });
+
+            if ($optGroup.children().length > 0) {
+                $('#jiravalues').append(showGroupedJiraAvailableValues ? $optGroup : $optGroup.children());
+            }
+        }
+    }
+
+    mapValues = function(jiraValue, tfsValue, allowDuplicates) {
+        jiraValue = jiraValue || $('#jiravalues option:selected').val();
+        tfsValue = tfsValue || $('#tfsvalues option:selected').val();
+        allowDuplicates = allowDuplicates || false;
+
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("MapValues", "Tfs")?_=' + new Date().getTime(),
+            data: 'guid=@Model.Guid' + '&mappingid=' + mappingId + '&jira=' + encodeURIComponent(jiraValue) + '&tfs=' + encodeURIComponent(tfsValue) + '&allowDuplicates=' + allowDuplicates,
+            success: function (data) {
+                if (data.success) {
+                    updateView(data.result.mappings);
+
+                    if (!allowDuplicates) {
+                        highlightMapping(data.result.newMappingId);
+                    }
+                } else {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            }
+        });
+    };
+    getMappedValues = function() {
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("GetMappedValues", "Tfs")?_=' + new Date().getTime(),
+            data: 'guid=@Model.Guid' + '&mappingid=' + mappingId,
+            success: function (data) {
+                if (data.success) {
+                    updateView(data.result.mappings);
+                } else {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            }
+        });
+    };
+
+    removeMapping = function(id) {
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("UnmapValues", "Tfs")?_=' + new Date().getTime(),
+            data: 'guid=@Model.Guid' + '&mappingid=' + mappingId + '&id=' + id,
+            success: function (data) {
+                if (data.success) {
+                    updateView(data.result.mappings);
+                } else {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            }
+        });
+    };
+
+    setMappingDefault = function(defaultMappingId) {
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetDefaultValueMapping", "Tfs")?_=' + new Date().getTime(),
+            data: 'guid=@Model.Guid' + '&mappingid=' + mappingId + '&id=' + defaultMappingId,
+            success: function (data) {
+                if (data.success) {
+                    updateView(data.result.mappings);
+                } else {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            }
+        });
+    };
+
+    clearJiraSprintsCacheAndReload = function() {
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("ClearJiraSprintsCache", "Tfs")?_=' + new Date().getTime(),
+            data: 'guid=@Model.Guid',
+            success: function () {
+                location.reload();
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            }
+        });
+    };
+
+    updateTfsUseCustomListSeparatorVisibility = function() {
+        if ($('input[name=mappingtype]:checked').val() === '@(convert)') {
+            $('#tfs-use-custom-list-separator').show();
+        } else {
+            $('#tfs-use-custom-list-separator').hide();
+        }
+    }
+
+    updateView = function(newMappings) {
+        mappings = newMappings;
+        fillAvailableValues();
+        showMappings();
+        updateMapButton();
+        updateTfsUseCustomListSeparatorVisibility();
+    }
+
+    $('.mappingtype').change(function () {
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetMappingMode", "Tfs")?_=' + new Date().getTime(),
+            data: 'guid=@Model.Guid&mappingid=' + mappingId + '&mode=' + $('input[name=mappingtype]:checked').val(),
+            success: function (data) {
+                if (data.success) {
+                    showHideValues();
+                } else {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            }
+        });
+        updateTfsUseCustomListSeparatorVisibility();
+    });
+
+    $('input[name=tfs-use-custom-list-separator]').change(function () {
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetTfsListSeparator", "Tfs")?_=' + new Date().getTime(),
+            data: 'guid=@Model.Guid&mappingid=' + mappingId + '&useCustomSeparator=' + $('input[name=tfs-use-custom-list-separator]').is(':checked'),
+            success: function (data) {
+                if (data.success) {
+                    showHideValues();
+                } else {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            }
+        });
+    });
+
+    $('.mappingdirection').change(function () {
+        var selectedDirection = parseInt($('input[name=mappingdirection]:checked').val());
+        var mappingWhenCreateingChecked = $('#mappingdirection_whencreate').is(':checked');
+
+        console.log('mappingWhenCreateingChecked', mappingWhenCreateingChecked, ' direction', selectedDirection);
+
+        if (mappingWhenCreateingChecked) {
+            selectedDirection += @(whenCreate);
+        }
+
+        console.log('Final direction: ', selectedDirection);
+
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetMappingDirection", "Tfs")?_=' + new Date().getTime(),
+            data: 'guid=@Model.Guid&mappingid=' + mappingId + '&direction=' + selectedDirection,
+            success: function (data) {
+                if (data.success) {
+                    mappingDirection = selectedDirection & @(both);
+                    mapWhenCreatingOnly = mappingWhenCreateingChecked;
+                    showMappings();
+                } else {
+                    showErrorMessage(data.error);
+                }
+
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            }
+        });
+    });
+
+    @{
+        if (mapping.MappingMode == FieldMapping.MAPPING_MODE_CONVERT_TYPES)
+        {
+            @: $('#mappingtype_convert').attr('checked', 'checked');
+                            }
+        else if (mapping.MappingMode == FieldMapping.MAPPING_MODE_VALUEMAP)
+        {
+            @: $('#mappingtype_valuemapmode').attr('checked', 'checked');
+                            }
+        else if (mapping.MappingMode == FieldMapping.MAPPING_MODE_COPY_LAST_PATH_PART)
+        {
+            @: $('#mappingtype_copypathend').attr('checked', 'checked');
+                            }
+        else if (mapping.MappingMode == FieldMapping.MAPPING_MODE_WITHOUT_CONVERSION)
+        {
+            @: $('#mappingtype_withoutconversion').attr('checked', 'checked');
+                        }
+
+        if (mappingDirection == FieldMapping.MAPPING_DIRECTION_TO_JIRA)
+        {
+            @: $('#mappingdirection_tojira').attr('checked', 'checked');
+                            }
+        else if (mappingDirection == FieldMapping.MAPPING_DIRECTION_TO_TFS)
+        {
+            @: $('#mappingdirection_totfs').attr('checked', 'checked');
+                            }
+        else if (mappingDirection == FieldMapping.MAPPING_DIRECTION_BOTH)
+        {
+            @: $('#mappingdirection_both').attr('checked', 'checked');
+                            }
+    };
+
+    function init(){
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("GetAvailableFieldValues", "Tfs")?_=' + new Date().getTime(),
+            data: 'guid=@Model.Guid&mappingid=@mapping.Id',
+            success: function (data) {
+                if (data.success) {
+                    hideSpinner();
+
+                    $('#jirafieldname').html('"' + data.result.jira.Name + ' (@mapping.JiraField)", type: ' + data.result.jira.Type);
+                    $('#tfsfieldname').html('"' + data.result.tfs.Name + ' (' + tfsField + ')", type: ' + data.result.tfs.Type);
+
+                    availableValues = { jiraValues: data.result.jira.AllowedValues, tfsValues: data.result.tfs.AllowedValues };
+                    availableDefaultValuesWithLabels = { jiraValues: data.result.jira.AllowedDefaultValuesWithLabels, tfsValues: data.result.tfs.AllowedDefaultValuesWithLabels };
+
+                    showGroupedJiraAvailableValues = _.some(availableValues.jiraValues, function(value) { return value && value.Group !== ''; });
+
+                    fillAvailableValues();
+                    showMappings();
+                    showHideValues();
+
+                    @if (mapping.IsIssueTypeMapping) {
+                        @: makeTFSFieldNameEditable();
+                                                            }
+                } else {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            }
+        });
+    }
+
+    init();
+
+    $('#mapvalues').click(function() {
+        mapValues();
+    });
+
+    updateMapButton(false);
+    showHideValues();
+
+    $('.fieldlist').change(function() {
+        var isJiraValueSelected = $('#jiravalues option:selected').length > 0;
+        var isTfsValueSelected = $('#tfsvalues option:selected').length > 0;
+        updateMapButton(isJiraValueSelected && isTfsValueSelected);
+
+        if (isStatusesMapping && isJiraValueSelected) {
+            $(".fieldlistleft").each(function() {
+                $(this).find(".value-inline-menu-add-button").last().show();
+            });
+        }
+
+        if (isStatusesMapping && isTfsValueSelected) {
+            $(".fieldlistright").each(function() {
+                $(this).find(".value-inline-menu-add-button").last().show();
+            });
+        }
+
+        var enabled = $('#jiravalues option[data-is-already-mapped!=true]:selected').length
+                   && $('#tfsvalues option[data-is-already-mapped!=true]:selected').length;
+        updateMapButton(enabled);
+    });
+
+    $("body").on("click", ".value-inline-menu-add-button", function() {
+        var type = $(this).attr("data-type");
+        var valueMappingId = $(this).attr("data-value-mapping-id");
+        var jiraValue, tfsValue;
+
+        if (type === "jira") {
+            jiraValue = $('#jiravalues option:selected').val();
+            tfsValue = getValueFromMappings(mappings, valueMappingId, "tfs");
+        } else if (type === "tfs") {
+            jiraValue = getValueFromMappings(mappings, valueMappingId, "jira");
+            tfsValue = $('#tfsvalues option:selected').val();
+        }
+
+        if (jiraValue && tfsValue) {
+            mapValues(jiraValue, tfsValue, true);
+        }
+    });
+
+    $("body").on("click", ".value-inline-menu-remove-button", function() {
+        var valueMappingId = $(this).attr("data-value-mapping-id");
+        removeMapping(valueMappingId);
+    });
+
+    $("body").on("click", ".value-inline-menu-default-button", function() {
+        var valueMappingId = $(this).attr("data-value-mapping-id");
+        setMappingDefault(valueMappingId);
+    });
+
+    $("body").on("click", ".removemapping", function(event) {
+        event.preventDefault();
+        var id = $(event.currentTarget).attr("data-value-mappings-id");
+        removeMapping(id);
+    });
+
+    $("body").on("click", ".clear-jira-sprints-cache-button", function(event) {
+        event.preventDefault();
+        clearJiraSprintsCacheAndReload();
+    });
+
+    var $tfsFieldNameChange = $("#tfsfieldnamechange");
+    var $tfsFieldNameNote = $("#tfsfieldnamenote");
+    var $tfsFieldName = $("#tfsfieldname");
+    var currentLabelText, currentInputText;
+
+    function makeTFSFieldNameEditable() {
+        currentLabelText = $tfsFieldName.html();
+        currentInputText = tfsField;
+
+        $tfsFieldNameChange.show();
+        $tfsFieldNameNote.hide();
+
+        $tfsFieldName.editable(function(value, settings) {
+            currentInputText = value;
+
+            function onAjaxError(data) {
+                showErrorMessage(data.error);
+                $tfsFieldName.html(currentLabelText);
+                $tfsFieldNameChange.click();
+            }
+
+            function onAjaxSuccess(data) {
+                if(data.success != true) {
+                    onAjaxError(data);
+                    return;
+                }
+
+                tfsField = value;
+                init();
+            }
+
+            jQuery.ajax({
+                type: 'POST',
+                url: '@Url.Action("UpdateMappingFields", "Tfs")?_=' + new Date().getTime(),
+                data: 'guid=@Model.Guid' + '&mappingid=' + mappingId + '&jiraField=' + encodeURIComponent('@mapping.JiraField') + '&tfsField=' + encodeURIComponent(value),
+                success: onAjaxSuccess,
+                error: onAjaxError
+            });
+
+            $tfsFieldNameChange.hide();
+
+            return "Refreshing. Please wait...";
+        }, {
+            trigger  : $("#tfsfieldnamechange"),
+            width    : 250,
+            cssclass : 'jeditable',
+            submit   : 'Save',
+            cancel   : 'Cancel',
+            onblur   : 'ignore',
+            onreset  : function() { $tfsFieldNameNote.hide(); },
+            data     : function() { $tfsFieldNameNote.show(); return currentInputText; }
+        });
+    }
+
+    $(document).ready(function() {
+        getMappedValues();
+        showSpinner();
+        fillHelp('#tfsvmehelp');
+    });
+</script>

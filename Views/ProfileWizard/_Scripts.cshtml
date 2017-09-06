@@ -1,0 +1,127 @@
+﻿<script>
+    var MappingDirection = {
+        NOT_SYNCHRONIZED: 0,
+        FROM_TFS_TO_JIRA: 1,
+        FROM_JIRA_TO_TFS: 2,
+        BOTH_DIRECTIONS: 3,
+
+        SYNCHRONIZE_ONLY_FIRST_TIME_BIT_FLAG: 4,
+        CONFLICT: -1
+    }
+
+    function setFieldError(fieldId, errorMessage) {
+        var input = $("#" + fieldId);
+        var error = $("#" + fieldId + ' + .tfs4jira-field-error');
+
+        input.addClass("tfs4jira-error-border");
+        error.text(errorMessage);
+    }
+
+    function clearFieldError(fieldId) {
+        var input = $("#" + fieldId);
+        var error = $("#" + fieldId + ' + .tfs4jira-field-error');
+
+        input.removeClass("tfs4jira-error-border");
+        error.text('');
+    }
+
+    function nonBlockingAjax(options) {
+        var result = $.Deferred();
+
+        options = _.extend(options, { type: 'POST' });
+
+        var ajaxXhr = $.ajax(options);
+
+        ajaxXhr.done(function testConnectionDone(data) {
+            if (data.success) {
+                result.resolve(data.result);
+            } else {
+                showErrorMessage(data.error);
+                result.reject(data.error);
+            }
+        });
+
+        ajaxXhr.fail(function testConnectionFail(xhr) {
+            console.log(xhr);
+            showErrorMessage(getXhrErrorResponse(xhr));
+            result.reject(getXhrErrorResponse(xhr));
+        });
+
+
+        return result.promise();
+    }
+
+    var blockingAjaxCounter = 0;
+
+    function blockingAjax(options) {
+        showSpinner();
+        blockingAjaxCounter++;
+
+        return nonBlockingAjax(options).always(function() {
+            blockingAjaxCounter--;
+
+            if (blockingAjaxCounter == 0) {
+                hideSpinner();
+            }
+        });
+    }
+
+    var $lastFocusedElement = $();
+
+    function saveFocusedElement() {
+        $lastFocusedElement = $(':focus');
+    }
+
+    function restoreFocus() {
+        $lastFocusedElement.focus();
+    }
+
+    function makeFieldSelect2($field, containerClassName, width, placeholder) {
+        var hasOptions = $field.find("option").length > 0;
+        var minimumResultsForSearch = parseInt($field.data("minimumresultsforsearch"));
+        var widthToSet = (width) ? width : "off";
+        $field.select2({
+            minimumResultsForSearch: (hasOptions && $.isNumeric(minimumResultsForSearch)) ? minimumResultsForSearch : -1,
+            containerCssClass: containerClassName,
+            width: widthToSet,
+            placeholder: placeholder
+        });
+    }
+      
+    function findElementByAttributes($container, attributes) {
+        var query = '';
+
+        _.each(attributes, function (value, key) {
+            query += '[' + key + '="' + value + '"]';
+        });
+
+        return $container.find(query);
+    }
+
+    function getSynchronizationDirection(mappingDirection) {
+        // Two way synchronization on profile - return mapping specific synchronization
+        if (synchronizationProfile.SyncDirection == MappingDirection.BOTH_DIRECTIONS) {
+            return mappingDirection % MappingDirection.SYNCHRONIZE_ONLY_FIRST_TIME_BIT_FLAG;
+        }
+
+        // One way synchronization on profile and two way synchronization on mapping - return profile level synchronization direction
+        if (mappingDirection % MappingDirection.SYNCHRONIZE_ONLY_FIRST_TIME_BIT_FLAG == MappingDirection.BOTH_DIRECTIONS) {
+            return synchronizationProfile.SyncDirection;
+        }
+
+        // Profile level direction is the same as mapping specific direction - return it
+        if (mappingDirection % MappingDirection.SYNCHRONIZE_ONLY_FIRST_TIME_BIT_FLAG == synchronizationProfile.SyncDirection) {
+            return synchronizationProfile.SyncDirection;
+        }
+
+        // The field synchronization direction is opposite in relation to direction in Synchronization Profile - return error (conflict)
+        return MappingDirection.CONFLICT;
+    }
+
+    function getCurrentProfileLevelMappingDirectionText() {
+        if (synchronizationProfile.SyncDirection == MappingDirection.FROM_TFS_TO_JIRA) return 'TFS to JIRA';
+        if (synchronizationProfile.SyncDirection == MappingDirection.FROM_JIRA_TO_TFS) return 'JIRA to TFS';
+
+        return 'both directions';
+    }
+</script>

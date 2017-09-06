@@ -1,0 +1,303 @@
+﻿@using synchronizer.Controllers
+@using synchronizer.Domain
+@using synchronizer.Domain.Entity
+@using synchronizer.Helpers
+@model ICollection<synchronizer.Models.SyncProfileErrorModel>
+
+@{
+    ViewBag.Title = "Configuration - TFS4JIRA Synchronizer";
+
+    string createdProfileGuid = TempData[TfsController.CreatedProfileGuidKey].NullableToString();
+}
+
+
+    <h1>Synchronization Configuration</h1>
+
+    @if (@Model.Count == 0)
+    {
+        <div style="margin-left: auto; margin-right: auto; width: 100%; text-align: center">
+            <p>No synchronization profiles defined.</p> <div class="addprofile" style="text-align: center"><a href="@Url.Action("Index", "ProfileWizard")">Create Synchronization Profile</a></div>
+        </div>
+    }
+    else
+    {
+        <div style="margin-bottom: 10px;">
+            <div style="float: left"><h2 class="nomargin">Synchronization profiles</h2></div>
+            <div style="float: right"><div class="addprofile"><a href="@Url.Action("Index", "ProfileWizard")">Create Synchronization Profile</a></div></div>
+            <div style="clear: both"></div>
+        </div>
+
+        <table class="profiles-table" style="table-layout: fixed;">
+            <thead>
+                <tr>
+                    <th style="width: 340px;">Profile name</th>
+                    <th style="width: 80px;">Status</th>
+                    <th style="width: 150px;">Last run</th>
+                    <th style="width: 150px;">Last successful run</th>
+                    <th style="width: 50px;">Errors</th>
+                    <th style="width: 30px;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+        var i = 0;
+
+        foreach (var p in @Model)
+        {
+            <tr class="@(p.Profile.State != SyncProfileState.Enabled ? "disabled" : "") profiles-table-row" data-profile-guid="@p.Profile.Guid" data-state="@p.Profile.State">
+                <td>
+                    <div class="profile-name-column">
+                        @if (@p.Profile.State == SyncProfileState.Draft)
+                        {
+                            if (p.Profile.Name == null)
+                            {
+                                @Html.ActionLink("<No Name>", "Index", "ProfileWizard", new { id = @p.Profile.Guid }, new { @class = "editprofile" })
+                            }
+                            else
+                            {
+                                @Html.ActionLink(@p.Profile.Name, "Index", "ProfileWizard", new { id = @p.Profile.Guid }, new { @class = "editprofile" })
+                            }
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Index", "Tfs", new {id = @p.Profile.Guid})">@p.Profile.Name</a>
+                        }
+                    </div>
+                </td>
+
+                @if (p.Profile.LastAttemptedScan != p.Profile.LastSuccessfulScan)
+                {
+                    <td title="Last synchronization has not finished successfully. Please refer to log for details."
+                        class="synchronization-error">
+                        @(p.Profile.State.ToString())
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        @(p.Profile.State.ToString())
+                    </td>
+                }
+                <td class="nowrap">@p.Profile.LastAttemptedScan</td>
+                <td class="nowrap">@p.Profile.LastSuccessfulScan</td>
+                <td class="nowrap @(p.ErrorCount > 0 ? "error-background" : "")">
+                    <a class="showerrors" id="showerrors_@(p.Profile.Guid)" href="@Url.Action("Index", "SyncError", new { id = @p.Profile.Guid }, null)">@p.ErrorCount</a>
+                </td>
+                <td class="nowrap">
+                    <ul class="operations-dropdown-menu">
+                        <li>
+                            <a href="#" class="operations-icon-link">
+                                <img src="@Url.Content("~/Content/Images/operations-icon.svg")" title="Operations" />
+                            </a>
+                            <ul>
+                                @if (@p.Profile.State == SyncProfileState.Draft)
+                                {
+                                    <li>
+                                        @Html.ActionLink("Edit", "Index", "ProfileWizard", new { id = @p.Profile.Guid }, new { @class = "editprofile" })
+                                    </li>
+                                    <li>
+                                        <a class="deleteprofile" href="#" id="deleteprofile_@(p.Profile.Guid)">Delete</a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    if (@p.Profile.State == SyncProfileState.Enabled)
+                                    {
+                                        <li>
+                                            <a href="#" class="disableprofile" id="disableprofile_@(p.Profile.Guid)">Disable</a>
+                                        </li>
+                                    }
+
+                                    if (@p.Profile.State == SyncProfileState.Disabled)
+                                    {
+                                        <li>
+                                            <a href="#" class="enableprofile" id="enableprofile_@(p.Profile.Guid)">Enable</a>
+                                        </li>
+                                    }
+
+                                    <li>
+                                        @Html.ActionLink("Check-ins Scanning", "Config", "Checkins", new { syncProfileGuid = @p.Profile.Guid, jiraUrl = p.Profile.JiraUrl }, new { @class = "editprofile" })
+                                    </li>
+
+                                    <li>
+                                        @Html.ActionLink("Initial Synchronization", "InitialSync", "Tfs", new { id = @p.Profile.Guid }, new { @class = "editprofile" })
+                                    </li>
+
+                                    <li><hr /></li>
+
+                                    <li>
+                                        <a href="@Url.Action("Index", "Tfs", new {id = @p.Profile.Guid})">Edit</a>
+                                    </li>
+
+                                    <li>
+                                        <a class="cloneprofile" href="#" data-profile-guid="@(p.Profile.Guid)" data-profile-name="@(p.Profile.Name)">
+                                            Clone
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="deleteprofile" href="#" id="deleteprofile_@(p.Profile.Guid)">
+                                            Delete
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+                                i++;
+        }
+                }
+            </tbody>
+        </table>
+    }
+
+
+
+<div id="tfsindexhelp" style="display: none;">
+    @{ Html.RenderPartial("Help/Help_Configuration"); }
+</div>
+
+<div id="cloneprofiledialog" style="display:none ">
+    @{ Html.RenderPartial("Dialogs/_CloneSyncProfileDialog"); }
+</div>
+
+ @*   Underscore template for tooltip shown after synchronization profile is created by Wizard *@
+<script type="text/template" id="new-profile-tooltip-content">
+    You can now configure Check-ins Scanning, <br>
+    perform Initial Synchronization or <br>
+    <%- isEnabled ? 'disable' : 'enable' %> created Synchronization Profile.    
+    <a href="#" class="new-profile-tooltip-close">Close</a>         
+</script>
+
+<script type="text/javascript">
+    setEnabled = function(enabled, target) {
+        var guid = target.id.split('_')[1];
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetSyncProfileEnabled", "Tfs")?_=' + new Date().getTime(),
+            data: 'guid=' + guid + '&enabled=' + enabled,
+            success: function(data) {
+                //console.log(data);
+                if (data.success) {
+                    location.reload(true);
+                } else {
+                    errorDialog('body', data.error, null);
+                }
+            },
+            error: function(xhr) {
+                console.log(xhr);
+                errorDialog('body', getXhrErrorResponse(xhr), null);
+            }
+        });
+    }
+
+    function showWizardTooltip() {
+        var $createdProfileRow = $('[data-profile-guid="@createdProfileGuid"]');
+        var $actionTextLinksContainer = $createdProfileRow.find('.operations-icon-link');
+
+        var contentTemplate = _.template($('#new-profile-tooltip-content').html());
+        var isProfileEnabled = $createdProfileRow.attr('data-state') === "@SyncProfileState.Enabled";
+
+        showOneTimeTooltip($actionTextLinksContainer, contentTemplate({ isEnabled: isProfileEnabled }));
+
+        $(".new-profile-tooltip-close").click(function (event) {
+            $actionTextLinksContainer.tooltipster('hide');
+            event.preventDefault();
+        });
+    }
+
+    $(document).ready(function() {
+        if (!_.isEmpty("@createdProfileGuid")) {
+            showWizardTooltip();
+        }
+
+        $('.operations-dropdown-menu').dropit();
+
+        $('#menu-config').addClass('selected');
+
+        $('.enableprofile').click(function(e) {
+            e.preventDefault();
+            setEnabled(true, e.currentTarget);
+        });
+
+        $('.disableprofile').click(function(e) {
+            e.preventDefault();
+            setEnabled(false, e.currentTarget);
+        });
+
+        $('.cloneprofile').click(function(e) {
+            e.preventDefault();
+
+            var baseProfileGuid = $(e.currentTarget).attr('data-profile-guid');
+            var baseProfileName = $(e.currentTarget).attr('data-profile-name');
+
+            var dialogTitle = 'Clone synchronization profile "' + baseProfileName + '"';
+            okCancelDialog(document.body, 700, 350, dialogTitle, $("#cloneprofiledialog").html(), null, null, cloneProfile);
+            $(".clone-sync-profile-form").submit(cloneProfile);
+
+            var $profileNameElement = $(".clone-sync-profile-name:visible");
+            $profileNameElement.val(getClonedProfileName()).focus();
+
+            function cloneProfile() {
+                jQuery.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("CloneSyncProfile", "Tfs")?_=' + new Date().getTime(),
+                    data: {
+                        guid: baseProfileGuid,
+                        name: $profileNameElement.val()
+                    }
+                }).done(function(data) {
+                    window.location.href = data.editUrl;
+                }).fail(function(xhr) {
+                    console.log(xhr);
+                    errorDialog('body', 'There was an error while cloning synchronization profile: ' + getXhrErrorResponse(xhr), null);
+                });
+
+                return false;
+            }
+
+            function getClonedProfileName() {
+                var result = 'Copy of ' + baseProfileName;
+                var copyCounter = 0;
+
+                var existingProfileNames = $.map($("[data-profile-name]"), function (element) {
+                    return $(element).attr('data-profile-name');
+                });
+
+                while (jQuery.inArray(result, existingProfileNames) !== -1) {
+                    copyCounter++;
+                    result = 'Copy (' + copyCounter + ') of ' + baseProfileName;
+                }
+                return result;
+            }
+        });
+
+        $('.deleteprofile').click(function(e) {
+            e.preventDefault();
+
+            questionDialog('body', 'Do you really want to delete this profile?', function() {
+                jQuery.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("DeleteSyncProfile", "Tfs")?_=' + new Date().getTime(),
+                    data: 'guid=' + e.currentTarget.id.split('_')[1],
+                    success: function(data) {
+                        console.log(data);
+                        if (data.success) {
+                            location.reload(true);
+                        } else {
+                            errorDialog('body', data.error, null);
+                        }
+                    },
+                    error: function(xhr) {
+                        console.log(xhr);
+                        errorDialog('body', getXhrErrorResponse(xhr), null);
+                    }
+                });
+            }, null);
+        });
+
+        fillHelp('#tfsindexhelp');
+    });
+</script>

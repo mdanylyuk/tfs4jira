@@ -1,0 +1,749 @@
+﻿@using synchronizer.Controllers
+
+@*
+    Mapping helper component. Objects of following types are used here:
+
+    enum MappingDirection {
+        NOT_SYNCHRONIZED: 0,
+        FROM_TFS_TO_JIRA: 1,
+        FROM_JIRA_TO_TFS: 2,
+        BOTH_DIRECTIONS: 3
+    }
+
+    class Value {
+        id: String,   - internal ID used to identify this value,
+        text: String  - text shown to user,
+        group: String - group used when jiraGroupMode is equal true
+    }
+
+    class ValueMapping {
+        jiraId: String                      - id of Value in JIRA (see Value.id),
+        tfsId: String                       - id of Value in TFS (see Value.id),
+        mappingId: String                   - unique ID for this mapping,
+        isDefault: Boolean                   - boolean value that marks default mapping in one-to-many mappings,
+        jiraHelp: String                    - optional help text for JIRA field,
+        tfsHelp: String                     - optional help text for TFS field,
+        showActiveEditButton: true          - should edit button be highlighted
+        editTooltip: String                 - optional tooltip shown when mapping is added to page,
+        direction: MappingDirection         - synchronization direction
+        directionTooltip: String            - optional tooltip shown when user hovers mapping direction indicator (direction arrows)
+    }
+
+    The following events are emited by MappingComponent:
+    * @MappingEvents.AddMappingButtonClicked({jiraId, tfsId})   - the parameter is ValueMapping without fields mappingId and direction,
+    * @MappingEvents.RemoveMappingButtonClicked(ValueMapping)   - the parameter is ValueMapping user intend to remove,
+    * @MappingEvents.EditMappingButtonClicked(ValueMapping)     - the parameter is ValueMapping user intend to edit,
+    * @MappingEvents.SetFallbackFromJiraToTfsClicked(Value.id)  - the parameter is ID of selected fallback TFS value,
+    * @MappingEvents.SetFallbackFromTfsToJiraClicked(Value.id)  - the parameter is ID of selected fallback JIRA value
+
+    The listed events means, that user has shown an intend to perform some action, but nothing has changed in the model yet.
+    In order to change model you have to call one of following events:
+    * @MappingEvents.AddMapping(ValueMapping)                   - the parameter is ValueMapping,
+    * @MappingEvents.RemoveMapping(ValueMapping)                - the parameter is ValueMapping,
+    * @MappingEvents.SetFallbackFromJiraToTfs(Value.id)         - the parameter is ID of selected fallback TFS value,
+    * @MappingEvents.SetFallbackFromTfsToJira(Value.id)         - the parameter is ID of selected fallback JIRA value,
+
+
+    Use following event to update mapping direction. In case, when parameter is of type ValueMapping then only
+    for this mapping direction will be updated to ValueMapping.direction. If passed argument is of type MappingDirection(string) its
+    value is set for each mapped row.
+    @MappingEvents.UpdateMappingDirection(ValueMapping or MappingDirection)
+
+
+    Initialization is performed in handler for event @MappingEvents.Init(parameters). Object 'parameters' should have following fields:
+
+    parameters: {
+        possibleJiraValues: [Value]         - an array of objects of type Value,
+        possibleTfsValues: [Value]          - an array of objects of type Value,
+        mappedValues: [ValueMapping]        - an array of objects of type ValueMapping,
+        fallbackActions: [Value]            - an array of objects of type Value,
+        fallbackFromTfsToJira: [Value.id]   - ID of selected fallback to JIRA,
+        fallbackFromJiraToTfs: [Value.id]   - ID of selected fallback to TFS,
+        showEditButtons: Boolean            - Flag indicating whether edit buttons should be shown for each mapping
+        showFallbackSelects: Boolean        - Flag indicating whether fallback selects should be shown
+        tfsTreePathMode: Boolean            - Flag indicating whether tfs values should be shown in treeview, where '\' indicates tree level (e.g. TreePath fields)
+        jiraGroupMode: Boolean              - Flag indicating whether jira available values should be grouped (e.g. sprints are grouped per board),
+        isMappingOneToMany: Boolean         - Flag indicating whether one-to-many mapping is turned on
+    }
+*@
+
+@helper MappingComponent(string id)
+{
+    <div class="tfs4jira-mapping-container" id="@id">
+        <div class="tfs4jira-mapping-layout">
+            <div class="tfs4jira-mapping-layout-row">
+                <div class="tfs4jira-mapping-layout-column-jira">
+                    <h2>JIRA Values</h2>
+                    <div class="tfs4jira-mapping-header-note-jira"></div>
+                </div>
+                <div class="tfs4jira-mapping-layout-column-tfs">
+                    <h2>TFS Values</h2>
+                    <div class="tfs4jira-mapping-header-note-tfs"></div>
+                </div>
+            </div>
+
+            <div class="tfs4jira-mapping-layout-row">
+                <div class="tfs4jira-mapping-layout-column-jira">
+                    <select class="tfs4jira-mapping-select" size="10"></select>
+                </div>
+                <div class="tfs4jira-mapping-layout-column-tfs">
+                    <select class="tfs4jira-mapping-select" size="10"></select>
+                </div>
+            </div>
+        </div>
+
+        <button class="tfs4jira-mapping-map-button tfs4jira-rounded-button" title="Please select values for both JIRA and TFS to map them.">Map</button>
+        
+        <div class="tfs4jira-mapping-no-mapped-values-container">
+            <span class="tfs4jira-mapping-no-mapped-values">
+                Please select JIRA and TFS values that you want to map.
+            </span>
+        </div>
+
+        <table class="tfs4jira-mapping-table">
+        </table>
+        
+        <div class="tfs4jira-mapping-anything-else">
+            <label>
+                Map anything else from JIRA to TFS as
+            </label>
+            <select class="tfs4jira-mapping-fallback-from-jira-to-tfs">
+                <optgroup label="Action" class="tfs4jira-mapping-fallback-actions"></optgroup>
+                <optgroup label="Set Value" class="tfs4jira-mapping-fallback-values"></optgroup>
+            </select>
+        </div>
+
+        <div class="tfs4jira-mapping-anything-else">
+            <label>
+                Map anything else from TFS to JIRA as
+            </label>
+            <select class="tfs4jira-mapping-fallback-from-tfs-to-jira">
+                <optgroup label="Action" class="tfs4jira-mapping-fallback-actions"></optgroup>
+                <optgroup label="Set Value" class="tfs4jira-mapping-fallback-values"></optgroup>
+            </select>
+        </div>
+    </div>
+
+    @*   Underscore template for single mapped row *@
+    <script type="text/template" class="mapped-row-template">
+        <tr class="tfs4jira-mapping-row">
+            <td class="tfs4jira-mapping-row-left">
+                <% if ( isMappingOneToMany ) { %>
+                    <% for (var i = 0; i < mappedValue.jira.length; i++) { %>
+                        <div title="<%- mappedValue.jira[i].value %>" class="tfs4jira-mapping-value-text">
+                            <button class="tfs4jira-mapping-row-operation tfs4jira-merged-mapping-remove tfs4jira-rounded-button" data-mapping-id="<%- (mappedValue.jira.length === 1) ? mappedValue.id : mappedValue.jira[i].id  %>" title="Remove">
+                                <img src="@VirtualPathUtility.ToAbsolute("~/Content/Images/delete-icon.svg")" />
+                            </button>
+                            <% if (!mappedValue.jira[i].isDefault && mappedValue.jira.length > 1) { %>
+                                <span class="value-inline-menu-default-button value-inline-link-button" data-value-mapping-id="<%- mappedValue.jira[i].id %>">set as default</span>
+                            <% } %>
+                            <% if (mappedValue.jira[i].isDefault) { %>
+                                <div class="tfs4jira-mapping-value-text-label"><strong><%- mappedValue.jira[i].value %></strong></div>
+                            <% } else { %>
+                                <div class="tfs4jira-mapping-value-text-label"><%- mappedValue.jira[i].value %></div>
+                            <% } %>
+                        </div>
+                    <% } %>
+                <% } else { %>
+                    <span title="<%- jiraValue.text %>" class="tfs4jira-mapping-value-text"><%- jiraValue.text  %></span>
+                <% } %>
+
+                <% if ( mappedValue.jiraHelp ) { %>
+                    <span class="tfs4jira-mapping-help-container">
+                        <span class="tfs4jira-mapping-help-link">?</span>
+                        <span class="tfs4jira-mapping-help-text" style="display: none;"><%= mappedValue.jiraHelp %></span>
+                    </span>
+                <% } %>
+
+                <% if ( !isJiraValueValid ) { %>
+                    <div class="tfs4jira-mapping-value-invalid" title="This value does not exist in JIRA. Please remove mapping for this value."></div>
+                <% } %>
+                
+                <% if ( isMappingOneToMany && mappedValue.tfs.length === 1 ) { %>
+                    <div class="value-inline-menu-add-button value-inline-link-button" data-value-mapping-id="<%- mappedValue.id[0] %>" data-type="jira" style="display: none;">+ add selected value</div>
+                <% } %>
+            </td>
+
+            <td class="tfs4jira-mapping-row-direction"><div class="<%- directionClass %>" title="<%- directionTooltip %>"> </div></td>
+            
+            <td class="tfs4jira-mapping-row-right">
+                <% if ( !isMappingOneToMany ) { %>
+                    <button class="tfs4jira-mapping-row-operation tfs4jira-mapping-remove tfs4jira-rounded-button" title="Remove">
+                        <img src="@VirtualPathUtility.ToAbsolute("~/Content/Images/delete-icon.svg")" />
+                    </button>
+                <% } %>
+
+                <% if ( showEditButtons && !isMappingOneToMany ){ %>
+                    <button class="tfs4jira-mapping-row-operation tfs4jira-mapping-edit tfs4jira-rounded-button" title="Edit">
+                        <% if ( mappedValue.showActiveEditButton ){ %>
+                        <img src="@VirtualPathUtility.ToAbsolute("~/Content/Images/field-values-icon-active.svg")" />
+                        <% } else { %>
+                        <img src="@VirtualPathUtility.ToAbsolute("~/Content/Images/field-values-icon.svg")" />
+                        <% } %>
+                    </button>
+                <% } %>
+
+                <div class="tfs4jira-mapping-value-text">
+                    <% if ( isMappingOneToMany ) { %>
+                        <% for (var i = 0; i < mappedValue.tfs.length; i++) { %>
+                            <div title="<%- mappedValue.tfs[i].value %>">
+                                <button class="tfs4jira-mapping-row-operation tfs4jira-merged-mapping-remove tfs4jira-rounded-button" data-mapping-id="<%- (mappedValue.tfs.length === 1) ? mappedValue.id : mappedValue.tfs[i].id  %>" title="Remove">
+                                    <img src="@VirtualPathUtility.ToAbsolute("~/Content/Images/delete-icon.svg")" />
+                                </button>
+                                <% if (!mappedValue.tfs[i].isDefault && mappedValue.tfs.length > 1) { %>
+                                    <span class="value-inline-menu-default-button value-inline-link-button" data-value-mapping-id="<%- mappedValue.tfs[i].id %>">set as default</span>
+                                <% } %>
+                                <% if (mappedValue.tfs[i].isDefault) { %>
+                                    <div class="tfs4jira-mapping-value-text-label"><strong><%- mappedValue.tfs[i].value %></strong></div>
+                                <% } else { %>
+                                    <div class="tfs4jira-mapping-value-text-label"><%- mappedValue.tfs[i].value %></div>
+                                <% } %>
+                            </div>
+                        <% } %>
+                    <% } else { %>
+                        <span title="<%- tfsValue.text %>"><%- tfsValue.text %></span>
+                        <% if ( mappedValue.tfsHelp ) { %>
+                            <div class="tfs4jira-mapping-help-container">
+                                <span class="tfs4jira-mapping-help-link">?</span>
+                                <div class="tfs4jira-mapping-help-text" style="display: none;"><%= mappedValue.tfsHelp %></div>
+                            </div>
+                        <% } %>
+                    <% } %>
+                </div>
+                
+                <% if ( !isTfsValueValid ) { %>
+                    <div class="tfs4jira-mapping-value-invalid" title="This value does not exist in TFS. Please remove mapping for this value."></div>
+                <% } %>
+                
+                <% if ( isMappingOneToMany && mappedValue.jira.length === 1 ) { %>
+                    <div class="value-inline-menu-add-button value-inline-link-button" data-value-mapping-id="<%- mappedValue.id[0] %>" data-type="tfs" style="display: none;">+ add selected value</div>
+                <% } %>
+            </td>
+        </tr>
+    </script>
+
+    <script>
+    $(function () {
+        var $root = $('#@id');
+        var $jiraHeaderNote = $root.find(".tfs4jira-mapping-header-note-jira");
+        var $tfsHeaderNote = $root.find(".tfs4jira-mapping-header-note-tfs");
+        var $jiraSelect = $root.find(".tfs4jira-mapping-layout-column-jira select");
+        var $tfsSelect = $root.find(".tfs4jira-mapping-layout-column-tfs select");
+        var $mappings = $root.find(".tfs4jira-mapping-table");
+        var $noMappedValuesInfo = $root.find(".tfs4jira-mapping-no-mapped-values-container");
+        var $fallbackToTfs = $root.find(".tfs4jira-mapping-fallback-from-jira-to-tfs");
+        var $fallbackToJira = $root.find(".tfs4jira-mapping-fallback-from-tfs-to-jira");
+
+        var $mapButton = $root.find(".tfs4jira-mapping-map-button");
+
+        var mappedRowTemplate = _.template($("script.mapped-row-template").html());
+
+        var possibleJiraValues,
+            possibleTfsValues,
+            mappedValues,
+            fallbackActions,
+            fallbackFromJiraToTfs,
+            fallbackFromTfsToJira,
+            showEditButtons,
+            showFallbackSelects,
+            tfsTreePathMode,
+            jiraGroupMode,
+            isMappingOneToMany;
+
+        $root.on("@MappingEvents.Init", function activateView(event, parameters) {
+            assertParameter(parameters, "possibleJiraValues");
+            assertParameter(parameters, "possibleTfsValues");
+            assertParameter(parameters, "mappedValues");
+            assertParameter(parameters, "showEditButtons");
+            assertParameter(parameters, "showFallbackSelects");
+
+            if (parameters.showFallbackSelects) {
+                assertParameter(parameters, "fallbackActions");
+                assertParameter(parameters, "fallbackFromTfsToJira");
+                assertParameter(parameters, "fallbackFromJiraToTfs");
+            }
+            
+            possibleJiraValues = _.filter(parameters.possibleJiraValues, function (value) { return value.id != null; });
+            possibleTfsValues = _.filter(parameters.possibleTfsValues, function (value) { return value.id != null; });
+            mappedValues = parameters.mappedValues;
+            fallbackActions = parameters.fallbackActions;
+            fallbackFromJiraToTfs = parameters.fallbackFromJiraToTfs;
+            fallbackFromTfsToJira = parameters.fallbackFromTfsToJira;
+            showEditButtons = parameters.showEditButtons;
+            showFallbackSelects = parameters.showFallbackSelects;
+            tfsTreePathMode = parameters.tfsTreePathMode;
+            jiraGroupMode = parameters.jiraGroupMode;
+            isMappingOneToMany = parameters.isMappingOneToMany;
+
+            setMappingHeaderNotes(parameters["jiraHeaderNote"], parameters["tfsHeaderNote"]);
+
+            refreshMappingState();
+
+            fillFallbackSelect($fallbackToTfs, possibleTfsValues, fallbackFromJiraToTfs);
+            fillFallbackSelect($fallbackToJira, possibleJiraValues, fallbackFromTfsToJira);
+
+            initializeFallbackSelect2($fallbackToTfs, possibleTfsValues);
+            initializeFallbackSelect2($fallbackToJira, possibleJiraValues);
+
+            updateControlsEnableState();
+
+            if (!showFallbackSelects) {
+                $root.find(".tfs4jira-mapping-anything-else").hide();
+            }
+        });
+
+        $mapButton.click(function () {
+            if ($jiraSelect.val() == null || $tfsSelect.val() == null) {
+                updateControlsEnableState();
+                return;
+            }
+
+            $root.trigger('@MappingEvents.AddMappingButtonClicked', {
+                jiraId: $jiraSelect.val(),
+                tfsId: $tfsSelect.val()
+            });
+        });
+
+        $mappings.on("click", "button.tfs4jira-mapping-remove", function () {
+            var $mappingRow = $(this).closest("tr");
+
+            $root.trigger('@MappingEvents.RemoveMappingButtonClicked', {
+                jiraId: $mappingRow.attr('data-jira-id'),
+                tfsId: $mappingRow.attr('data-tfs-id'),
+                mappingId: $mappingRow.attr('data-mapping-id')
+            });
+        });
+
+        $mappings.on("click", "button.tfs4jira-merged-mapping-remove", function () {
+            $root.trigger('@MappingEvents.RemoveMappingButtonClicked', {
+                mappingId: $(this).attr('data-mapping-id')
+            });
+        });
+
+        $mappings.on("click", "button.tfs4jira-mapping-edit", function () {
+            var $mappingRow = $(this).closest("tr");
+
+            $root.trigger('@MappingEvents.EditMappingButtonClicked', {
+                jiraId: $mappingRow.attr('data-jira-id'),
+                tfsId: $mappingRow.attr('data-tfs-id'),
+                mappingId: $mappingRow.attr('data-mapping-id')
+            });
+        });
+
+        $mappings.on("click", ".value-inline-menu-default-button", function () {
+            $root.trigger('@MappingEvents.DefaultMappingButtonClicked', {
+                mappingId: $(this).attr("data-value-mapping-id")
+            });
+        });
+
+        $fallbackToTfs.on("select2-selecting", function (e) {
+            $root.trigger('@MappingEvents.SetFallbackFromJiraToTfsClicked', e.val);
+            $fallbackToTfs.select2("close");
+            return false;
+        });
+
+        $fallbackToJira.on("select2-selecting", function (e) {
+            $root.trigger('@MappingEvents.SetFallbackFromTfsToJiraClicked', e.val);
+            $fallbackToJira.select2("close");
+            return false;
+        });
+
+        $root.on("@MappingEvents.SetFallbackFromTfsToJira", function activateView(event, selectedValueId) {
+            $fallbackToJira.select2("val", selectedValueId);
+        });
+
+        $root.on("@MappingEvents.SetFallbackFromJiraToTfs", function activateView(event, selectedValueId) {
+            $fallbackToTfs.select2("val", selectedValueId);
+        });
+
+        $root.on("@MappingEvents.AddMapping", function activateView(event, data) {
+            $jiraSelect.val('');
+            $tfsSelect.val('');
+
+            if (isMappingOneToMany) {
+                mappedValues = data.mappings.map(function (value) {
+                    value.jiraId = value.jira;
+                    value.tfsId = value.tfs;
+                    return value;
+                });
+            } else {
+                mappedValues.push(data.mappedValue);
+            }
+
+            refreshMappingState();
+            updateControlsEnableState();
+
+            if (data.mappedValue) {
+                var $row = findMappedRow(data.mappedValue.jiraId, data.mappedValue.tfsId);
+                $row.css('backgroundColor', '#FFBF00');
+                $row.animate({ backgroundColor: '#ffffff' }, 2000);
+                addTooltipToEditButton($row, data.mappedValue.editTooltip, true);
+            }
+        });
+
+        $root.on("@MappingEvents.RemoveMapping", function activateView(event, data) {
+            if (isMappingOneToMany) {
+                mappedValues = data.mappings.map(function (value) {
+                    value.jiraId = value.jira;
+                    value.tfsId = value.tfs;
+                    return value;
+                });
+            } else {
+                mappedValues = _.reject(mappedValues, function (element) {
+                    return (element.jiraId == data.mappedValue.jiraId) && (element.tfsId == data.mappedValue.tfsId);
+                });
+            }
+
+            refreshMappingState();
+            updateControlsEnableState();
+        });
+
+        $root.on("@MappingEvents.UpdateMappingDirection", function activateView(event, argument) {
+            if (argument == null) {
+                throw new Error('UpdateMappingDirection argument cannot be null');
+            }
+
+            if (_.isString(argument) || _.isNumber(argument)) {
+                $mappings.find(".tfs4jira-mapping-row-direction div").attr('class', getMappingDirectionClass(argument));
+                return;
+            }
+
+            var $row = findMappedRow(argument.jiraId, argument.tfsId);
+            $row.find(".tfs4jira-mapping-row-direction div").attr('class', getMappingDirectionClass(argument.direction));
+        });
+
+        var helpTextTimer;
+        $root.on('mouseenter', '.tfs4jira-mapping-help-container', function () {
+            clearTimeout(helpTextTimer);
+            $root.find(".tfs4jira-mapping-help-text").hide();
+            $(this).find(".tfs4jira-mapping-help-text").show();
+        });
+
+        $root.on('mouseleave', '.tfs4jira-mapping-help-container', function () {
+            helpTextTimer = setTimeout(function() {
+                $root.find(".tfs4jira-mapping-help-text").hide();
+            }, 250);
+        });
+
+        $root.find("select").change(updateControlsEnableState);
+
+        $root.on("click", ".value-inline-menu-add-button", function () {
+            var type = $(this).attr("data-type");
+            var valueMappingId = $(this).attr("data-value-mapping-id");
+            var jiraValue, tfsValue;
+
+            if (type === "jira") {
+                jiraValue = $jiraSelect.val();
+                tfsValue = getValueFromMappings(mappedValues, valueMappingId, "tfs");
+            } else if (type === "tfs") {
+                jiraValue = getValueFromMappings(mappedValues, valueMappingId, "jira");
+                tfsValue = $tfsSelect.val();
+            }
+
+            if (jiraValue && tfsValue) {
+                $root.trigger('@MappingEvents.AddMappingButtonClicked', {
+                    jiraId: jiraValue,
+                    tfsId: tfsValue,
+                    allowDuplicates: true
+                });
+            }
+        });
+
+        function setMappingHeaderNotes(jiraHeaderNote, tfsHeaderNote) {
+            $jiraHeaderNote.html(jiraHeaderNote || '');
+            $tfsHeaderNote.html(tfsHeaderNote || '');
+        }
+
+        function refreshMappingState() {
+            $jiraSelect.empty();
+            $tfsSelect.empty();
+            $mappings.empty();
+            
+            _.chain(possibleTfsValues).sortBy(functional.labelUpperCase).each(addTfsValueToSelectComponent);
+
+            if (jiraGroupMode) {
+                _.chain(possibleJiraValues).groupBy('group').sortBy(functional.objectKeyUpperCase).each(addJiraValueGroupToSelectComponent);
+            } else {
+                _.chain(possibleJiraValues).sortBy(functional.labelUpperCase).each(addJiraSingleValueToSelectComponent);
+            }
+
+            var mappedValuesToRender = isMappingOneToMany ? getMergedMappings(mappedValues) : mappedValues;
+
+            _.each(mappedValuesToRender, function (mappedValue) {
+                var $row = addMappedValueToTableComponent(mappedValue);
+                addTooltipToEditButton($row, mappedValue.editTooltip, false);
+            });
+        }
+
+        function addJiraValueGroupToSelectComponent(group) {
+            var groupName = group[0].group;
+
+            var $group = $('<optgroup>', { label: groupName });
+
+            _.chain(group).sortBy(functional.labelUpperCase).each(function (element) {
+                var isAlreadyMapped = _.findWhere(mappedValues, { jiraId: element.id }) != undefined;
+
+                var $option = $("<option>", {
+                    'text': element.text,
+                    'value': element.id,
+                    'data-is-already-mapped': _.findWhere(mappedValues, { jiraId: element.id }) != undefined
+                });
+
+                $option.tooltipster({
+                    position: 'left',
+                    content: groupName + '\\' + element.text + (isAlreadyMapped ? ' - value already mapped' : '')
+                });
+
+                $group.append($option);
+            });
+
+            $jiraSelect.append($group);
+        }
+
+        function addJiraSingleValueToSelectComponent(element) {
+            var isAlreadyMapped = _.findWhere(mappedValues, { jiraId: element.id }) != undefined;
+
+            if (isAlreadyMapped) {
+                return;
+            }
+
+            $jiraSelect.append($("<option>", {
+                text: element.text,
+                value: element.id
+            }));            
+        }
+
+        function addTfsValueToSelectComponent(element) {            
+            var isAlreadyMapped = _.findWhere(mappedValues, { tfsId: element.id }) != undefined;
+
+            if (!tfsTreePathMode && isAlreadyMapped) {
+                return;
+            }
+
+            if (!tfsTreePathMode) {
+                $tfsSelect.append($("<option>", {
+                    text: element.text,
+                    value: element.id
+                }));                
+            }
+
+            if(tfsTreePathMode) {
+                var content = $('<div>').text(element.text).html();
+                content = content.replace(/^.*?\\/, ' ').replace(/.*?\\/g, '&nbsp;&nbsp;');
+
+                var $option = $("<option>", {
+                    html: content,
+                    value: element.id
+                });
+
+                $tfsSelect.append($option);
+                $option.tooltipster({
+                    position: 'left',
+                    content: element.text + (isAlreadyMapped ? ' - value already mapped' : '')
+                });
+
+                findTfsOptionElement(element.id).attr('data-is-already-mapped', isAlreadyMapped);
+            }
+        }        
+
+        function addMappedValueToTableComponent(mappedValue) {
+            var jiraValue = _.find(possibleJiraValues, function (value) { return value.id == (mappedValue.jiraId || mappedValue.jira[0].value); });
+            var tfsValue = _.find(possibleTfsValues, function (value) { return value.id == (mappedValue.tfsId || mappedValue.tfs[0].value); });
+            var isJiraValueValid = (jiraValue != null);
+            var isTfsValueValid = (tfsValue != null);
+
+            jiraValue = jiraValue || { id: mappedValue.jiraId, text: mappedValue.jiraId };
+            tfsValue = tfsValue || { id: mappedValue.tfsId, text: mappedValue.tfsId };
+
+            var $row = addMappedValueRow({
+                mappedValue: mappedValue,
+                jiraValue: jiraValue,
+                tfsValue: tfsValue,
+                directionClass: getMappingDirectionClass(mappedValue.direction),
+                showEditButtons: showEditButtons,
+                directionTooltip: mappedValue.directionTooltip || '',
+                isJiraValueValid: isJiraValueValid,
+                isTfsValueValid: isTfsValueValid,
+                isMappingOneToMany: isMappingOneToMany
+            });
+
+            addMappedValueGroupsTooltip($row.find('.tfs4jira-mapping-row-left'), possibleJiraValues, jiraValue);
+            addMappedValueGroupsTooltip($row.find('.tfs4jira-mapping-row-right'), possibleTfsValues, tfsValue);
+
+            return $row;
+        }
+
+        function addMappedValueGroupsTooltip($target, possibleValues, value) {
+            if (value.id === undefined) {
+                return;
+            }
+
+            var groupNames = _.chain(possibleValues).where({ id: value.id }).sortBy(functional.groupUpperCase).pluck('group').value();
+
+            if (groupNames.length <= 1 && !groupNames[0]) {
+                return;
+            }
+
+            var $tooltip = $('<div>');
+            _.each(groupNames, function (groupName) {
+                $tooltip.append($('<div>', {
+                    'text': groupName + '\\' + value.text,
+                    'class': 'tfs4jira-mapping-row-tooltip-group-name'
+                }));
+            });
+            $target.tooltipster({ content: $tooltip, position: 'left' });
+        }
+
+        function addMappedValueRow(parameters) {
+            var renderedRow = mappedRowTemplate(parameters);
+
+            var $row = $(renderedRow);
+
+            $row.attr('data-jira-id', parameters.mappedValue.jiraId || parameters.mappedValue.jira[0].value);
+            $row.attr('data-tfs-id', parameters.mappedValue.tfsId || parameters.mappedValue.tfs[0].value);
+            $row.attr('data-jira-text', parameters.jiraValue.text || parameters.mappedValue.jira[0].value);
+            $row.attr('data-mapping-id', parameters.mappedValue.mappingId || parameters.mappedValue.id[0]);
+
+            // Set table order
+            $mappings.append($row);
+            $mappings.find("tr").each(function (i, element) {
+                if ($(element).attr('data-jira-text').localeCompare(parameters.jiraValue.text || parameters.mappedValue.jira[0].value) > 0) {
+                    $(element).before($row);
+                    return false;
+                }
+            });
+
+            return $row;
+        }
+
+        function findTfsOptionElement(tfsId) {
+            return $tfsSelect.find('option').filter(function () { return $(this).val() === tfsId; });
+        }
+
+        function findMappedRow(jiraId, tfsId) {
+            return $mappings.find('tr').filter(function () {
+                return $(this).attr('data-jira-id') === jiraId && $(this).attr('data-tfs-id') === tfsId;
+            });
+        }
+
+        function addTooltipToEditButton($row, tooltipContent, openOnCreate) {
+            // hide all currently opened tooltips
+            $mappings.find('.tooltipstered').tooltipster('hide');
+
+            if (_.isEmpty(tooltipContent)) {
+                return;
+            }
+
+            var $editButton = $row.find('.tfs4jira-mapping-edit');
+
+            $editButton.tooltipster({
+                        position: 'bottom',
+                        content: tooltipContent,
+                        timer: 4000,
+                        speed: 500,
+                        theme: 'tfs4jira-tooltip-theme',
+                        onlyOne: true
+            });
+
+            if (openOnCreate) {
+                $editButton.tooltipster('show');
+            }
+        }
+
+        function getMappingDirectionClass(direction) {
+            if (direction == MappingDirection.FROM_JIRA_TO_TFS) return 'tfs4jira-mapping-row-direction-jira-to-tfs';
+            if (direction == MappingDirection.FROM_TFS_TO_JIRA) return 'tfs4jira-mapping-row-direction-tfs-to-jira';
+            if (direction == MappingDirection.CONFLICT) return 'tfs4jira-mapping-row-direction-conflict';
+
+            return 'tfs4jira-mapping-row-direction-both';
+        }        
+
+        function initializeFallbackSelect2($fallbackSelect, possibleValues) {
+            $fallbackSelect.select2({
+                minimumResultsForSearch: -1,
+                containerCssClass: 'ts4jira-select2-form-field',
+                width: 290,
+                formatResult: function (data) {
+                    var $result = $('<div>', { text: data.text });
+                    addMappedValueGroupsTooltip($result, possibleValues, { text: data.text, id: data.id });
+                    return $result;
+                }
+            });
+        }
+
+        function fillFallbackSelect($fallbackSelect, possibleValues, selectedValue) {
+            var $values = $fallbackSelect.find(".tfs4jira-mapping-fallback-values");
+            var $actions = $fallbackSelect.find(".tfs4jira-mapping-fallback-actions");
+
+            $values.empty();
+            $actions.empty();
+            
+            _.each(fallbackActions, function (element) {
+                $actions.append($("<option>", {
+                    text: element.text,
+                    value: element.id,
+                    selected: (element.id === selectedValue) ? 'selected' : null
+                }));
+            });
+
+            _.chain(possibleValues)
+                .groupBy('id')
+                .sortBy(function(group) {
+                    return group[0] && group[0].text && group[0].text.toLocaleUpperCase();
+                })
+                .each(function (group) {
+                    $values.append($("<option>", {
+                        text: group[0].text,
+                        value: group[0].id,
+                        selected: (group[0].id === selectedValue) ? 'selected' : null,
+                    }));
+                });
+        }
+
+        function updateControlsEnableState() {
+            function isSelectedOptionMappable($select) {
+                if ($select.val() == null) return false;
+
+                var $option = $select.find('option').filter(function () { return $(this).val() === $select.val(); });
+                return $option.attr('data-is-already-mapped') !== 'true';
+            }
+
+            var isTfsValueMappable = isSelectedOptionMappable($tfsSelect);
+            var isJiraValueMappable = isSelectedOptionMappable($jiraSelect);
+
+            $mapButton.prop('disabled', !isJiraValueMappable || !isTfsValueMappable);
+
+            if (mappedValues.length === 0) {
+                $noMappedValuesInfo.show();
+                $mappings.hide();
+            } else {
+                $noMappedValuesInfo.hide();
+                $mappings.show();
+            }
+
+            var jiraAddButtons = $(".tfs4jira-mapping-row-left").find(".value-inline-menu-add-button");
+            var tfsAddButtons = $(".tfs4jira-mapping-row-right").find(".value-inline-menu-add-button");
+            ($jiraSelect.val() == null) ? jiraAddButtons.hide() : jiraAddButtons.show();
+            ($tfsSelect.val() == null) ? tfsAddButtons.hide() : tfsAddButtons.show();
+        }
+
+        function assertParameter(parameters, parameterName) {
+            if (!parameters.hasOwnProperty(parameterName)) {
+                throw new Error(parameterName + " argument is missing");
+            }
+        }
+
+        var functional = {
+            labelUpperCase: function(option) {
+                return option.text.toLocaleUpperCase();
+            },
+            groupUpperCase: function (option) {
+                return option.group && option.group.toLocaleUpperCase();
+            },
+            objectKeyUpperCase: function(value, key) {
+                return key.toLocaleUpperCase();
+            }
+        };
+    });
+</script>
+}

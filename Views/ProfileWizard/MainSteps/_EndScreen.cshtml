@@ -1,0 +1,58 @@
+﻿@using synchronizer.Controllers
+@{
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model) last-screen-wrapper">
+    <h1>Well Done!</h1>
+    <div class="wizard-screen-info-text">
+        <p>
+            You have finished setting up the synchronization profile. Do you want to enable it and start synchronization now?
+        </p>
+        
+        <p>
+            <div>
+                <input style="margin-left: 0;" type="radio" id="wizard-enable-profile-yes" name="wizard-enable-profile" value="enable"> 
+                <label for="wizard-enable-profile-yes">Yes, enable the synchronization profile now.</label>
+            </div>
+            <div>
+                <input style="margin-left: 0;" type="radio" id="wizard-enable-profile-no" name="wizard-enable-profile" value="disable" checked> 
+                <label for="wizard-enable-profile-no">No, I will enable it manually later.</label>
+            </div>
+        </p>
+    </div>
+    <div class="wizard-screen-buttons-wrapper">
+        <div class="link_button_wrapper">
+            <a id="back-from-end-screen-button" href="#">Back</a>
+            <div>I need to change settings.</div>
+        </div>
+        <button id="finish_button" class="wizard-navigation-button tfs4jira-rounded-button">Save</button>
+        <div class="clearer"></div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        var $root = $('#@id');
+        var $enableProfileRadioButton = findElementByAttributes($root, { name: 'wizard-enable-profile' });
+
+        $root.find("#back-from-end-screen-button").click(function () {
+            GoToPreviousStep();
+            return false;
+        });
+
+        $root.find("#finish_button").on("click", function () {
+            var enabled = ($enableProfileRadioButton.filter(":checked").val() === 'enable');
+
+            showSpinner();
+            nonBlockingAjax({
+                url: '@Url.Action("SetSyncProfileEnabled", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, enabled: enabled }
+            }).done(function() {
+                location.href = '@Url.Action("Index", "Tfs", new {id = string.Empty}, null)';
+            }).fail(function() {
+                hideSpinner();
+            });
+        });
+    });
+</script>

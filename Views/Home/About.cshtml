@@ -1,0 +1,74 @@
+﻿@{
+    ViewBag.Title = "About - TFS4JIRA Synchronizer";
+}
+
+<h1>About TFS4JIRA Synchronizer</h1>
+<p>
+     <p><strong>TFS4JIRA Synchronizer</strong> performs automatic, bi-directional JIRA issue and TFS Work Item synchronization.</p>
+     <p>It is fully configurable, and after initial setup, it can run with minimal human intervention.</p> 
+</p>
+
+<hr class="section-ruler"/>
+
+<div>
+    <input type="checkbox" id="analytics-checkbox">
+    <label for="analytics-checkbox">
+        Allow Spartez to collect anonymous usage data to improve TFS4JIRA Synchronizer.
+    </label>
+</div>
+
+<script type="text/javascript">
+
+    function updateAnalyticsSettings() {
+        var $analyticsCheckbox = $('#analytics-checkbox');
+        var shouldBeAnalyticsOn = !!$analyticsCheckbox.attr('checked');
+
+        $analyticsCheckbox.attr('disabled', true);
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetApplicationSettings", "Tfs")?_=' + new Date().getTime(),
+            data: 'isAnalyticsOn=' + ((shouldBeAnalyticsOn) ? "true" : "false"),
+            success: function(data) {
+                if (data.success) {
+                    $analyticsCheckbox
+                        .attr('disabled', false)
+                        .attr('checked', (data.result && data.result.isAnalyticsOn));
+                } else {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function(xhr) {
+                showErrorMessage(getXhrErrorResponse(xhr));
+            }
+        });
+    }
+
+    function loadAnalyticsSettings() {
+        var $analyticsCheckbox = $('#analytics-checkbox');
+
+        $analyticsCheckbox.attr('disabled', true);
+        jQuery.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetApplicationSettings", "Tfs")?_=' + new Date().getTime(),
+            success: function(data) {
+                $analyticsCheckbox
+                    .attr('disabled', false)
+                    .attr('checked', data.isAnalyticsOn);
+            },
+            error: function(xhr) {
+                showErrorMessage(getXhrErrorResponse(xhr));
+            }
+        });
+    }
+
+
+    $(document).ready(function() {
+        $('#menu-about').addClass('selected');
+
+        $('#analytics-checkbox').change(function() {
+            updateAnalyticsSettings();
+        });
+
+        loadAnalyticsSettings();
+    });
+</script>

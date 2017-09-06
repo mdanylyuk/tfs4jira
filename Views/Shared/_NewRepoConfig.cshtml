@@ -1,0 +1,136 @@
+﻿<script type="text/template" id="new-repository-config-template">
+    <div class="profileform new-repository-form">
+        @Html.Hidden("tfsgit_0", "", new {@class = "tfsgit"})
+        
+        <div class="row">
+            <div class="field">
+                <div class="label">TFS Server URL</div>
+                <div class="editbox">@Html.TextBox("tfsurl_0", null, new {@class = "tfsurl"})</div>
+                <div class="field-description">TFS server base URL including scheme name, with optional port number, e.g.  http://mytfs:8080/tfs.</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Visual Studio Online</div>
+                <div class="editbox">@Html.CheckBox("tfshosted_0", false, new {@class = "tfshosted"})</div>
+                <div class="field-description">
+                    Check this option if you want to connect with Visual Studio Online (cloud version of TFS). Alternate credentials on Visual Studio Online should be enabled.
+                    @HelpHelpers.LinkToOnlineDocumentation("hosted_tfs_config", "More info")
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">User Name</div>
+                <div class="editbox">@Html.TextBox("tfsuser_0", null, new {@class = "tfsuser"})</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Password</div>
+                <div class="editbox">@Html.Password("tfspassword_0", null, new {@class = "tfspassword", @autocomplete = "new-password"})</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Domain</div>
+                <div class="editbox">@Html.TextBox("tfsdomain_0", null, new {@class = "tfsdomain"})</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Project Collection</div>
+                <div class="editbox">
+                    <select id="tfscoll_0" class="tfscoll">
+                        <option value="DefaultCollection">DefaultCollection</option>
+                    </select>
+                </div>
+                <div class="fetch-button-container">
+                    <span class="fetch-collection-button button-link">Fetch collections</span>
+                    <span class="fetch-collection-info">Fetching collections...</span>
+                </div>
+            </div>
+        </div>
+        <div class="gitrepoparams">
+            <div class="row">
+                <div class="field">
+                    <div class="label">Git Project / Repository</div>
+                    <div class="editbox">
+                        <select id="tfsgitrepo_0" class="tfsgitrepo">
+                        </select>
+                    </div>
+                    <div class="fetch-button-container">
+                        <span class="fetch-git-repository-button button-link">Fetch repositories</span>
+                        <span class="fetch-git-repository-info">Fetching repositories...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <div class="label">Start from push date</div>
+                    <div class="editbox">
+                        @Html.TextBox("tfsgitstartdate_0", "", new {@class = "tfsgitstartdate", @readonly = true})
+                        <img class="start-date-clean-button" src="@VirtualPathUtility.ToAbsolute("~/Content/Images/delete-icon.svg")">
+                    </div>
+                    <div class="field-description">
+                        By default this field is empty which means that whole repository will be scanned. If you set the date, only commits pushed to TFS / VSTS after this date will be scanned.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tfsrepoparams">
+            <div class="row">
+                <div class="field">
+                    <div class="label">Folder</div>
+                    <div class="editbox">@Html.TextBox("tfsfolder_0", "$/", new {@class = "tfsfolder"})</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <div class="label">Start at Changeset #</div>
+                    <div class="editbox">@Html.TextBox("tfsstartrev_0", 1, new {@class = "tfsstartrev"})</div>
+                    <div class="field-description">
+                        If you started putting JIRA issue keys in check-in comments only recently then
+                        specifying starting changeset is useful for improving initial repository scan time.
+                        @HelpHelpers.LinkToOnlineDocumentation("checkins_sync_ondemand_config", "More info")
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <div class="label">Scan Size</div>
+                    <div class="editbox">@Html.TextBox("tfsscansize_0", 100, new {@class = "tfsscansize"})</div>
+                    <div class="field-description">
+                        Number of changesets to scan in one scan operation.
+                        @HelpHelpers.LinkToOnlineDocumentation("checkins_sync_ondemand_config", "More info")
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <div class="label">Max Files in Changeset</div>
+                    <div class="editbox">@Html.TextBox("tfsmaxfiles_0", 30, new {@class = "tfsmaxfiles"})</div>
+                    <div class="field-description">
+                        Maximum number of files that will be scanned in each changeset.
+                        @HelpHelpers.LinkToOnlineDocumentation("checkins_sync_ondemand_config", "More info")
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label"></div>
+                <div class="getter" id="apply">
+                    <input type="button" id="tfsconfig_0_applybutton" class="tfsconfig_applybutton" value="Save & Close" />
+                    <span id="tfsconfig_0_testbutton" class="button-link tfsconfig_testbutton">Test</span>
+                    <span class="button-link tfsrepo_canceladd">Cancel</span>
+                </div>
+                <div class="worker" id="tfsconfig_0_applyworker">
+                    <div class="worker-throbber"></div>
+                    <div class="worker-label">Saving the configuration...</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</script>

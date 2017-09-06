@@ -1,0 +1,33 @@
+﻿@using synchronizer.Controllers
+@{
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
+    <h1>Create New Profile</h1>
+    
+    <div class="tfs4jira-fieldgroup">
+        <label for="profile-name">Profile Name</label>
+        <input id="profile-name" />
+        <div class="tfs4jira-field-error"></div>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        $('#@id').on("@NavigationEvents.ActivateView", function (event, parameters) {
+            $("#profile-name").val(synchronizationProfile.Name).focus();
+        });
+
+        $('#@id').on("@NavigationEvents.NextButtonClicked", function () {
+            var profileName = $("#profile-name").val();
+            if (profileName === "") {
+                setFieldError("profile-name", "Please provide profile name.");
+            } else {
+                clearFieldError("profile-name");
+                synchronizationProfile.Name = profileName;
+                SaveModelAndGoToNextStep();
+            }
+        });
+    });
+</script>

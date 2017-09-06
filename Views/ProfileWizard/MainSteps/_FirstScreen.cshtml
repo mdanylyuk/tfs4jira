@@ -1,0 +1,26 @@
+﻿@using synchronizer.Controllers
+@{
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model) first-screen-wrapper">
+    <h1>Hello!</h1>
+    <div class="wizard-screen-info-text">This wizard is going to guide you through a creation of synchronization profile.</div>
+    <div class="wizard-screen-info-text">It will help you set all required parameters and it will try to sanity-check the profile configuration.</div>
+    <div class="wizard-screen-buttons-wrapper">
+        <div class="link_button_wrapper">
+            @Html.ActionLink("Create profile manually", "Index", "Tfs", new { id = "new" }, null)
+            <div>Recommended for advanced users</div>
+        </div>
+        <button id="start_button" class="wizard-navigation-button tfs4jira-rounded-button">Start</button>
+        <div class="clearer"></div>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        $('#@id').on("@NavigationEvents.ActivateView", function (event, parameters) {
+            $("#start_button").one("click", GoToNextStep);
+        });
+    });
+</script>

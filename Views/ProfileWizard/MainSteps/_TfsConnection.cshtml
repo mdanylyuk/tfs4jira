@@ -1,0 +1,125 @@
+﻿@using synchronizer.Controllers
+@{
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
+    <h1>TFS Settings</h1>
+
+    <div class="tfs4jira-fieldgroup">
+        <label for="tfs-url">URL</label>
+        <input id="tfs-url" placeholder="TFS server URL starting with http:// or https://" />
+        <div class="tfs4jira-field-error"></div>
+        <div class="tfs4jira-field-description">TFS base URL with optional port number, e.g. http://mytfs:8080/tfs. </div>
+    </div>
+    <div class="tfs4jira-fieldgroup">
+        <label for="tfs-login">User Name</label>
+        <input id="tfs-login" />
+        <div class="tfs4jira-field-error"></div>
+    </div>
+    <div class="tfs4jira-fieldgroup">
+        <label for="tfs-password">Password</label>
+        <input id="tfs-password" type="password" />
+        <div class="tfs4jira-field-error"></div>
+    </div>
+    <div class="tfs4jira-fieldgroup">
+        <label for="tfs-login">Domain</label>
+        <input id="tfs-domain" />
+        <div class="tfs4jira-field-error"></div>
+        <div class="tfs4jira-field-description">Leave the field empty if your TFS server is not in any domain.</div>
+    </div>
+    <div class="tfs4jira-fieldgroup-checkbox">
+        <input type="checkbox" id="tfs-is-hosted">
+        <label for="tfs-is-hosted">This is visualstudio.com instance</label>
+        <div class="tfs4jira-field-error"></div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('#@id').on("@NavigationEvents.ActivateView", function activateView(event, parameters) {
+            $("#tfs-url").focus();
+
+            $("#tfs-url").val(synchronizationProfile.TfsUrl);
+            $("#tfs-login").val(synchronizationProfile.TfsUser);
+            $("#tfs-domain").val(synchronizationProfile.TfsDomain);
+            $("#tfs-password").val(synchronizationProfile.TfsPassword);
+            $("#tfs-is-hosted")[0].checked = synchronizationProfile.HostedTfs;
+        });
+
+        $('#@id').on("@NavigationEvents.NextButtonClicked", function nextButtonClicked() {
+            if (validate()) {
+                saveFocusedElement();
+
+                testConnection()
+                    .done(function testSuccessedAfterNextButtonClicked() {
+                        synchronizationProfile.TfsUrl = $("#tfs-url").val().trim();
+                        synchronizationProfile.TfsUser = $("#tfs-login").val().trim();
+                        synchronizationProfile.TfsDomain = $("#tfs-domain").val().trim();
+                        synchronizationProfile.TfsPassword = $("#tfs-password").val();
+                        synchronizationProfile.HostedTfs = $("#tfs-is-hosted")[0].checked;
+
+                        SaveModelAndGoToNextStep();
+                    });
+            }
+        });
+
+        $('#@id').on("@NavigationEvents.TestButtonClicked", function testButtonClicked() {
+            if (validate()) {
+                saveFocusedElement();
+
+                testConnection()
+                    .done(function testSuccessed() {
+                        infoDialog('body', 'Success! TFS server location and credentials seem to be fine.', restoreFocus);
+                    });
+            }
+        });
+
+        function validate() {
+            var url = $("#tfs-url").val().trim(); 
+            var login = $("#tfs-login").val().trim(); 
+            var password = $("#tfs-password").val();
+
+            var isValid = true;
+
+            if (_.isEmpty(url)) {
+                setFieldError("tfs-url", "Please enter TFS URL.");
+                isValid = false;
+            } else if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0) {
+                setFieldError("tfs-url", "TFS URL should start with protocol name ('http://' or 'https://').");
+                isValid = false;
+            } else {
+                clearFieldError("tfs-url");
+            }
+
+            if (_.isEmpty(login)) {
+                setFieldError("tfs-login", "Please provide user name.");
+                isValid = false;
+            } else {
+                clearFieldError("tfs-login");
+            }
+
+            if (_.isEmpty(password)) {
+                setFieldError("tfs-password", "Please provide user password.");
+                isValid = false;
+            } else {
+                clearFieldError("tfs-password");
+            }
+
+            return isValid;
+        }
+
+        function testConnection() {
+            var url = encodeURIComponent($("#tfs-url").val().trim());
+            var login = encodeURIComponent($("#tfs-login").val().trim());
+            var domain = encodeURIComponent($("#tfs-domain").val().trim());
+            var password = encodeURIComponent($("#tfs-password").val());
+            var hostedTfs = $("#tfs-is-hosted")[0].checked;
+
+            return blockingAjax({
+                url: '@Url.Action("TestTfs", "Tfs")?_=' + new Date().getTime(),
+                data: 'hostedtfs=' + hostedTfs + '&user=' + login + '&domain=' + domain + '&password=' + password + '&url=' + url
+            });
+        }
+    });
+</script>

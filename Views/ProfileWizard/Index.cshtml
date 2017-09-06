@@ -1,0 +1,265 @@
+﻿@{
+    ViewBag.Title = "Create Profile - TFS4JIRA Synchronizer";
+}
+
+@using System.Runtime.InteropServices
+@using Newtonsoft.Json
+@using synchronizer.Controllers
+
+@model synchronizer.Domain.Entity.SyncProfile
+
+<div class="spinner"><!-- -- --></div>
+
+<div class="wizard-container">
+    @{
+        const string stepContainerClass = "wizard-step";
+
+        // All steps are added to DOM, but they are hidden
+        foreach (var step in WizardStep.Steps)
+        {
+            Html.RenderPartial(step.PartialName, new { Id = step.Id, Class = stepContainerClass });
+        }
+
+        foreach (var step in WizardStep.SideSteps)
+        {
+            Html.RenderPartial(step.PartialName, new { Id = step.Id, Class = stepContainerClass });
+        }
+    }
+
+    <div class="wizard-navigation">
+        <button id="back-button" class="wizard-navigation-button tfs4jira-rounded-button">Back</button>
+        <button id="test-button" class="wizard-navigation-button tfs4jira-rounded-button">Test connection</button>
+        <button id="next-button" class="wizard-navigation-button tfs4jira-rounded-button">Next</button>
+        <button id="save-button" class="wizard-navigation-button tfs4jira-rounded-button">Save</button>
+    </div>
+</div>
+
+@{ Html.RenderPartial("_Scripts"); }
+
+<script>
+    var EMPTY_GUID = "00000000-0000-0000-0000-000000000000";
+
+    var steps = @Html.Raw(JsonConvert.SerializeObject(WizardStep.Steps));
+    var sideSteps = @Html.Raw(JsonConvert.SerializeObject(WizardStep.SideSteps));
+
+    var currentStep;                // This is an object of class WizardStep
+
+    var synchronizationProfile = @Html.Raw(JsonConvert.SerializeObject(Model));
+
+    function getStepIndexInStepsList(step) {
+        for (var i = 0; i < steps.length; i++) {
+            if (steps[i].Id === step.Id) {
+                return i;
+            }
+        }
+
+        return null;
+    }
+
+    function getStepElement(step) {
+        return $(document.getElementById(step.Id));
+    }
+
+    function setCurrentStep(step, parameters) {
+        $('.@stepContainerClass').hide();
+
+        var $currentStep = getStepElement(step);
+        $currentStep.show();
+        $currentStep.trigger("@NavigationEvents.ActivateView", parameters);
+
+        currentStep = step;
+
+        updateControlButtons(currentStep);
+    }
+
+    function updateControlButtons(step) {
+        $("#next-button, #back-button, #save-button, #test-button").hide();
+        switch(step.Buttons) {
+            case "@ProfileScreenButtons.OnlyNext":
+                $("#next-button").show();
+                break;
+            case "@ProfileScreenButtons.OnlyBack":
+                $("#back-button").show();
+                break;
+            case "@ProfileScreenButtons.NextBack":
+                $("#next-button, #back-button").show();
+                break;
+            case "@ProfileScreenButtons.NextBackTest":
+                $("#next-button, #back-button, #test-button").show();
+                break;
+            case "@ProfileScreenButtons.OnlySave":
+                $("#save-button").show();
+                break;
+        }
+    }
+
+    $("#next-button").click(function() {
+        getStepElement(currentStep).trigger('@NavigationEvents.NextButtonClicked');
+    });
+
+    $("#save-button").click(function() {
+        getStepElement(currentStep).trigger('@NavigationEvents.SaveButtonClicked');
+    });
+
+    $("#test-button").click(function() {
+        getStepElement(currentStep).trigger('@NavigationEvents.TestButtonClicked');
+    });
+
+    $(".wizard-container").on("keydown", "input", function (event) {
+        if (event.keyCode === 10 || event.keyCode === 13) {
+            getStepElement(currentStep).trigger('@NavigationEvents.NextButtonClicked');
+        }
+    });
+
+    $("#back-button").click(GoToPreviousStep);    
+
+    function SaveModel() {
+        var result = $.Deferred();
+
+        sendProfileUpdateRequest(
+                function onSendProfileUpdateRequestSuccess() {
+                    result.resolve();
+                },
+                function onSendProfileUpdateRequestFailure() {
+                    result.reject();
+                }
+        );
+
+        return result.promise();
+    }
+
+    function SaveModelAndGoToNextStep() {
+        var result = $.Deferred();
+        //TODO show throbber or some other progress indicator
+
+        var currentStepIdx = getStepIndexInStepsList(currentStep);
+        synchronizationProfile.ProfileWizardStep = currentStepIdx + 1;
+
+        sendProfileUpdateRequest(
+            function() {
+
+                if (currentStepIdx === null) {
+                    throw "Cannot find step: " + step.Id;
+                }
+
+                GoToNextStep();
+                result.resolve();
+            },
+            function(error) {
+                console.log(error);
+                result.reject(error);
+                //TODO errorDialog('body', getXhrErrorResponse(xhr), null);
+            });
+        return result.promise();
+    }
+
+    function GoToNextStep() {
+        var currentStepIdx = getStepIndexInStepsList(currentStep);
+        setCurrentStep(steps[currentStepIdx + 1]);
+    }
+
+    function GoToPreviousStep() {
+        var currentStepIdx = getStepIndexInStepsList(currentStep);
+        if (currentStepIdx === null) {
+            throw "Cannot find step: " + step.Id;
+        }
+        setCurrentStep(steps[currentStepIdx - 1]);
+    }
+
+    function SaveModelAndGoToSideStep(viewId, parameters) {
+        //TODO show throbber or some other progress indicator
+
+
+        sendProfileUpdateRequest(
+            function() {
+                var allSteps = [].concat(steps, sideSteps);
+
+                for (var i = 0; i < allSteps.length; i++) {
+                    if (allSteps[i].Id === viewId) {
+                        setCurrentStep(allSteps[i], parameters);
+                        return;
+                    }
+                }
+
+                throw "Unknown view. Parameters: " + JSON.stringify(parameters);
+            },
+            function() {
+                //TODO errorDialog('body', getXhrErrorResponse(xhr), null) -ish;
+            });
+    }
+
+    function sendProfileUpdateRequest(onSuccess, onFailure) {
+        jQuery.ajax({
+            type: 'POST',
+            url: getProfileUpdateRequestUrl(),
+            data: getProfileUpdateRequestData(),
+            complete: function() {
+                //TODO hide throbber
+            },
+            success: function(data) {
+                if (data.success) {
+                    console.log("success; guid = " +  data.guid);
+                    if (synchronizationProfile.Guid === EMPTY_GUID) {
+                        synchronizationProfile.Guid = data.guid;
+                        var base = location.href.substring(0, location.href.indexOf('/ProfileWizard'));
+                        var jumpUrl = base + '/ProfileWizard/Index/' + data.guid;
+                        console.log('Redirecting to ' + jumpUrl);
+                        location.href = jumpUrl;
+                    }
+                    onSuccess();
+                } else {
+
+                    onFailure();
+                }
+            },
+            error: function(xhr) {
+                onFailure();
+            }
+        });
+    }
+
+    function getProfileUpdateRequestUrl() {
+        url = (synchronizationProfile.Guid === EMPTY_GUID ? '@Url.Action("AddNewDraftSyncProfile", "Tfs")' : '@Url.Action("UpdateDraftSyncProfile", "Tfs")');
+        return url + '?_=' + new Date().getTime();
+    }
+
+    function getProfileUpdateRequestData() {
+        data = 'name=' + encodeURIComponent(synchronizationProfile.Name);
+        data += getRequestDataPartForProfileAttribute('SyncInterval', 'interval');
+        data += getRequestDataPartForProfileAttribute('Guid', 'guid');
+        data += getRequestDataPartForProfileAttribute('JiraProject', 'jiraproject');
+        data += getRequestDataPartForProfileAttribute('JiraTfsCustomFieldId', 'jiratfscfid');
+        data += getRequestDataPartForProfileAttribute('JiraUrl', 'jiraurl');
+        data += getRequestDataPartForProfileAttribute('JiraUser', 'jirauser');
+        data += getRequestDataPartForProfileAttribute('JiraPassword', 'jirapassword');
+        data += getRequestDataPartForProfileAttribute('HostedTfs', 'hostedtfs');
+        data += getRequestDataPartForProfileAttribute('UseTfsHistory', 'usehistory');
+        data += getRequestDataPartForProfileAttribute('OnDemandJira', 'jiraondemand');
+        data += getRequestDataPartForProfileAttribute('TfsUrl', 'tfsurl');
+        data += getRequestDataPartForProfileAttribute('TfsUser', 'tfsuser');
+        data += getRequestDataPartForProfileAttribute('TfsPassword', 'tfspassword');
+        data += getRequestDataPartForProfileAttribute('TfsDomain', 'tfsdomain');
+        data += getRequestDataPartForProfileAttribute('TfsCollection', 'tfscollectionid');
+        data += getRequestDataPartForProfileAttribute('TfsProject', 'tfsproject');
+        data += getRequestDataPartForProfileAttribute('TfsJiraCustomFieldName', 'tfsjiracfname');
+        data += getRequestDataPartForProfileAttribute('TfsJiraReporter', 'tfsjirareporter');
+        data += getRequestDataPartForProfileAttribute('SyncDirection', 'syncdirection');
+        data += getRequestDataPartForProfileAttribute('SubtaskSyncDirection', 'subtasksyncdirection');
+        data += getRequestDataPartForProfileAttribute('CommentSyncDirection', 'commentsyncdirection');
+        data += getRequestDataPartForProfileAttribute('AttachmentMappingMode', 'attachmentmappingmode');
+        data += getRequestDataPartForProfileAttribute('ProfileWizardStep', 'profilewizardstep');
+
+        return data;
+    }
+
+    function getRequestDataPartForProfileAttribute(profileAttributeName, requestAttributeName) {
+        if (synchronizationProfile[profileAttributeName] !== null) {
+            return '&' + requestAttributeName + '=' + encodeURIComponent(synchronizationProfile[profileAttributeName]);
+        }
+        return '';
+    }
+
+    $(function initWizard() {
+        setCurrentStep(steps[synchronizationProfile.ProfileWizardStep]);
+    });
+</script>

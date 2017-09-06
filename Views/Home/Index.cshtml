@@ -1,0 +1,136 @@
+﻿@{
+    ViewBag.Title = "Log - TFS4JIRA Synchronizer";
+}
+
+<h1>Application Log</h1>
+<div id="log"></div>
+<div id="log-footer">
+    <div id="log-path">
+        Log Level: <select id="set-log-level" placeholder="Log Level"></select>&nbsp;|&nbsp;@Html.ActionLink("Export support package", "ExportSupportPackage", "Home", new { target = "_blank" })&nbsp;|&nbsp;Log files directory: <span id="log-file-directory"></span>
+        
+    </div>
+    <div id="log-pause">
+        <span id="pauseresumetext">Refreshed every 3 seconds</span> <a href="#" id="pauseresume">Pause</a>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    var paused = false;
+
+    function setLogLevel() {
+        var opt = $('#set-log-level').val();
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetLogLevel", "Home")?_=' + new Date().getTime(),
+            data: 'level=' + opt,
+            success: function (data) {
+                if (!data.success) {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function (xhr) {
+                showErrorMessage(getXhrErrorResponse(xhr));
+            },
+            complete: function() {
+                loadLogLevels();
+            }
+        });
+    };
+
+    function loadLogLevels() {
+        $('#set-log-level').unbind('change', setLogLevel);
+
+        jQuery.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetLogLevel", "Home")?_=' + new Date().getTime(),
+            success: function (data) {
+                $('#set-log-level').html('');
+                for (var i = 0; i < data.all.length; ++i) {
+                    var $opt = $('<option/>');
+                    $opt.val(data.all[i].Name).html(data.all[i].Name);
+                    if (data.level && data.level.Name === data.all[i].Name) {
+                        $opt.attr('selected', true);
+                    }
+                    $('#set-log-level').append($opt);
+                }
+                $('#set-log-level').change(setLogLevel);
+            },
+            error: function(xhr) {
+                console.log(xhr);
+            }
+        });
+    };
+
+    function runLogRetrieve() {
+        if (paused) return;
+
+        jQuery.ajax({
+            type: 'GET',
+            url: '@Url.Action("Log", "Home")?_=' + new Date().getTime(),
+            success: function (data) {
+                var txt = '<pre>';
+                for (var i = 0; i < data.log.length; ++i) {
+                    txt += htmlEncode(data.log[i]);
+                }
+                txt += '</pre>';
+                $('#log').html(txt);                
+                $("#log").prop({scrollTop: $("#log").prop("scrollHeight")});
+                $("#log-file-directory").html(data.logFileDirectory);
+            },
+            error: function (xhr) {
+                console.log(xhr);
+            }
+        });
+    };
+
+    resizeLog = function() {
+        var y = $('#log').offset().top;
+        var h = $('#footer').height();
+        var docH = $(window).height();
+        var hei = docH - h - y - 55;
+        $('#log').css({height: hei  + 'px'});
+        setHelpSizePos();
+    };
+    
+    function htmlEncode(value) {
+        if (value) {
+            var htmlValue = $('<div>').text(value).html();
+            var cssClass = "log";
+            if (value.indexOf(" DEBUG ") >= 0 ) {
+                cssClass = "log_debug";
+            } else if (value.indexOf(" WARN ") > 0) {
+                cssClass = "log_warn";
+            } else if (value.indexOf(" ERROR ") > 0) {
+                cssClass = "log_error";
+            } else if (value.indexOf(" FATAL ") > 0) {
+                cssClass = "log_fatal";
+            }
+            
+            return '<span class="' + cssClass + '">' + htmlValue + '</span>';
+        } else {
+            return '';
+        }
+    }
+
+    $(document).ready(function () {
+    @if (!ViewBag.isAuthorized) {
+        @:location.href = '@Url.Action("About", "Home")';
+    }
+        $('#menu-activity').addClass('selected');
+
+        loadLogLevels();
+        runLogRetrieve();
+        $('#pauseresume').click(function(e) {
+            $('#pauseresume').html(paused ? 'Pause' : 'Resume');
+            $('#pauseresumetext').html(paused ? 'Refreshed every 3 seconds' : 'Log refresh paused');
+            paused = !paused;
+        });
+        setInterval(runLogRetrieve, 3000);
+
+        $(window).resize(function() {
+            resizeLog();
+        });
+        resizeLog();
+    });
+</script>

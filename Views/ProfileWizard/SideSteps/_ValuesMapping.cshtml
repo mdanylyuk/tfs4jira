@@ -1,0 +1,269 @@
+﻿@using synchronizer.Controllers
+@{
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+    string mappingComponentId = id + "-component";
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
+    <h1>Value Mapping between '<span id="wizard-value-mapping-jira-field-name"></span>' and '<span id="wizard-value-mapping-tfs-field-name"></span>'</h1>
+
+    <div class="wizard-value-mapping-settings">
+        <h2>Mapping mode</h2>
+        <div id="wizard-value-mapping-standard">
+            <div class="tfs4jira-fieldgroup-checkbox wizard-value-mapping-radio">
+                <label>
+                    <input type="radio" name="mapping-mode" value="1">
+                    Copy values (attempt type conversion)
+                </label>
+            </div>
+            <div class="tfs4jira-fieldgroup-checkbox wizard-value-mapping-radio">
+                <label>
+                    <input type="radio" name="mapping-mode" value="2" class="mapping-mode-map-values">
+                    Map values
+                </label>
+            </div>
+        </div>
+
+        <div id="wizard-value-mapping-treepath" style="display: none;">
+            <span class="message-box info wizard-info-box">
+                <span class="message-icon"></span>
+                Synchronization of TFS Tree Path fields like <i>Iteration Path</i> and <i>Area Path</i> is handled differently compared to other fields.<br /><br />
+                Ensure that you are familiar with
+                <a href="https://confluence.spartez.com/pages/viewpage.action?pageId=25758526">documentation regarding this topic</a>
+                before changing the settings below.
+            </span>
+
+            <div class="tfs4jira-fieldgroup-checkbox wizard-value-mapping-radio">
+                <label>
+                    <input type="radio" name="mapping-mode" value="1">
+                    Copy full TFS tree path
+                </label>
+            </div>
+            <div class="tfs4jira-fieldgroup-checkbox wizard-value-mapping-radio">
+                <label>
+                    <input type="radio" name="mapping-mode" value="4">
+                    Copy last part of TFS tree path
+                </label>
+            </div>
+            <div class="tfs4jira-fieldgroup-checkbox wizard-value-mapping-radio">
+                <label>
+                    <input type="radio" name="mapping-mode" value="2" class="mapping-mode-map-values">
+                    Map values
+                </label>
+            </div>
+        </div>
+
+        <hr class="tfs4jira-horizontal-separator" />
+
+        <h2>Mapping direction</h2>
+        <div class="tfs4jira-fieldgroup-checkbox wizard-value-mapping-radio">
+            <input type="radio" name="mapping-direction" value="1" id="mapping-direction-tfs-to-jira">
+            <label for="mapping-direction-tfs-to-jira">TFS to JIRA</label>
+        </div>
+        <div class="tfs4jira-fieldgroup-checkbox wizard-value-mapping-radio">
+            <input type="radio" name="mapping-direction" value="2" id="mapping-direction-jira-to-tfs">
+            <label for="mapping-direction-jira-to-tfs">JIRA to TFS</label>
+        </div>
+        <div class="tfs4jira-fieldgroup-checkbox wizard-value-mapping-radio">
+            <input type="radio" name="mapping-direction" value="3" id="mapping-direction-use-global">
+            <label for="mapping-direction-use-global">
+                Use profile level setting - currently <span id="mapping-direction-project-value"></span>
+            </label>
+        </div>
+
+        <hr class="tfs4jira-horizontal-separator"/>
+
+        <div class="tfs-custom-list-separator-container">
+            <h2>Alternate TFS list items separator.</h2>
+            <div class="tfs4jira-fieldgroup-checkbox wizard-value-mapping-radio">
+                <input type="checkbox" name="tfs-custom-list-separator" id="tfs-custom-list-separator">
+                Use alternate (";") TFS/VSTS list items separator
+                <span class="helpcontainer">
+                    <span class="helplink">?</span>
+                    <span class="helpinfo">
+                        If you are using a custom TFS/VSTS plugin which requires the multivalue list items to be separated
+                        by a different separator (like "Multivalue control", or "Custom Controls for TFS Work Item Tracking")
+                        please mark this checkbox. It changes the separator during synchronization from ", " to ";".
+                    </span>
+                </span>
+            </div>
+          <hr class="tfs4jira-horizontal-separator"/>
+        </div>
+
+        <div class="mapping-component-container">
+            @MappingHelpers.MappingComponent(@mappingComponentId)
+            <hr class="tfs4jira-horizontal-separator" />
+        </div>
+
+        <div class="tfs4jira-fieldgroup-checkbox wizard-value-mapping-radio">
+            <input type="checkbox" id="mapping-only-on-create">
+            <label for="mapping-only-on-create">Only map value when creating new Work Item or Issue.</label>
+        </div>
+    </div>
+</div>
+
+@{
+    Html.RenderPartial("_ValueMappingScripts", new
+    {
+        MappingComponentId = @mappingComponentId,
+        ShowDoNothingAction = false,
+        ShowRaiseErrorAction = true,
+        ShowEmptyValue = true,
+        IsMappingOneToMany = false
+    });
+}
+
+
+<script>
+    $(function () {
+        var $root = $('#@id');
+
+        var $mappingDirection = findElementByAttributes($root, { name: 'mapping-direction' });
+        var $mappingMode = findElementByAttributes($root, { name: 'mapping-mode' });
+        var $mappingComponentContainer = $root.find('.mapping-component-container');
+        var $tfsCustomListSeparatorContainer = $root.find('.tfs-custom-list-separator-container');
+        var $mappingComponent = $root.find('#@mappingComponentId');
+        var $mappingOnlyOnCreate = $root.find('#mapping-only-on-create');
+        var $tfsCustomListSeparatorInput = $tfsCustomListSeparatorContainer.find('input[name=tfs-custom-list-separator]')
+
+        var mappingModeValue;
+        var mappingDirectionValue;
+        var mapOnlyOnCreateValue;
+        var tfsUseCustomSeparator;
+
+        var mapping;
+
+        $root.on("@NavigationEvents.ActivateView", function activateView(event, mappingIdArgument) {
+            blockingAjax({
+                url: '@Url.Action("GetMapping", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, mappingid: mappingIdArgument }
+            }).done(function (valueMapping) {
+                mapping = valueMapping;
+
+                mappingModeValue = valueMapping.mappingMode;
+                mappingDirectionValue = valueMapping.mappingDirection % MappingDirection.SYNCHRONIZE_ONLY_FIRST_TIME_BIT_FLAG;
+                mapOnlyOnCreateValue = valueMapping.mappingDirection >= MappingDirection.SYNCHRONIZE_ONLY_FIRST_TIME_BIT_FLAG;
+                tfsUseCustomSeparator = valueMapping.useCustomSeparator;
+
+                updateMappingModeRadio();
+                updateTfsUseCustomListSeparator();
+                updateMappingDirectionRadio();
+                updateMapOnlyOnCreateCheckbox();
+                updateMappingComponentVisibility();
+                updateTfsUseCustomListSeparatorVisiblity();
+
+                $root.find('#mapping-direction-tfs-to-jira').attr('disabled', !valueMapping.isMappableToJira);
+                $root.find('#mapping-direction-jira-to-tfs').attr('disabled', !valueMapping.isMappableToTfs);
+                $root.find('.mapping-mode-map-values').attr('disabled', !valueMapping.allowMapValuesMode);
+
+                $root.find('#wizard-value-mapping-jira-field-name').text(valueMapping.jiraValues.Name);
+                $root.find('#wizard-value-mapping-tfs-field-name').text(valueMapping.tfsValues.Name);
+
+                $root.find('#mapping-direction-project-value').text(getCurrentProfileLevelMappingDirectionText());
+
+                $mappingComponent.trigger('@ValueMappingEvents.MappingDataLoaded', valueMapping);
+            });
+        });
+
+        $root.on("@NavigationEvents.SaveButtonClicked", function () {
+            SaveModelAndGoToSideStep("@WizardStep.FieldMapping");
+        });
+
+        $mappingMode.change(function (event) {
+            var newValue = $(this).val();
+
+            nonBlockingAjax({
+                url: '@Url.Action("SetMappingMode", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, mappingid: mapping.mappingId, mode: newValue }
+            }).done(function () {
+                tfsUseCustomSeparator = newValue;
+                updateMappingComponentVisibility();
+                updateTfsListSeparatorVisiblity();
+            }).fail(function () {
+                updateMappingModeRadio();
+            });
+        });
+
+        $mappingDirection.change(function () {
+            var newValue = $(this).val();
+
+            nonBlockingAjax({
+                url: '@Url.Action("SetMappingDirection", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, mappingid: mapping.mappingId, direction: parseInt(newValue) + (mapOnlyOnCreateValue ? MappingDirection.SYNCHRONIZE_ONLY_FIRST_TIME_BIT_FLAG : 0) }
+            }).done(function () {
+                mappingDirectionValue = newValue;
+                mapping.mappingDirection = parseInt(newValue) + (mapOnlyOnCreateValue ? MappingDirection.SYNCHRONIZE_ONLY_FIRST_TIME_BIT_FLAG : 0);
+                updateMappingDirection();
+            }).fail(function () {
+                updateMappingDirectionRadio();
+            });
+        });
+
+        $mappingOnlyOnCreate.change(function () {
+            var newValue = $mappingOnlyOnCreate.is(':checked');
+            console.log(newValue);
+
+            nonBlockingAjax({
+                url: '@Url.Action("SetMappingDirection", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, mappingid: mapping.mappingId, direction: parseInt(mappingDirectionValue) + (newValue ? MappingDirection.SYNCHRONIZE_ONLY_FIRST_TIME_BIT_FLAG : 0) }
+            }).done(function (data) {
+                mapOnlyOnCreateValue = newValue;
+            }).fail(function () {
+                updateMapOnlyOnCreateCheckbox();
+            });
+        });
+
+        $tfsCustomListSeparatorInput.change(function () {
+            var newValue = $(this).is(':checked');
+
+            nonBlockingAjax({
+                url: '@Url.Action("SetTfsListSeparator", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, mappingid: mapping.mappingId, useCustomSeparator: newValue }
+            }).done(function () {
+                tfsUseCustomSeparator = newValue;
+            }).fail(function () {
+                updateTfsUseCustomListSeparator();
+            });
+        });
+
+        function updateMappingComponentVisibility() {
+            if (mappingModeValue == '2') {
+                $mappingComponentContainer.show();
+            } else {
+                $mappingComponentContainer.hide();
+            }
+        }
+
+        function updateTfsUseCustomListSeparatorVisiblity() {
+            if (mapping.isTfsTextType && mapping.isJiraFieldTypeArray && mappingModeValue == '1') {
+                $tfsCustomListSeparatorContainer.show();
+            } else {
+                $tfsCustomListSeparatorContainer.hide();
+            }
+        }
+
+        function updateMappingModeRadio() {
+            $root.find("#wizard-value-mapping-standard").toggle(!mapping.isTreePathMapping);
+            $root.find("#wizard-value-mapping-treepath").toggle(mapping.isTreePathMapping);
+
+            findElementByAttributes($root, { name: 'mapping-mode', value: mappingModeValue }).filter(':visible').prop('checked', true);
+        }
+
+        function updateMappingDirectionRadio() {
+            findElementByAttributes($root, { name: 'mapping-direction', value: mappingDirectionValue }).prop('checked', true);
+        }
+
+        function updateMapOnlyOnCreateCheckbox() {
+            $mappingOnlyOnCreate.prop('checked', mapOnlyOnCreateValue);
+        }
+
+        function updateMappingDirection() {
+            $mappingComponent.trigger('@MappingEvents.UpdateMappingDirection', mappingDirectionValue);
+        }
+        
+        function updateTfsUseCustomListSeparator() {
+            $tfsCustomListSeparatorInput.prop('checked', tfsUseCustomSeparator);
+        }
+    });
+
+</script>

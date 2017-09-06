@@ -1,0 +1,76 @@
+﻿@model synchronizer.Models.LogOnModel
+
+@{
+    ViewBag.Title = "Log In";
+    ViewBag.isLogInPage = true;
+}
+
+<h1>Log In to TFS4JIRA Synchronizer</h1>
+
+@using (Html.BeginForm())
+{
+    <div id="login-form">
+        <h2 class="headerh2">Login</h2>
+@*        <legend>Input your Windows credentials to log in.</legend>*@
+
+        <div class="row">
+            <div class="label">@Html.LabelFor(m => m.UserName)</div>
+            <div class="field">
+                <div class="editbox">
+                    @Html.TextBoxFor(m => m.UserName)
+                    @Html.ValidationMessageFor(m => m.UserName)
+                </div>
+            </div>  
+        </div>
+        <div class="row">
+            <div class="label">@Html.LabelFor(m => m.Password)</div>
+            <div class="field">
+                <div class="editbox">
+                    @Html.PasswordFor(m => m.Password)
+                    @Html.ValidationMessageFor(m => m.Password)
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="label">@Html.LabelFor(m => m.Domain)</div>
+            <div class="field">
+                <div class="editbox">
+                    @Html.TextBoxFor(m => m.Domain)
+                    @Html.ValidationMessageFor(m => m.Domain)
+                </div>
+            </div>  
+        </div>
+        <div class="row">
+            <div class="label"></div>
+            <div class="field">
+                <div class="editbox">
+                    <input id="login" type="submit" value="Log In" />
+                </div>
+            </div>  
+        </div>
+
+        @Html.ValidationSummary(true)
+
+    </div>
+}
+
+<div id="tfssehelp" style="display:none;">
+    @{Html.RenderPartial("Help/Help_LogOn");}
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        fillHelp('#tfssehelp');
+        $('#UserName')
+            .tooltipster({
+                position: 'top',
+                content: 'Host machine\'s Windows user name.'
+            });
+        $('#Password')
+          .tooltipster({
+              position: 'top', 
+              content: 'Host machine\'s Windows user password.'
+          });
+    });
+</script>
+

@@ -1,0 +1,236 @@
+﻿@using synchronizer.Controllers
+@{
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
+    <h1>Synchronization Settings</h1>
+    
+    <div class="tfs4jira-fieldgroup">
+        <label for="synchronization-direction">Synchronization Direction</label>
+        <select id="synchronization-direction">
+            <option value="1">From TFS to JIRA</option>
+            <option value="2">From JIRA to TFS</option>
+            <option value="3" selected="selected">Both Directions</option>
+        </select>
+    </div>
+    <div class="tfs4jira-fieldgroup">
+        <label for="comment-synchronization">Comment Synchronization</label>
+        <select id="comment-synchronization">
+            <option value="0" selected="selected">Not Synchronized</option>
+            <option value="1">From TFS to JIRA</option>
+            <option value="2">From JIRA to TFS</option>
+            <option value="3">Both Directions</option>
+        </select>
+        <div id="comment-synchronization-not-available-message" class="hidden-on-load tfs4jira-field-description">
+            Comment synchronization is not available because it requires JIRA 6.2 or newer.
+        </div>
+    </div>
+    <div class="tfs4jira-fieldgroup">
+        <label for="attachment-synchronization">Attachment Synchronization</label>
+        <select id="attachment-synchronization">
+            <option value="0" selected="selected">Not Synchronized</option>
+            <option value="1">From TFS to JIRA</option>
+            <option value="2">From JIRA to TFS</option>
+            <option value="3">Both Directions</option>
+        </select>
+    </div>
+    
+    <div class="tfs4jira-horizontal-separator synchronization-settings-horizontal-separator"></div>
+    
+    <div class="tfs4jira-fieldgroup">
+        <label for="jira-project">JIRA Project</label>
+        <select id="jira-project" data-minimumresultsforsearch="5"></select>
+        <div class="tfs4jira-field-error"></div>
+    </div>
+
+    <div class="tfs4jira-fields-group">
+        <div class="tfs4jira-fieldgroup">
+            <label for="tfs-collection">TFS Collection</label>
+            <select id="tfs-collection" data-minimumresultsforsearch="5"></select>
+            <div class="tfs4jira-field-error"></div>
+        </div>
+        <div class="tfs4jira-fieldgroup">
+            <label for="tfs-project">TFS Project</label>
+            <select id="tfs-project" data-minimumresultsforsearch="5"></select>
+            <div class="tfs4jira-field-error"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $("#tfs-collection").on("change", tfsCollectionChanged);
+
+        $('#@id').on("@NavigationEvents.ActivateView", function (event, parameters) {
+            initializeForm();
+            restoreSynchronizationDirection();
+            getTfsCollections();
+            getJiraProjects();
+        });
+
+        function initializeForm() {
+            $('#@id').find('select').each(function () {
+                makeFieldSelect2($(this), "ts4jira-select2-form-field");
+            });
+        }
+
+        function checkIfCommentSynchronizationAvailable() {
+            blockingAjax({
+                url: '@Url.Action("GetJiraServerInfo", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid }
+            }).done(
+                function (data) {
+                    var info = jQuery.parseJSON(data);
+                    if (info && info.buildNumber && !isNaN(info.buildNumber) && (info.buildNumber >= 6252)) {
+                        $('#comment-synchronization').attr('disabled', null);
+                        $('#comment-synchronization').removeClass('disabled');
+                        $('#comment-synchronization-not-available-message').hide();
+                    } else {
+                        $('#comment-synchronization').attr('disabled', 'disabled');
+                        $('#comment-synchronization').addClass('disabled');
+                        $('#comment-synchronization-not-available-message').show();
+                        synchronizationProfile.CommentSyncDirection = 0;
+                    }
+                    $("#comment-synchronization").select2("val", synchronizationProfile.CommentSyncDirection);
+                }
+            );
+        }
+
+        function restoreSynchronizationDirection() {
+            if (synchronizationProfile.SyncDirection !== 0) {
+                $("#synchronization-direction").select2("val", synchronizationProfile.SyncDirection);
+            }
+            checkIfCommentSynchronizationAvailable();
+            $("#attachment-synchronization").select2("val", synchronizationProfile.AttachmentMappingMode);
+        }
+
+        function getTfsCollections() {
+            blockingAjax({
+                url: '@Url.Action("GetTfsProjectCollections", "Tfs")?_=' + new Date().getTime(),
+                data: { hostedtfs: synchronizationProfile.HostedTfs, user: synchronizationProfile.TfsUser, domain: synchronizationProfile.TfsDomain,
+                    password: synchronizationProfile.TfsPassword, url: synchronizationProfile.TfsUrl }
+            }).done(function (data) {
+                $("#tfs-collection").empty();
+                var isCollectionSelected = synchronizationProfile.TfsCollection !== null;
+                data.collections.forEach(function (collection) {
+                    $("#tfs-collection").append($("<option>", {
+                        value: collection.Key,
+                        text: collection.Value,
+                        selected: isCollectionSelected ? (collection.Key === synchronizationProfile.TfsCollection) : (collection.Value === "DefaultCollection")
+                    }));
+                });
+                makeFieldSelect2($("#tfs-collection"), "ts4jira-select2-form-field");
+                tfsCollectionChanged();
+            });
+        }
+
+        function tfsCollectionChanged() {
+            synchronizationProfile.TfsCollection = $("#tfs-collection").select2("val");
+            getTfsProjects();
+        }
+
+        function getTfsProjects() {
+            blockingAjax({
+                url: '@Url.Action("GetTfsProjects", "Tfs")?_=' + new Date().getTime(),
+                data: { hostedtfs: synchronizationProfile.HostedTfs, user: synchronizationProfile.TfsUser, domain: synchronizationProfile.TfsDomain,
+                    password: synchronizationProfile.TfsPassword, url: synchronizationProfile.TfsUrl, collection: synchronizationProfile.TfsCollection }
+            }).done(function (data) {
+                $("#tfs-project").empty();
+                data.projects.forEach(function (project) {
+                    $("#tfs-project").append($("<option>", {
+                        value: project.Key,
+                        text: project.Value,
+                        selected: (project.Key === synchronizationProfile.TfsProject)
+                    }));
+                });
+                makeFieldSelect2($("#tfs-project"), "ts4jira-select2-form-field");
+            });
+        }
+
+        function getJiraProjects() {
+            blockingAjax({
+                url: '@Url.Action("GetJiraProjects", "Tfs")?_=' + new Date().getTime(),
+                data: { user: synchronizationProfile.JiraUser, password: synchronizationProfile.JiraPassword, url: synchronizationProfile.JiraUrl }
+            }).done(function (data) {
+                $("#jira-project").empty();
+                data.projects.forEach(function (project) {
+                    $("#jira-project").append($("<option>", {
+                        value: project.Key,
+                        text: project.Value,
+                        selected: (project.Key === synchronizationProfile.JiraProject)
+                    }));
+                });
+                makeFieldSelect2($("#jira-project"), "ts4jira-select2-form-field");
+            });
+        }
+
+        function validate() {
+            var isValid = true;
+
+            clearFieldError("tfs-collection");
+            if ($("#tfs-collection").select2("val") === null) {
+                setFieldError("tfs-collection", "Please choose TFS Collection.");
+                isValid = false;
+            }
+
+            clearFieldError("tfs-project");
+            if ($("#tfs-project").select2("val") === null) {
+                setFieldError("tfs-project", "Please choose TFS Project.");
+                isValid = false;
+            }
+
+            clearFieldError("jira-project");
+            if ($("#jira-project").select2("val") === null) {
+                setFieldError("jira-project", "Please choose JIRA Project.");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        $('#@id').on("@NavigationEvents.NextButtonClicked", function() {
+            if (validate()) {
+                synchronizationProfile.SyncDirection = $("#synchronization-direction").select2("val");
+                synchronizationProfile.CommentSyncDirection = $("#comment-synchronization").select2("val");
+                synchronizationProfile.AttachmentMappingMode = $("#attachment-synchronization").select2("val");
+                synchronizationProfile.TfsCollection = $("#tfs-collection").select2("val");
+
+                if (shouldUpdateSubtaskSyncDirection()) {
+                    synchronizationProfile.SubtaskSyncDirection = MappingDirection.BOTH_DIRECTIONS;
+                }
+
+                var prevTfsProject = synchronizationProfile.TfsProject;
+                var prevJiraProject = synchronizationProfile.JiraProject;
+                synchronizationProfile.TfsProject = $("#tfs-project").select2("val");
+                synchronizationProfile.JiraProject = $("#jira-project").select2("val");
+
+                if (synchronizationProfile.TfsProject != prevTfsProject || synchronizationProfile.JiraProject != prevJiraProject) {
+                    SaveModelAndGoToNextStep().done(function () {
+                        setDefaultMappingsAndGoToNextStep();
+                    });
+                } else {
+                    SaveModelAndGoToNextStep();
+                }
+            }
+        });
+
+        function shouldUpdateSubtaskSyncDirection() {
+            var isProfileSynchronizedOnlyInOneDirection = (synchronizationProfile.SyncDirection !== MappingDirection.BOTH_DIRECTIONS);
+
+            var areSubtasksSynchronizedOnlyInOneDirection = (synchronizationProfile.SubtaskSyncDirection === MappingDirection.FROM_JIRA_TO_TFS ||
+                synchronizationProfile.SubtaskSyncDirection === MappingDirection.FROM_TFS_TO_JIRA);
+
+            var isSubtaskDirectionDifferentThanProfileDirection = (synchronizationProfile.SyncDirection !== synchronizationProfile.SubtaskSyncDirection);
+
+            return isProfileSynchronizedOnlyInOneDirection && areSubtasksSynchronizedOnlyInOneDirection && isSubtaskDirectionDifferentThanProfileDirection;
+        }
+
+        function setDefaultMappingsAndGoToNextStep() {
+            blockingAjax({
+                url: '@Url.Action("SetDefaultMappings", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid }
+            });
+        }        
+    });
+</script>

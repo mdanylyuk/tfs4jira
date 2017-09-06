@@ -1,0 +1,196 @@
+﻿@using synchronizer.Controllers
+@{    
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+    string mappingComponentId = id + "-component";
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
+    <h1>Subtask Mapping</h1>
+    
+    <div class="tfs4jira-fieldgroup-checkbox" style="margin-left:95px;">
+        <input type="checkbox" id="synchronize-subtasks-checkbox">
+        <label for="synchronize-subtasks-checkbox">Synchronize subtasks</label>
+    </div>
+    
+    <div id="synchronize-subtasks-details">
+        <hr class="tfs4jira-horizontal-separator subtasks-mapping-horizontal-separator" />
+        <div class="tfs4jira-fieldgroup tfs4jira-subtask-form synchronize-subtask-direction-container">
+            <label for="synchronize-subtasks-select">Subtasks synchronization direction</label>
+            <select id="synchronize-subtasks-select">
+                <option value="1" id="synchronize-subtask-direction-tfs-to-jira">From TFS To JIRA</option>
+                <option value="2" id="synchronize-subtask-direction-jira-to-tfs">From JIRA To TFS</option>
+                <option value="3" id="synchronize-subtask-direction-global" selected="selected">Both directions</option>
+            </select>
+        </div>
+
+        <div class="tfs4jira-fieldgroup tfs4jira-subtask-form">
+            <label for="subtask-link-type">TFS link type that maps to JIRA subtask</label>
+            <select id="subtask-link-type"></select>
+            <div class="tfs4jira-field-error subtask-link-error">Please select TFS link type that maps to JIRA subtask.</div>
+            <div class="tfs4jira-field-description subtask-link-description" style="display: block;">
+                JIRA subtasks relationship is mapped into link in TFS. 
+                See <a href="https://confluence.spartez.com/display/TFS4JIRA/Synchronizing+JIRA+subtasks+to+TFS+links" target="_blank">online help</a> for details.
+            </div>
+        </div>
+
+        <hr class="tfs4jira-horizontal-separator subtasks-mapping-horizontal-separator" />
+
+        @MappingHelpers.MappingComponent(@mappingComponentId)
+    </div>
+    
+    <div class="info-box subtasks-not-synchronized-info">
+        <div class="info-image"></div>
+        Subtasks will not be synchronized.
+    </div>
+</div>
+
+<script>
+    $(function () {
+        var $root = $('#@id');
+        var $mappingComponent = $root.find("#@mappingComponentId");
+
+        var $synchronizeSubtasksCheckbox = $root.find("#synchronize-subtasks-checkbox");
+        var $synchronizeSubtasksSelect = $root.find("#synchronize-subtasks-select");
+        var $linkTypeSelect = $root.find("#subtask-link-type");
+        var $subtaskLinkError = $root.find('.subtask-link-error');
+
+        var $subtasksDetails = $root.find("#synchronize-subtasks-details");
+        var $notSynchronizedInfo = $root.find(".subtasks-not-synchronized-info");
+
+        var $synchronizeSubtaskDirectionContainer = $root.find(".synchronize-subtask-direction-container");
+
+        $synchronizeSubtasksCheckbox.change(function () {
+            var isChecked = $synchronizeSubtasksCheckbox.is(':checked');
+            var synchronizationDirection = isChecked ? 3 : 0;
+
+            nonBlockingAjax({
+                url: '@Url.Action("SetSubtaskSyncDirection", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, subtasksyncdirection: synchronizationDirection }
+            }).fail(function () {
+                $synchronizeSubtasksCheckbox.prop('checked', !isChecked);
+            }).done(function (result) {
+                synchronizationProfile.SubtaskSyncDirection = synchronizationDirection;
+
+                if (isChecked) {
+                    $notSynchronizedInfo.hide();
+                    $subtasksDetails.show();
+                    $synchronizeSubtasksSelect.select2("val", result.subtaskMapping);
+
+                    updateSyncDirectionIndicators();                    
+                } else {
+                    $notSynchronizedInfo.show();
+                    $subtasksDetails.hide();
+                }
+            });
+        });
+
+        $linkTypeSelect.on("select2-selecting", function (e) {
+            setSubtaskLinkType(e.val);
+            $linkTypeSelect.select2("close");
+            return false;
+        });
+
+        $synchronizeSubtasksSelect.on("select2-selecting", function (e) {
+            nonBlockingAjax({
+                url: '@Url.Action("SetSubtaskSyncDirection", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, subtasksyncdirection: e.val }
+            }).done(function (result) {
+                synchronizationProfile.SubtaskSyncDirection = result.subtaskMapping;
+                $synchronizeSubtasksSelect.select2("val", result.subtaskMapping);
+                updateSyncDirectionIndicators();
+            });
+
+            $synchronizeSubtasksSelect.select2("close");
+            return false;
+        });
+
+        $('#@id').on("@NavigationEvents.ActivateView", function (event, parameters) {
+            $notSynchronizedInfo.show();
+            $subtasksDetails.hide();
+            $synchronizeSubtasksCheckbox.prop("checked", synchronizationProfile.SubtaskSyncDirection !== 0);
+
+            $synchronizeSubtaskDirectionContainer.show();
+            if (synchronizationProfile.SyncDirection != MappingDirection.BOTH_DIRECTIONS) {
+                $synchronizeSubtaskDirectionContainer.hide();
+            }
+
+            makeFieldSelect2($linkTypeSelect, 'ts4jira-select2-form-field', 300, 'Please select link type');
+            makeFieldSelect2($synchronizeSubtasksSelect, 'ts4jira-select2-form-field', 300);
+            $synchronizeSubtasksSelect.select2('val', synchronizationProfile.SubtaskSyncDirection);
+            $subtaskLinkError.hide();
+
+            loadLinkTypes();
+            loadSubtaskMapping();
+
+            if (synchronizationProfile.SubtaskSyncDirection !== 0) {
+                $subtasksDetails.show();
+                $notSynchronizedInfo.hide();
+            }            
+        });
+
+        $('#@id').on("@NavigationEvents.NextButtonClicked", function () {
+            if ($synchronizeSubtasksCheckbox.is(':checked') && _.isEmpty($linkTypeSelect.select2("val"))) {
+                return $subtaskLinkError.show();
+            }
+
+            SaveModelAndGoToNextStep();
+        });
+
+        function loadLinkTypes() {
+            blockingAjax({
+                url: '@Url.Action("GetLinkTypes", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid }
+            }).done(function(result) {
+                $linkTypeSelect.empty().append($('<option>'));
+
+                _.each(result.linkTypes, function(linkType) {
+                    $linkTypeSelect.append($("<option>", {
+                        val: linkType.referenceName,
+                        text: linkType.reverse + ' -> ' + linkType.forward
+                    }));
+                });
+
+                if (_.isEmpty(synchronizationProfile.TfsLinkTypeForSubtasks) && (result.linkTypes.length > 0)) {
+                    setSubtaskLinkType(result.linkTypes[0].referenceName);
+                } else {
+                    $linkTypeSelect.select2('val', synchronizationProfile.TfsLinkTypeForSubtasks);
+                }
+            });
+        }
+
+        function setSubtaskLinkType(subtaskLinkType) {
+            nonBlockingAjax({
+                url: '@Url.Action("SetSubtaskLinkType", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, subtasklinktype: subtaskLinkType }
+            }).done(function (result) {
+                synchronizationProfile.TfsLinkTypeForSubtasks = result.subtaskLinkType;
+                $linkTypeSelect.select2("val", result.subtaskLinkType);
+            });
+        }
+
+        function loadSubtaskMapping() {
+            blockingAjax({
+                url: '@Url.Action("GetSubtaskMapping", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid }
+            }).done(function (data) {
+                data.mappingDirection = synchronizationProfile.SubtaskSyncDirection;
+                $mappingComponent.trigger('@ValueMappingEvents.MappingDataLoaded', data);
+            });
+        }
+
+        function updateSyncDirectionIndicators() {
+            $mappingComponent.trigger('@MappingEvents.UpdateMappingDirection', getSynchronizationDirection(synchronizationProfile.SubtaskSyncDirection));
+        }
+    });
+</script>
+
+@{
+    Html.RenderPartial("_ValueMappingScripts", new
+    {
+        MappingComponentId = @mappingComponentId,
+        ShowDoNothingAction = true,
+        ShowRaiseErrorAction = false,
+        ShowEmptyValue = false,
+        IsMappingOneToMany = false
+    });
+}

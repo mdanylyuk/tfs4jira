@@ -1,0 +1,7 @@
+﻿@if (ViewBag.isAuthorized != null && ViewBag.isAuthorized)
+{
+    <text>Welcome <strong>@User.Identity.Name</strong>
+    @Html.ActionLink("Log Out", "LogOff", "Account")</text><br />
+} else {
+    @:@Html.ActionLink("Log In", "LogOn", "Account")
+}

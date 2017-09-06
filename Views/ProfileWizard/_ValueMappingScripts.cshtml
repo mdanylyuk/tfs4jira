@@ -1,0 +1,148 @@
+﻿@using synchronizer.Controllers
+@using synchronizer.Services
+@{
+    string mappingComponentId = @Model.GetType().GetProperty("MappingComponentId").GetValue(Model);
+    bool showDoNothingAction = @Model.GetType().GetProperty("ShowDoNothingAction").GetValue(Model);
+    bool showRaiseErrorAction = @Model.GetType().GetProperty("ShowRaiseErrorAction").GetValue(Model);
+    bool showEmptyValue = @Model.GetType().GetProperty("ShowEmptyValue").GetValue(Model);
+    bool isMappingOneToMany = @Model.GetType().GetProperty("IsMappingOneToMany").GetValue(Model);
+}
+
+@* 
+    This file contains scripts that allows to utilize MappingHelpers.MappingComponent in context of 
+    State and Type mapping. I am not sure how they will evolve, so for now I put them here.
+*@
+
+<script>
+    $(function () {
+        var RAISE_ERROR_VALUE = '-error-';
+        var DO_NOTHING_VALUE = '@SyncProfileService.ValueMappingSkipSpecialValue';
+        var EMPTY_VALUE = '@SyncProfileService.ValueMappingEmptySpecialValue';
+
+        var showDoNothingAction = @(showDoNothingAction ? "true" : "false");
+        var showRaiseErrorAction = @(showRaiseErrorAction ? "true" : "false");
+        var showEmptyValue = @(showEmptyValue ? "true" : "false");
+        var $mapping = $("#@mappingComponentId");
+        var isMappingOneToMany = @(isMappingOneToMany ? "true" : "false");
+        var valueMapping;
+
+        $mapping.on("@ValueMappingEvents.MappingDataLoaded", function activateView(event, data) {
+            valueMapping = data;
+
+            var jiraHeaderNote = '';
+
+            if (data.jiraType === 'user') {
+                jiraHeaderNote = 'Only JIRA users with permission <i>assignable user</i> are shown in the list below.';
+            }
+
+            var mappingOptions = {
+                possibleJiraValues: _.chain(data.jiraValues.AllowedValues)
+                    .filter(function(allowedValue) {
+                        return allowedValue.Value !== null;
+                    })
+                    .map(function (value) {
+                        return { text: value.Label, id: value.Value, group: value.Group };
+                    }).value(),
+                possibleTfsValues: _.chain(data.tfsValues.AllowedValues)
+                    .filter(function(allowedValue) {
+                        return allowedValue.Value !== null;
+                    })
+                    .map(function (value) {
+                        return { text: value.Label, id: value.Value, group: value.Group };
+                    }).value(),
+                mappedValues: _.map(data.mappings, function(mapping) {
+                    return {
+                        jiraId: mapping.jira, tfsId: mapping.tfs,
+                        mappingId: mapping.id,
+                        isDefault: mapping.isDefault,
+                        direction: getSynchronizationDirection(valueMapping.mappingDirection)
+                    };
+                }),
+                fallbackFromJiraToTfs: data.jiraDefaultValue || RAISE_ERROR_VALUE,
+                fallbackFromTfsToJira: data.tfsDefaultValue || RAISE_ERROR_VALUE,
+                showEditButtons: false,
+                showFallbackSelects: true,
+                jiraHeaderNote: jiraHeaderNote,
+                tfsTreePathMode: data.isTreePathMapping,
+                jiraGroupMode: _.some(data.jiraValues.AllowedValues, function(value) { return value && value.Group !== ''; }),
+                isMappingOneToMany: isMappingOneToMany
+            }
+
+            mappingOptions.fallbackActions = [];
+            showDoNothingAction ? mappingOptions.fallbackActions.push({ text: 'Do nothing', id: DO_NOTHING_VALUE }) : "";
+            showEmptyValue ? mappingOptions.fallbackActions.push({ text: 'Empty value', id: EMPTY_VALUE }) : "";
+            showRaiseErrorAction ? mappingOptions.fallbackActions.push({ text: 'Raise error', id: RAISE_ERROR_VALUE }) : "";
+
+            $mapping.trigger('@MappingEvents.Init', mappingOptions);
+        });
+
+        $mapping.on("@MappingEvents.AddMappingButtonClicked", function (event, mappedValue) {
+            nonBlockingAjax({
+                url: '@Url.Action("MapValues", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, mappingid: valueMapping.mappingId, jira: mappedValue.jiraId, tfs: mappedValue.tfsId, allowDuplicates: mappedValue.allowDuplicates }
+            }).done(function (data) {
+                mappedValue.mappingId = data.newMappingId;
+                mappedValue.direction = getSynchronizationDirection(valueMapping.mappingDirection);
+                data.mappedValue = mappedValue;
+                data.mappings = data.mappings.map(function (mapping) {
+                    mapping.direction = getSynchronizationDirection(valueMapping.mappingDirection);
+                    return mapping;
+                });
+                $mapping.trigger('@MappingEvents.AddMapping', data);
+            });
+        });
+
+        $mapping.on("@MappingEvents.RemoveMappingButtonClicked", function (event, mappedValue) {
+            nonBlockingAjax({
+                url: '@Url.Action("UnmapValues", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, mappingid: valueMapping.mappingId, id: mappedValue.mappingId }
+            }).done(function(data) {
+                data.mappedValue = mappedValue;
+                data.mappings = data.mappings.map(function (mapping) {
+                    mapping.direction = getSynchronizationDirection(valueMapping.mappingDirection);
+                    return mapping;
+                });
+                $mapping.trigger('@MappingEvents.RemoveMapping', data);
+            });
+        });
+
+        $mapping.on("@MappingEvents.DefaultMappingButtonClicked", function (event, mappedValue) {
+            nonBlockingAjax({
+                url: '@Url.Action("SetDefaultValueMapping", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, mappingid: valueMapping.mappingId, id: mappedValue.mappingId }
+            }).done(function(data) {
+                data.mappings = data.mappings.map(function (mapping) {
+                    mapping.direction = getSynchronizationDirection(valueMapping.mappingDirection);
+                    return mapping;
+                });
+                $mapping.trigger('@MappingEvents.AddMapping', data);
+            });
+        });
+
+        $mapping.on("@MappingEvents.SetFallbackFromJiraToTfsClicked", function (event, selectedValueId) {
+            setFallback('jira', selectedValueId)
+                .done(function () {
+                    $mapping.trigger('@MappingEvents.SetFallbackFromJiraToTfs', selectedValueId);
+                });
+        });
+
+        $mapping.on("@MappingEvents.SetFallbackFromTfsToJiraClicked", function (event, selectedValueId) {
+            setFallback('tfs', selectedValueId)
+                .done(function () {
+                    $mapping.trigger('@MappingEvents.SetFallbackFromTfsToJira', selectedValueId);
+                });
+        });
+
+        function setFallback(forJiraOrTfs, fallbackValueId) {
+            var value = fallbackValueId;
+            if (value == RAISE_ERROR_VALUE) {
+                value = undefined;
+            };
+
+            return nonBlockingAjax({
+                url: '@Url.Action("SetFieldDefault", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid, mappingid: valueMapping.mappingId, what: forJiraOrTfs, value: value }
+            });
+        }
+    });
+</script>

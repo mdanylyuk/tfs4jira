@@ -1,0 +1,323 @@
+﻿@model synchronizer.Models.SyncErrorModel
+
+@{
+    ViewBag.Title = "Synchronization Errors - TFS4JIRA Synchronizer";
+}
+
+@Html.ActionLink("Back", "Index", "Tfs", new {id = string.Empty}, null)
+
+@if (Model.Error != null)
+{
+    <p>Error retrieving synchronization profile: &quot;@Model.Error&quot;</p>
+}
+else
+{
+    <h1>Synchronization errors for profile &quot;@Model.Profile.Name&quot;</h1>
+    <div id="messages"></div>
+    <div>
+        <div id="errors-count" style="float: left"></div>     
+        <div id="bulk-actions" style="float: right">
+            <a id="deleteall" href="#">Acknowledge (forget) all errors</a>    
+            |
+            <a id="synchronizeall" href="#">Force resynchronization for all errors</a>
+        </div>
+        <div style="clear: both"></div>
+    </div>
+    <div id="syncerrors"></div>
+    <div id="paging" style="text-align: center; margin-left: auto; margin-right: auto; width: 100%"></div>
+
+
+    <div id="tfssehelp" style="display: none;">
+        @{Html.RenderPartial("Help/Help_SynchronizationErrors");}
+    </div>
+
+    <script type="text/javascript">
+        var limit = 20;
+        var page = 0;
+        var allCount = 0;
+        var allPagesCount = 0;
+
+        getFormattedDate = function(timestamp) {
+            var date = eval("new " + timestamp.slice(1, -1));
+            return date.toString('yyyy-MM-dd HH:mm:ss');
+        };
+
+        showErrorDetails = function(id) {
+            var data = $('#syncerrors').data(id);
+
+            // TFS-966
+            var sanitizedDetails = $('<div/>').text(data.details).html();
+
+            var txt = '';
+            txt += '<strong>Summary</strong><br/><p>' + data.summary + '</p>';
+            txt += '<strong>Details</strong><br/><pre>' + sanitizedDetails + '</pre>';
+            if (data.mapping) {
+                txt += '<strong>Mapping info</strong>';
+                txt += '<ul>';
+                for (var prop in data.mapping) {
+                    txt += '<li>' + prop + ': <strong>' + data.mapping[prop] + '</strong></li>';
+                }
+                txt += '</ul>';
+            }
+
+            errorDialog('body', txt, null, 800, 600);
+        };
+
+        acknowledgeError = function (id) {
+            showInfoMessage('Acknowledging synchronization error...');
+
+            var data = $('#syncerrors').data(id);
+            jQuery.ajax({
+                type: 'POST',
+                url: '@Url.Action("DeleteSyncError", "SyncError", new {id = Model.Profile.Guid})?_=' + new Date().getTime(),
+                data: 'errorId=' + id + (data.issueKey ? '&issueKey=' + data.issueKey : '') + (data.workItemId ? '&workItemId=' + data.workItemId : ''),
+                success: function (data) {
+                    if (data.success) {
+                        page = sanitizePage(allCount - 1);
+                        reloadErrors();
+                    } else {
+                        errorDialog('body', data.message, null);
+                    }
+                },
+                error: function (xhr) {
+                    errorDialog('body', getXhrErrorResponse(xhr), null);
+                },
+                complete: function () {
+                    clearMessages();
+                }
+            });
+        };
+
+        akcnowledgeAllErrors = function() {
+            showInfoMessage('Acknowledging all synchronization errors...');
+
+            jQuery.ajax({
+                type: 'POST',
+                url: '@Url.Action("DeleteAllSyncErrors", "SyncError", new {id = Model.Profile.Guid})?_=' + new Date().getTime(),
+                success: function(data) {
+                    if (data.success) {
+                        page = sanitizePage(0);
+                        reloadErrors();
+                    } else {
+                        errorDialog('body', data.message, null);
+                    }
+                },
+                error: function(xhr) {
+                    errorDialog('body', getXhrErrorResponse(xhr), null);
+                },
+                complete: function() {
+                    clearMessages();
+                }
+            });
+        };
+
+        forceSynchronization = function (id) {
+            var data = $('#syncerrors').data(id);
+            jQuery.ajax({
+                type: 'POST',
+                url: '@Url.Action("MarkForForcedSynchronization", "SyncError", new {id = Model.Profile.Guid})?_=' + new Date().getTime(),
+                data: '' + (data.issueKey ? '&issueKey=' + data.issueKey : '') + (data.workItemId ? '&workItemId=' + data.workItemId : ''),
+                success: function (data) {
+                    if (data.success) {
+                        reloadErrors();
+                    } else {
+                        errorDialog('body', data.message, null);
+                    }
+                },
+                error: function (xhr) {
+                    errorDialog('body', getXhrErrorResponse(xhr), null);
+                },
+                complete: function () {
+                    clearMessages();
+                }
+            });
+        }
+
+        forceSynchronizationForAllErrors = function (id) {
+            jQuery.ajax({
+                type: 'POST',
+                url: '@Url.Action("MarkAllForForcedSynchronization", "SyncError", new { id = Model.Profile.Guid })?_=' + new Date().getTime(),
+                success: function (data) {
+                    if (data.success) {
+                        reloadErrors();
+                    } else {
+                        errorDialog('body', data.message, null);
+                    }
+                },
+                error: function (xhr) {
+                    errorDialog('body', getXhrErrorResponse(xhr), null);
+                },
+                complete: function () {
+                    clearMessages();
+                }
+            });
+        }
+
+        sanitizePage = function(allCount) {
+            if (page <= 0 || allCount <= 0) {
+                return 0;
+            }
+
+            return Math.min((allCount > 0 ? Math.ceil(allCount / limit) : 0) - 1, page);
+        };
+
+        reloadErrors = function () {
+            showInfoMessage('Retrieving synchronization errors...');
+
+            $("#bulk-actions").hide();
+
+            jQuery.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetSyncErrors", "SyncError", new {id = Model.Profile.Guid})?limit=' + limit + '&offset=' + (page * limit) + '&_=' + new Date().getTime(),
+                success: function (data) {
+                    if (data.success) {
+                        allCount = data.count;
+                        allPagesCount = (allCount > 0 ? Math.ceil(allCount / limit) : 0);
+
+                        var txt = '';
+                        if (allCount > 0) {
+                            $("#bulk-actions").show();                            
+
+                            $('#errors-count').html('Displaying errors ' + (page * limit + 1) + ' - ' + (page * limit + data.errors.length) + ' of ' + allCount);
+
+                            txt = renderErrorsTable(data);
+                        } else {
+                            $('#errors-count').html('');
+
+                            txt = '<p>No synchronization errors.</p>';
+                        }
+
+                        $('#syncerrors').html(txt);
+
+                        fillHelp('#tfssehelp');
+                        refreshPaging();
+                    } else {
+                        errorDialog('body', data.message, null);
+                    }
+                },
+                error: function (xhr) {
+                    errorDialog('body', getXhrErrorResponse(xhr), null);
+                },
+                complete: function () {
+                    clearMessages();
+                }
+            });
+        };
+
+        renderErrorsTable = function(data) {
+            var txt = '<table id="errors">';
+            txt += '<thead>';
+            txt += '<th class="nowrap">JIRA issue key</th><th class="nowrap">TFS work item id</th><th class="nowrap">Last error time</th><th>Error summary</th><th class="nowrap">Operations</th>';
+            txt += '</thead>';
+            txt += '<tbody>';
+            for (var i = 0; i < data.errors.length; ++i) {
+                var error = data.errors[i];
+
+                txt += '<tr>';
+                txt += '<td class="nowrap">' + (error.JiraIssueKey ? ('<a target="_blank" href="' + error.IssueUrl + '">' + error.JiraIssueKey + '</a>') : 'None') + '</td>';
+                txt += '<td class="nowrap">' + (error.TfsWorkItemId ? ('<a target="_blank" href="' + error.WorkItemUrl + '">#' + error.TfsWorkItemId + '</a>') : 'None') + '</td>';
+                txt += '<td class="nowrap">' + getFormattedDate(error.Timestamp) + '</td>';
+                txt += '<td>' + (error.ErrorSummary ? '<a title="Click for details" href="#" class="syncerrdetails" id="syncerrdetails-' + error.SynchronizationErrorId + '">' + error.ErrorSummary + '</a>' : 'None') + '</td>';
+                txt += '<td class="nowrap sync-errors-operations"><a href="#" class="syncerrack" id="syncerrack-' + error.SynchronizationErrorId + '">Acknowledge (forget)</a>&nbsp;|&nbsp;';
+
+                txt += (error.ForceSynchronization) 
+                    ? '<span class="sync-errors-resynchronization-forced">Resynchronization forced</span>'
+                    : '<a href="#" class="syncerrforce" id="syncerrforce-' + error.SynchronizationErrorId + '">Force resynchronization</a>';
+
+                txt += '</td>';
+                txt += '</tr>';
+
+                var errorData = { summary: error.ErrorSummary, details: error.ErrorDetails, issueKey: error.JiraIssueKey, workItemId: error.TfsWorkItemId };
+                if (error.FieldMappingId) {
+                    var mappingData = {
+                        "JIRA Field": error.JiraField,
+                        "JIRA Type": error.JiraType,
+                        "TFS Field": error.TfsField,
+                        "TFS Type": error.TfsType
+                    };
+                    errorData.mapping = mappingData;
+                }
+                $('#syncerrors').data(error.SynchronizationErrorId.toString(), errorData);
+            }
+            txt += '</tbody>';
+            txt += '</table>';
+
+            return txt;
+        };
+
+        refreshPaging = function() {
+            var paging = $('#paging');
+
+            paging.html('');
+
+            if (page > 0) {
+                paging.append($('<span>').append($('<a>').attr('href', '#').text('Previous').click((function() {
+                    return function() {
+                        page--;
+                        reloadErrors();
+                    };
+                })())).css('margin-right', '30px').css('position', 'relative'));
+            }
+
+            for (var i = Math.max(0, page - limit / 2); i < Math.min(allPagesCount, page + limit / 2); i++) {
+                var span = $('<span>').append($('<a>').attr('href', '#').text(i + 1).click((function(x) {
+                    return function() {
+                        page = x;
+                        reloadErrors();
+                    };
+                })(i))).css('margin-left', '10px').css('position', 'relative');
+                if (i == page) {
+                    span.css('font-weight', 'bold');
+                }
+                paging.append(span);
+            }
+
+            if (page < allPagesCount - 1) {
+                paging.append($('<span>').append($('<a>').attr('href', '#').text('Next').click((function() {
+                    return function() {
+                        page++;
+                        reloadErrors();
+                    };
+                })())).css('margin-left', '30px').css('position', 'relative'));
+            }
+        };
+
+        $(document).ready(function() {
+            reloadErrors();
+
+            $('.syncerrdetails').live('click', function(e) {
+                e.preventDefault();
+                var id = e.currentTarget.id.split('-')[1];
+                showErrorDetails(id);
+            });
+
+            $('.syncerrack').live('click', function(e) {
+                e.preventDefault();
+                var id = e.currentTarget.id.split('-')[1];
+                acknowledgeError(id);
+            });
+
+            $('.syncerrforce').live('click', function (e) {
+                e.preventDefault();
+                var id = e.currentTarget.id.split('-')[1];
+                forceSynchronization(id);
+            });
+
+            $('#deleteall').click(function(e) {
+                e.preventDefault();
+                questionDialog('body', 'Do you really want to acknowledge all ' + allCount + ' synchronization errors?', function () {
+                    akcnowledgeAllErrors();
+                }, null);
+            });
+
+            $('#synchronizeall').click(function (e) {
+                e.preventDefault();
+                questionDialog('body', 'Do you really want to force resynchronization for all ' + allCount + ' synchronization errors?', function () {
+                    forceSynchronizationForAllErrors();
+                }, null);
+            });
+
+            fillHelp('#tfssehelp');
+        });
+    </script>
+}

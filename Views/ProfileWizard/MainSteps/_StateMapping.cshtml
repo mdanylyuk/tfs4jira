@@ -1,0 +1,42 @@
+﻿@using synchronizer.Controllers
+@{    
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+    string mappingComponentId = id + "-component";
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
+    <h1>State Mapping</h1>
+    
+    @MappingHelpers.MappingComponent(@mappingComponentId)
+</div>
+
+@{
+    Html.RenderPartial("_ValueMappingScripts", new
+    {
+        MappingComponentId = @mappingComponentId,
+        ShowDoNothingAction = false,
+        ShowRaiseErrorAction = true,
+        ShowEmptyValue = false,
+        IsMappingOneToMany = true
+    });
+}
+
+<script>
+    $(function () {
+        var $root = $('#@id');
+        var $mappingComponent = $root.find("#@mappingComponentId");
+
+        $root.on("@NavigationEvents.ActivateView", function activateView(event) {
+            blockingAjax({
+                url: '@Url.Action("GetStateMapping", "Tfs")?_=' + new Date().getTime(),
+                data: { guid: synchronizationProfile.Guid }
+            }).done(function(data) {
+                $mappingComponent.trigger('@ValueMappingEvents.MappingDataLoaded', data);
+            });           
+        });
+
+        $root.on("@NavigationEvents.NextButtonClicked", function () {
+            SaveModelAndGoToNextStep();
+        });
+    });
+</script>

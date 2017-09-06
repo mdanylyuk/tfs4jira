@@ -1,0 +1,3 @@
+You can grant or deny access to the application for the given user by setting appropriate permissions to this file.
+The file content has no matter - the user can log into TFS4JIRA Synchronizer application only when he has both Read and Write access to this file.
+See: https://confluence.spartez.com/display/TFS4JIRA/Setting+TFS4JIRA+Synchronizer+application+access+permissions for details

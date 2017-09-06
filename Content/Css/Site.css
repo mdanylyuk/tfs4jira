@@ -1,0 +1,1914 @@
+﻿body {
+    background-color: #fff;
+    font-size: 14px;
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #404040;
+}
+
+a:link {
+    color: #326CA6;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #326CA6;
+}
+
+a:hover {
+    color: #326CA6;
+    text-decoration: underline;
+}
+
+a:active {
+    color: #326CA6;
+    text-decoration: underline;
+}
+
+p, ul {
+    margin-bottom: 20px;
+    line-height: 1.6em;
+}
+
+header,
+footer,
+nav,
+section {
+    display: block;
+}
+/* ----------------------------------------------------------*/
+
+/* Generic elements styles
+----------------------------------------------------------*/
+textarea {
+    min-height: 75px;
+}
+
+input[type="text"], 
+input[type="password"] {
+    border: 1px solid #ccc;
+    padding: 2px;
+    font-size: 1.2em;
+    color: #444;
+    width: 240px;
+}
+
+select {
+    border: 1px solid #ccc;
+    padding: 2px;
+    font-size: 1.2em;
+    color: #444;
+    width: 240px;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+    margin: 3px 3px 0 5px;
+    /* I'm not sure if this is safe... blame mzielinski */
+}
+
+input[type="submit"] {
+    font-size: 1.2em;
+    padding: 5px;
+}
+
+table 
+{
+    width: 100%;
+    border: 0;
+    border-collapse: collapse;
+}
+
+table td {
+    padding: 5px;
+    border: 0;
+}
+
+table td.url {
+    overflow-x: hidden;
+    max-width: 167px;
+    text-overflow: ellipsis;
+}
+
+table th {
+    padding: 6px 5px;
+    text-align: left;
+    background-color: #e8eef4;
+    border: solid 1px #e8eef4;
+}
+
+table tr {
+    border-bottom: 1px solid #eee;
+}
+
+table tr .disabled 
+{
+    color: #aaa;
+}
+
+table .nowrap {
+    white-space: nowrap;
+    width: 1px;
+}
+/* ----------------------------------------------------------*/
+
+
+/* HEADINGS   
+----------------------------------------------------------*/
+h1, h2, h3, h4, h5, h6 {
+    font-size: 14px;
+    color: #000;
+}
+
+h1 {
+    font-size: 20px;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+h2 {
+    padding: 0 0 0 0;
+}
+
+h3 {
+    font-size: 18px;
+}
+
+h4 {
+    font-size: 16px;
+}
+
+h5, h6 {
+    font-size: 14px;
+}
+/* ----------------------------------------------------------*/
+
+
+/* Primary layout elements   
+----------------------------------------------------------*/
+.page {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+}
+
+header, #header {
+    position: relative;
+    margin-bottom: 0;
+    color: #000;
+    padding: 0;
+}
+
+header h1, #header h1 {
+    font-weight: bold;
+    padding: 5px 0;
+    margin: 0;
+    color: #fff;
+    border: none;
+    line-height: 2em;
+    font-size: 32px !important;
+    /*text-shadow: 1px 1px 2px #111;*/
+}
+
+#main 
+{
+	border-top: 3px #888 solid; 
+
+    padding: 10px 0 10px 0;
+    background-color: #fff;
+    /* border-radius: 4px 0 0 0;
+    -webkit-border-radius: 4px 0 0 0;
+    -moz-border-radius: 4px 0 0 0;*/
+    position: relative;
+}
+
+#main h1 {
+    margin-bottom: 2em;
+}
+
+#content 
+{
+	position: relative;
+}
+
+footer, 
+#footer {
+    background-color: #fff;
+    color: #999;
+    padding: 10px 0;
+    position: relative;
+    border-top: 1px solid #ccc;
+    font-size: 11px;
+    line-height: normal;
+    margin: 10px 0 30px 0;
+    height: 2em;
+}
+
+#footer-left 
+{
+	position: absolute;
+	left: 0;
+}
+
+#footer-right 
+{
+	position: absolute;
+	right: 0;
+}
+
+#footer-center
+{
+	position: absolute;
+	left: 50%;
+	text-align: center;
+	width: 40em;
+	margin-left: -20em;
+}
+
+#footer-debug-version-message {
+    color: #f00;
+    font-weight: bold;
+}
+
+.section-ruler {
+    border-color: -moz-use-text-color -moz-use-text-color #CCCCCC;
+    border-style: none none solid;
+    border-width: medium medium 1px;
+    margin: 15px 0;
+}
+/* ----------------------------------------------------------*/
+
+
+/* Tab menu
+----------------------------------------------------------*/
+nav, 
+#menucontainer {
+    margin-top: 40px;
+    height: 2.8em;
+    line-height: 2.8em;
+}
+
+#menucontainer 
+{
+	position: relative;
+}
+
+#helpme-container {
+    position: relative; 
+    font-size: 16px; 
+    font-weight: bold; 
+    float: right;
+    height: 2.8em;
+}
+
+ul#menu {
+    position: relative;
+    margin: 0;
+    text-align: right;
+}
+
+ul#menu li {
+    display: inline;
+    list-style: none;
+}
+
+ul#menu li#greeting {
+    padding: 10px 20px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #fff;
+}
+
+ul#menu li a {
+    padding: 10px 20px;
+    font-weight: bold;
+    text-decoration: none;
+    line-height: 2.8em;
+    background-color: #eee;
+    color: #888;
+    border-radius: 4px 4px 0 0;
+    -webkit-border-radius: 4px 4px 0 0;
+    -moz-border-radius: 4px 4px 0 0;
+}
+
+ul#menu li a:hover {
+    background-color: #ccc;
+    text-decoration: none;
+}
+
+ul#menu li a:active {
+    background-color: #eee;
+    text-decoration: none;
+}
+
+ul#menu li.selected a {
+    background-color: #888;
+    color: #fff;
+}
+.tabheader 
+{
+	text-align: left;
+	font-size:14px;
+	margin-bottom: 2em;
+	padding-bottom: 5px;
+	/*width: 300px;*/
+	position: relative;
+	left: 0;
+	/*margin-left: -150px;*/
+	border-bottom: 1px solid #ccc;
+	margin-top: 1em;
+	font-weight: bold;
+}
+
+.tabheader a 
+{
+	border-radius: 4px 4px 0 0;
+    -webkit-border-radius: 4px 4px 0 0;
+    -moz-border-radius: 4px 4px 0 0;
+
+	text-decoration: none;
+	padding: 0.5em;
+	background-color: #eee;
+	padding: 0.5em 1em 5px 1em;
+	color: #888;
+}
+
+.tabheader a:hover {
+    background-color: #ccc;
+    text-decoration: none;
+}
+
+.tabheader a:active {
+    background-color: #eee;
+    text-decoration: none;
+}
+
+.tabheadercurrent 
+{
+	border-radius: 4px 4px 0 0;
+    -webkit-border-radius: 4px 4px 0 0;
+    -moz-border-radius: 4px 4px 0 0;
+
+	display: inline;
+	padding: 0.5em 1em 5px 1em;
+	background-color: #888;
+	color: #fff; 
+}
+/* ----------------------------------------------------------*/
+
+
+/* Login form
+----------------------------------------------------------*/
+#login-form {
+    padding: 0 2em 2em 2em;
+    margin: 0;
+    position: relative;
+    left: 50%;
+    width: 300px;
+    margin-left: -150px;
+}
+
+#login-form .row 
+{
+	position: relative;
+    margin-bottom: 10px;
+	margin-left: 2em;
+}
+
+#login-form .row .field {
+    position: relative;
+    overflow: auto;
+}
+
+#login-form .row .label 
+{
+    float: left;
+	position: relative;
+	left: 0;
+	top: 0;
+	width: 80px;
+	text-align: right;
+	height: 2em;
+	line-height: 2em;
+}
+
+#login-form .row .editbox 
+{
+    float: left;
+	position: relative;
+    margin-left: 10px;
+	top: 0;
+}
+
+#login-form .row input {
+    width: 160px !important;
+}
+
+#login-form .row input[type="checkbox"] {
+    width: inherit !important;
+}
+
+#login-form .row input[type="submit"] {
+    width: 100px !important;
+}
+
+#login-form legend 
+{
+    font-size: 11px;
+    margin-bottom: 10px;
+}
+
+/* ----------------------------------------------------------
+ * Synchronization profiles table
+ * ----------------------------------------------------------*/
+.synchronization-error {    
+    padding-right: 28px;    
+    background-image: url(../Images/warning.png);
+    background-repeat: no-repeat;
+    -ms-background-position-x: right;
+    -ms-background-position-y: 3px;
+    background-position: right 5px top 4px;
+    background-size: 18px;    
+} 
+
+.profiles-table th {
+    box-sizing: border-box;
+}
+
+.profiles-table-row:hover {
+    background: #f6f6f6;
+}
+
+.operations-icon-link {
+    margin: 4px 2px;
+    border: none;
+    opacity: 0.45;
+}
+
+.operations-icon-link:active {
+    text-decoration: none;
+}
+
+.operations-icon-link:hover {
+    text-decoration: none;
+    opacity: 0.6;
+}
+
+.operations-icon-link img {
+    width: 18px;
+    height: 16px;
+    box-sizing: border-box;
+    vertical-align: middle;
+    border: none;
+}
+
+.profile-name-column {
+    width: 320px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Hide drodown menu until JS is loaded */
+ul.operations-dropdown-menu {
+    display: inline-block;
+    list-style-type: none;
+    line-height: normal;
+    margin: 0;
+    padding: 0;
+}
+
+.operations-dropdown-menu ul {
+    display: none;
+}
+
+.operations-dropdown-menu .dropit-submenu {
+    display: none;
+    background: white;
+    box-shadow: 1px 1px 5px #888;
+    background: #fff;
+    border: 1px solid #999;
+    border-radius: 0 0 3px 3px;
+}
+
+.operations-dropdown-menu .dropit-submenu hr {
+    margin: 0;
+    border: none;
+    border-top: 1px solid #CCC;
+}
+
+.operations-dropdown-menu .dropit-submenu a {
+    padding: 8px 10px;
+    display: block;
+    color: black;
+    text-decoration: none;
+}
+
+.operations-dropdown-menu .dropit-submenu a:hover {
+    background: #eee;
+}
+
+div.tfs4jira-tooltip-theme {
+    border-radius: 5px; 
+	border: 1px solid #d6d07c;
+	background: #faf7e6;
+	color: #7e7c67;
+    z-index: 1000;
+    pointer-events: auto;
+    cursor: default;
+}
+
+.new-profile-tooltip-close {
+    margin-top: 20px;
+    float: right;
+    cursor: pointer;
+}
+
+.tfs4jira-tooltip-theme .tooltipster-content {
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+	line-height: 16px;
+	padding: 8px 10px;
+}
+
+/* ----------------------------------------------------------*/
+
+/* Synchronization profile form
+----------------------------------------------------------*/
+.profileform
+{
+	position: relative;
+	left:50%;
+	width: 600px;
+	margin-left:-300px;
+}
+
+.profileform .row
+{
+	position: relative;
+    margin-bottom: 10px;
+}
+
+.profileform .row .field
+{
+    position: relative;
+    overflow: auto;
+}
+
+.profileform .row .label
+{
+    float: left;
+	position: relative;
+	left: 0;
+	top: 0;
+	width: 200px;
+	text-align: right;
+	height: 2em;
+	line-height: 2em;
+}
+
+
+.profileform .row .input
+{
+    width: 240px !important;
+}
+
+.profileform .row .editbox
+{
+    float: left;
+	position: relative;
+    margin-left: 10px;
+	top: 0;
+}
+
+.profileform .row .field-description
+{
+    position: relative;
+    clear: left;
+    font-size: 11px;
+    margin-top: 2px;
+    margin-left: 210px;
+}
+
+.profileform .row .getter
+{
+	float: left;
+	position: relative;
+    margin-left: 10px;
+	top: 0;
+}
+
+.profileform .row .getter *
+{
+	margin-right: 12px;
+}
+
+.profileform .row .saver
+{
+	position: relative;
+	right: -10em;
+	top: 1em;
+	text-align: left;
+}
+
+.profileform .row .worker
+{
+    float: left;
+	position: relative;
+	display: none;
+    margin-left: 10px;
+    height: 2em;
+    line-height: 2em
+}
+
+.profileform .row .worker-label 
+{
+    position: relative;
+    float: left;
+    margin-left: 5px;
+    
+}
+
+.profileform .row .worker-throbber
+{
+    position: relative;
+    clear: left;
+    float: left;
+    width: 24px;
+	height: 24px;
+	min-width: 24px;
+	min-height: 24px;
+	background-image: url(../Images/ajax-loader.gif);
+	background-repeat: no-repeat;
+    background-position: center;
+}
+
+.profileform input[type="text"],
+.profileform input[type="password"],
+.profileform .field-description {
+    width: 300px;
+}
+
+.profileform select {
+    width: 306px;
+}
+
+.profileform .fetch-button-container {
+    clear: both; 
+    margin-left: 210px; 
+    padding-top: 5px;
+}
+
+.profileform .fetch-git-repository-button,
+.profileform .fetch-collection-button
+ {
+    vertical-align: middle;
+}
+
+.profileform .fetch-git-repository-info,
+.profileform .fetch-collection-info
+ {
+    vertical-align: middle; 
+    font-style: italic; 
+    color: #333; 
+    display: none;
+}
+
+.start-date-clean-button {
+     position: absolute;
+     width: 10px;
+     height: 10px;
+     top: 8px;
+     right: 8px;
+     cursor: pointer;
+     opacity: 0.6;
+}
+
+/* ----------------------------------------------------------*/
+
+/* Mappings editor
+-----------------------------------------------------------*/
+.fieldlist 
+{
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.fieldlist option {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis
+}
+
+.fieldlist option[data-is-already-mapped=true] {
+    color: #aaa;
+}
+
+.defaultvalue 
+{
+    width: 100%;    
+}
+
+.fieldlistwrap 
+{
+    position: relative;
+	background-color: #eee;
+	padding-bottom: 2em;
+}
+
+.fieldlistcontent 
+{
+    width: 800px; 
+    margin-left: auto; 
+    margin-right: auto;
+}
+
+.fieldlisthead 
+{
+	font-weight: bold;
+	font-size: 14px;
+	padding-top: 10px;
+	text-align: left;
+}
+
+.fieldlistheadnote {
+    margin-top: 3px;
+    font-size: smaller;
+    font-weight: normal;
+}
+
+.fieldlistleft {
+    position: relative;
+    display: table-cell;
+    text-align: left;
+    vertical-align: middle;
+	top: 0;
+	width: 250px;
+}
+
+.fieldlistmiddle 
+{
+    position: relative;
+    display: table-cell;
+    vertical-align: middle;
+	width:100px;
+    min-height: 10px;
+	text-align: center;
+}
+
+.fieldlistright
+{    
+	position: relative;
+	display: table-cell;
+    text-align: left;
+    vertical-align: middle;
+	top: 0;
+	width: 250px;
+    word-break: break-all;
+}
+
+.fieldslistrightmost
+{
+	position: relative;
+    display: table-cell;
+    vertical-align: middle;	
+    padding-left: 20px;
+    width: 60px;
+}
+
+.mappingrow .fieldlistleft, .mappingrow .fieldlistright {
+    padding: 10px 0;
+}
+
+.value-mapping-merged-value {
+    padding: 5px 0;
+}
+
+.fieldlist-wide {
+    width: auto;
+    text-align: center
+}
+
+.fieldlist-wide .fieldlistleft,
+.fieldlist-wide .fieldlistright {
+    width: 450px;
+}
+
+input.mapbutton {
+    font-size: 14px;
+}
+
+.value-mapping-merged-value-label {
+    display: inline-block;
+    width: 320px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.value-inline-menu {
+    display: inline-block;
+}
+
+.value-inline-link-button {
+    color: #326CA6;
+    cursor: pointer;
+}
+
+.value-inline-link-button:hover {
+    text-decoration: underline;
+}
+
+.value-inline-menu-add-button {
+    padding: 10px 0;
+}
+
+.value-inline-menu-default-button {
+    float: right;
+    margin: 0 10px;
+}
+
+.tfs4jira-merged-mapping-remove {
+    float: right;
+    margin-right: 10px;
+}
+
+.value-inline-menu-remove-button {
+    float: right;
+    width: 12px;
+    height: 12px;
+    cursor: pointer;
+    opacity: 0.5;
+    margin-top: 1px;
+}
+
+.value-inline-menu-remove-button:hover {
+    opacity: 1;
+}
+
+#mappings {
+    position: relative;
+    width: 100%;
+	margin-top: 20px;
+}
+
+.mappingrow {
+    display: inline-block;
+}
+
+.mappingrowtooltip:not(:first-child) {
+    margin-top: 8px;
+}
+
+#mappings .mappingrow {
+    border-bottom: 1px solid #CCC;
+}
+
+.mappingdirectionarrow {
+    font-size: 16px;
+}
+
+.hidden-on-load 
+{
+    display: none;
+}
+
+.mapping-section
+{
+    padding-left: 40px;
+}
+
+.jeditable
+{
+    display: inline;
+}
+
+.jeditable input
+{
+    padding: 1px 2px;
+}
+
+.jeditable button 
+{
+    width: 60px;
+    margin: 0 0 0 8px;
+}
+
+#tfsfieldnamechange, #tfsfieldnamenote
+{
+    display:none;
+    font-size:8px;
+}
+
+
+
+/* ----------------------------------------------------------*/
+
+/* Styles for validation helpers
+-----------------------------------------------------------*/
+.field-validation-error {
+    color: #ff0000;
+}
+
+.field-validation-valid {
+    display: none;
+}
+
+.input-validation-error {
+    border: 1px solid #ff0000;
+    background-color: #ffeeee;
+}
+
+.validation-summary-errors 
+{
+	margin-top: 20px;
+    font-weight: bold;
+    color: #ff0000;
+}
+
+.validation-summary-errors ul 
+{
+	margin-bottom: 0;
+}
+
+.validation-summary-valid {
+    display: none;
+}
+/* ----------------------------------------------------------*/
+
+/* Login link
+-----------------------------------------------------------*/
+#logindisplay {
+    font-size: 1.1em;
+    display: block;
+    text-align: right;
+    margin: 10px;
+    /* color: White; */
+}
+
+#logindisplay a:link {
+    /* color: white; */
+    text-decoration: underline;
+}
+
+#logindisplay a:visited {
+    /* color: white; */
+    text-decoration: underline;
+}
+
+#logindisplay a:hover {
+    /* color: white; */
+    text-decoration: none;
+}
+/* ----------------------------------------------------------*/
+
+/* jquery.fieldsel.js
+-----------------------------------------------------------*/
+.fieldswrap {
+    position: relative;
+}
+
+.selectedfield {
+    left: 0;
+    top: -0.2em;
+    z-index: 1;
+    border: solid 1px #ccc;
+    display: none;
+    height: 2em;
+    line-height: 2em;
+    padding-left: 0.5em;
+    padding-right: 0;
+    width: 240px;
+}
+
+.clearfield 
+{
+    border: solid 1px #ccc;
+    background-image: url('../Images/close.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    right:4px;
+    top:4px;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+    cursor: pointer;
+    position:absolute;
+    
+}
+
+.selectedfieldname {
+    float: left;
+    overflow-x: hidden;
+    height: 2em;
+}
+/* ----------------------------------------------------------*/
+
+/* Glass panel
+-----------------------------------------------------------*/
+#glass-panel {
+    width:100%;
+    height:100%;
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:10000;
+    font-size:24pt;
+    font-weight:bold;
+    color:white;
+    background:rgba(0, 0, 0, 0.3);    
+    text-align:center;
+    line-height:100%;
+}
+
+#glass-panel div.cont {
+    position:relative;
+    top:50%;
+    height:100px;
+    margin-top:-50px;
+}
+
+#glass-panel div.cont div.msg {    
+    background-image: url("../images/ajax-loader-on-glass.gif");
+    background-repeat: no-repeat;
+    background-position: left 50%;
+    padding-left: 60px;
+    height: 100px;
+    line-height: 100px;
+    display: inline;
+    padding-top:100px;
+    padding-bottom:100px;
+}
+/* ----------------------------------------------------------*/
+
+/* Popup dialog
+-----------------------------------------------------------*/
+.dialog {
+    -moz-box-shadow: 5px 5px 10px #444;
+    -webkit-box-shadow: 5px 5px 10px #444;
+    box-shadow: 5px 5px 10px #444;
+    /* For IE 8 */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#444444')";
+    /* For IE 5.5 - 7 */
+    filter: progid:DXImageTransform.Microsoft.Shadow(Strength=5, Direction=135, Color='#444444');
+}
+
+.popupdialog {
+    position: fixed;
+    top:50%;
+    left:50%;
+    border-width: 3px;
+    border-style: solid;
+    border-color: #888;
+    background-color: white;
+    z-index: 20000;
+}
+
+.popupdialogheader {
+    background-color: #f0f0f0;
+    position: relative;
+    top:0;
+    left:0;
+    right:0;
+    line-height: 2em;
+    height:2em;
+    font-weight:bold;
+    font-size:14pt;
+    padding-left: 0.5em;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.popupdialogbody {
+    position: absolute;
+    padding: 20px;
+    overflow: auto;
+    top: 4em;
+    bottom: 4em;
+    left: 0;
+    right: 0.5em;
+}
+
+.popupbuttoncontainer {
+    position: absolute;
+    bottom: 0;
+    left:0.5em;
+    right:0.5em;
+    background-color: white;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    background-color: white;
+}
+
+.popupbutton {
+    float: right;
+    margin-left: 0.5em;
+}
+
+.cancelbutton {
+    text-decoration: underline;
+    padding-top: 0.4em;
+    padding-left:0.5em;
+    cursor: pointer;
+    color:#369;
+}
+/* ----------------------------------------------------------*/
+
+/* Messages
+-----------------------------------------------------------*/
+#messages 
+{
+    position: absolute;
+    top: 1em;
+    text-align: right;
+    right: 0;
+}
+
+#messages .info {
+    color: #0000ff;
+    height: 2em;
+    line-height: 2em;
+}
+
+#messages .error {
+    color: #f00;
+    height: 2em;
+    line-height: 2em;
+}
+/* Spinner
+   ----------------------------------------------------------*/
+.spinner { 
+    display:    none;   
+    position:   absolute;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('../Images/ajax-loader-red.gif') 
+                50% 50px 
+                no-repeat;
+}
+
+#tabcontent {
+    position: relative;
+}
+
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .spinner {
+    display: block;
+}
+
+/* Help
+-----------------------------------------------------------*/
+#help 
+{
+	position: absolute;
+	right: 0;
+	top: 0;
+	height: 100px;
+	width: 400px;
+	margin:10px;
+	margin-right: 0;
+    background-color: #f5f5f5;
+}
+
+#helpinner 
+{
+	overflow: auto;
+	padding: 1em;
+	padding-top: 0;
+	position: absolute;
+	left: 0;
+	top: 40px;
+	right: 0;
+	bottom: 0;
+}
+/* ----------------------------------------------------------*/
+
+/* Add profile button
+-----------------------------------------------------------*/
+.addprofile
+{
+	text-align: right;
+}  
+
+.addprofile a
+{
+	font-weight: bold;
+	background-repeat: no-repeat;
+    background-color: #326CA6;
+	padding: 8px;
+	padding-left: 12px;
+	padding-right: 12px;
+	background-position: 8px center;
+	border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+}
+
+.addprofile a:hover {
+    text-decoration: none;
+    background-color: #326ca6;
+    background-color: rgba(50, 108, 166, 0.88);
+}
+
+.addprofile a:link, .addprofile a:visited {
+    color: #f6f6f6;
+    text-decoration: none;
+}
+
+/* ----------------------------------------------------------*/
+
+/* Log view  
+----------------------------------------------------------*/
+.log_debug {
+    color: #999999;
+}
+
+.log_warn {
+    color: #ff0000;
+}
+
+.log_error {
+    color: #ff0000;
+}
+
+.log_fatal {
+    color: #ff0000;   
+}
+
+#log {
+    height:30em;
+    overflow: auto;
+    margin-top: 1em;
+}
+
+#log-footer {
+    display: table;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#log-path {
+    display: table-cell;
+}
+
+#log-file-directory {
+    font-family: monospace;
+}
+
+#log-pause {
+    display: table-cell;
+    text-align: right;
+    white-space: nowrap;
+}
+
+#set-log-level {
+	width: 100px;
+}
+
+/* ----------------------------------------------------------*/
+
+/* Errors view
+----------------------------------------------------------*/
+#paging {
+    margin-top: 20px;
+}
+
+#errors-count {
+    margin-bottom: 20px;
+}
+
+.sync-errors-operations {
+    min-width: 270px;
+}
+
+.sync-errors-resynchronization-forced {
+    color: #888;
+    font-style: italic;
+}
+
+/* ----------------------------------------------------------*/
+
+/* Other elements
+----------------------------------------------------------*/
+#applogo {
+    position: absolute;
+    font-weight: bold;
+    font-size: 40px;
+    color: #000;
+    height: 80px;
+    padding-left: 90px;
+    line-height: 80px;
+    background-image: url(../Images/logo.png);
+    background-repeat: no-repeat;
+}
+/* ----------------------------------------------------------*/
+
+/* Misc classes
+----------------------------------------------------------*/
+.nomargin {
+    margin: 0;
+}
+
+.clear {
+    clear: both;
+}
+
+.error {
+    color: Red;
+}
+
+.error-background {
+    background-color: #ffbbbb;
+}
+
+.disabled {
+    color: #aaa;
+}
+
+.ui-autocomplete-loading { background: white url('../Images/ui-anim_basic_16x16.gif') right center no-repeat; }
+
+.name 
+{
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.headerh2 
+{
+	border-bottom: 1px solid #ccc;
+	color:#666;
+	padding-bottom: 0.3em;
+    clear: left;
+}
+
+.newrepo {
+	background-color: #eee;
+	padding: 1em;
+	padding-top: 1em;
+}
+
+.reposcanform {
+	width: 1200px;
+	margin-left: -576px;
+}
+
+.reposcanlist {
+	width: 1200px;
+	margin-left: -600px;
+}
+
+.reposcanlist table th, 
+.reposcanlist table td {
+    padding: 8px 10px;
+}
+
+#checkin-policy-plugin-info {
+    display: none;
+}
+
+.fielderror {
+    background-color: #ffcccc;
+}
+
+.helpcontainer {
+    position: relative;
+}
+
+.helpcontainer .helpinfo {
+  display: none;
+}
+
+.helpcontainer:hover .helpinfo {
+  display: block;
+}
+
+.helplink {
+    cursor: pointer;
+    color: #326CA6;
+    font-weight: bold;
+}
+
+.helpinfo {
+    position: absolute;
+    display: block;
+    width: 500px;
+    padding: 10px;
+    font-size: 11px;
+    z-index: 100;
+    background-color: white;
+    border: 1px solid #CCC;
+	line-height: 1.6em;
+}
+
+.helpinfo ul {
+    padding-left: 15px;
+    margin: 0;
+	line-height: 1.6em;
+}
+
+.progress-bar-container {
+    position: relative;
+    height: 20px;
+    border: 1px solid black;
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: #ADCCEC;
+}
+
+.progress-bar-text {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    text-align: center;
+    line-height: 20px;
+    font-weight: bold;
+}
+
+.warning-message {
+    display: inline-block;
+    padding: 8px 12px;
+    font-weight: bold;
+    border: 1px solid #F8BD00;
+    color: black;
+    background-color: #FFF6D8;
+}
+
+.warning-icon {
+    vertical-align: bottom;
+    margin-right: 8px;
+}
+
+.fixed-width-page-wrapper {
+    margin: 0 auto 50px auto;   
+    width: 1200px;
+}
+
+.initial-sync-synchronized {
+    color: #0C2DD6;
+}
+
+.initial-sync-error {
+    color: #c82222;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.throbber {
+    display: inline-block;
+    width: 24px;
+	height: 24px;
+	background-image: url(../Images/ajax-loader.gif);
+	background-repeat: no-repeat;
+    background-position: center;
+}
+
+.clone-sync-profile-dialog {
+    margin: 0 10px;
+}
+
+.initial-sync-throbber {
+    visibility: hidden;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+.info-box {
+    min-height: 50px;
+    margin-bottom: 40px;
+    position:relative;
+    border: 1px solid #ccc;
+    background-color: rgba(204, 204, 204, 0.09);
+    padding: 15px 15px 15px 70px;
+}
+
+.info-box ul {
+    margin-top: 10px;
+    margin-bottom: 0;
+    padding-left: 25px;
+}
+
+.init-sync-control-info {
+    position:relative;
+    border: 1px solid #ccc;
+    background-color: rgba(204, 204, 204, 0.09);    
+    padding: 15px 15px 15px 15px;
+}
+
+.initial-sync-button {
+    display: none;
+    width: 100px;
+}
+
+.initial-sync-section {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 36px 0;
+}
+
+.initial-sync-row {
+    margin: 12px 0;
+}
+
+.initial-sync-label {
+    display: table-cell;
+    vertical-align: top;
+    width: 150px;
+    text-align: right;
+    padding-right: 10px;
+}
+
+.initial-sync-control {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.info-image {
+    position: absolute;
+    top: 15px;
+    left: 10px;
+    opacity: 0.2;
+    background-image: url(../Images/info-icon.png);
+    background-repeat: no-repeat;
+    width: 48px;
+    height: 48px;
+}
+
+.small-margin-left {
+    margin-left: 5px;
+}
+
+.chosen-container {
+    min-width: 500px;
+}
+
+.initial-sync-logs-container {
+    height: 160px;
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    overflow: auto;
+}
+
+.initial-sync-logs-message {
+    padding: 2px 0;
+}
+
+.button-link {
+    color: #326CA6;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+    border: none;
+    text-decoration: underline;
+}
+
+.tfs4jira-dropdown-button:after {
+    border: 4px solid transparent;
+    border-top-color: #000;
+    content: '';
+    position: absolute;
+    left: 100%;    
+    top: 50%;    
+}
+
+/* ----------------------------------------------------------*/
+
+/* SynchronizationFilters
+----------------------------------------------------------*/
+
+#filters-container {
+    margin: 0 auto 50px auto;   
+    width: 800px;
+}
+
+#jira-filters, #tfs-filters {
+    margin: 15px 0;
+}
+
+#add-jira-filter-button,
+#add-tfs-filter-button {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
+.filter-section {
+    margin-bottom: 50px;
+}
+
+.filter-row-show {
+    padding: 14px 10px;
+}
+
+.filter-row-edit {
+    padding: 25px 10px;
+    margin: 10px 0;
+    text-align: center;
+    border: 1px solid #CCCCCC;
+    border-radius: 5px;
+}
+
+.filter-row-show:nth-child(even) {
+    background-color: #F7F7F7;
+}
+
+.filter-row-show:hover {
+    background-color: #C2EAFC;
+}
+
+.filter-row-show:hover .operations-dropdown-menu {
+    visibility: visible;
+}
+
+.filter-button {
+    padding: 5px 10px;
+}
+
+.filter-operations-button-container {
+    visibility: hidden;
+    display: inline-block;
+    float: right;
+}
+
+.filter-row-show:hover .filter-operations-button-container {
+    visibility: visible;
+}
+
+.filter-button-container {
+    text-align: center;
+    margin-top: 25px;
+}
+
+.cancel-filter-button,
+.save-filter-button {
+    margin: 0 10px;
+}
+
+.no-filter-info {
+    text-align: center;
+    padding: 10px 0;
+    margin: 10px 0;
+}
+
+.filter-header-container {
+    position: relative;
+}
+
+.filter-text {
+    font-size: 16px;
+    vertical-align: middle;
+}
+
+.filter-header-text {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#jira-filter-matching-section, #tfs-filter-matching-section {
+    text-align: center;
+    margin: 15px 0;
+    display: none;
+}
+
+/* ----------------------------------------------------------*/
+/* Create repository from profile dialog                     */
+/* ----------------------------------------------------------*/
+
+.create-repository-from-profile-dialog-profile-name {
+    white-space: nowrap;    
+    overflow: hidden;
+    text-overflow: ellipsis;   
+}
+
+.create-repository-from-profile-dialog-buttons {
+    float: right;
+}
+
+/* TUI - standarized TFS4JIRA User Interface
+----------------------------------------------------------*/
+
+.black-text {
+    color: #333333;
+}
+
+.grey-text {
+    color: #555454;
+}
+
+.tfs4jira-rounded-button {
+    display: inline-block;
+    padding: 10px 20px;
+    vertical-align: middle;
+	color: #555;
+    cursor: pointer;
+	text-shadow: 0 1px 0 rgba(255,255,255, 0.8);
+	text-align: center;
+	font-weight: 700;
+	font-family: helvetica, arial, sans-serif;
+	border-radius: 4px;
+	border: 1px solid #bcbcbc;
+    margin: 0 5px;
+
+	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+
+	background-image: -ms-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(239,239,239,1) 60%,rgba(225,223,226,1) 100%);
+	background-image: linear-gradient(rgba(255,255,255,1) 0%,rgba(239,239,239,1) 60%,rgba(225,223,226,1) 100%);
+}
+
+.tfs4jira-icon-button {
+    width: auto;
+    height: auto;
+    line-height: 0;
+    padding: 4px;
+    margin: 0 3px;
+}
+
+.tfs4jira-icon-button img {
+    width: 10px;
+    height: 10px;
+    opacity: 0.6;
+}
+
+input.tfs4jira-input-field,
+.tfs4jira-fieldgroup input:not([type=checkbox]) {
+    display: inline-block;  
+    font-size: 16px;
+    padding: 8px;
+    
+    box-sizing: border-box;
+    vertical-align: middle;
+
+    background: #fafafa;
+    border-radius: 4px;
+    border: 1px solid #bcbcbc;
+    -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.short-field {
+    width: 160px;
+}
+
+.medium-field {
+    width: 240px;
+}
+
+.long-field {
+    width: 320px;
+}
+
+.select2-container.ts4jira-select2-form-field {
+    border-radius: 4px;
+    -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    text-align: left;
+}
+
+.select2-container.ts4jira-select2-form-field a.select2-choice {
+    height: 34px;
+    border: 1px solid #bcbcbc;
+}
+
+.select2-container.ts4jira-select2-form-field span.select2-chosen {
+    font-size: 16px;
+    line-height: 36px;
+}
+
+.select2-container.ts4jira-select2-form-field .select2-choice .select2-arrow {
+    border-left: 1px solid #bcbcbc;
+}
+
+.select2-container.ts4jira-select2-form-field .select2-choice .select2-arrow b {
+    margin-top: 4px;
+}
+
+.small-left-separator {
+    margin-left: 6px;
+}
+
+.message-box-icon-container {
+    position: absolute;
+    width: 60px;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    border-right: 1px solid #ccc;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+
+    background-image: -ms-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(247,247,247,1) 60%,rgba(236,236,236,1) 100%);
+    background-image: linear-gradient(rgba(255,255,255,1) 0%,rgba(247, 247, 247, 1) 60%,rgba(236, 236, 236, 1) 100%);
+}
+
+.message-box-icon {
+    position: absolute;
+    top: 30px;
+    left: 20px;
+    width: 20px;
+    height: 20px;
+    opacity: 0.5;  
+}
+
+.message-box {
+    min-height: 50px;
+    margin-bottom: 30px;
+    position: relative;
+    border: 1px solid #ccc;
+    padding: 15px 15px 15px 80px;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #555454;
+    display: block;
+}
+
+.message-box ul {
+    margin-top: 10px;
+    margin-bottom: 0;
+    padding-left: 25px;
+}
+
+/* message-box universal */
+.message-box::before {
+    content: "";
+    position: absolute;
+    width: 60px;    
+    top: 0;
+    left: 0;
+    bottom: 0;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    
+    border-right: 1px solid #ccc;
+    background-image: -ms-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(247,247,247,1) 60%,rgba(236,236,236,1) 100%);
+    background-image: linear-gradient(rgba(255,255,255,1) 0%,rgba(247, 247, 247, 1) 60%,rgba(236, 236, 236, 1) 100%);
+}
+
+.message-box .message-icon {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 20px;
+    top: 30px;
+    background: center no-repeat;
+}
+
+/* message-box info */
+.message-box.info {
+    border: 1px solid #40b8ea;
+}
+
+.message-box.info::before{
+    border-right: 1px solid #40b8ea;
+    background-image: -ms-linear-gradient(top, rgba(114, 207, 244, 1) 0%, rgba(64, 184, 234, 1) 100%);
+    background-image: linear-gradient(rgba(114, 207, 244, 1) 0%, rgba(64, 184, 234, 1) 100%);
+}
+
+.message-box.info .message-icon {
+    background-image: url("../Images/information-white.svg");
+}
+
+/* message-box warning */
+.message-box.warning {
+    border: 1px solid #F8BD00;
+}
+
+.message-box.warning::before {
+    border-right: 1px solid #F8BD00;
+    background-image: -ms-linear-gradient(top, rgba(248, 219, 124, 1) 0%, rgba(248, 189, 0, 1) 100%);
+    background-image: linear-gradient(rgba(248, 219, 124, 1) 0%, rgba(248, 189, 0, 1) 100%);
+}
+
+.message-box.warning .message-icon {
+    background-image: url("../Images/warning-white.svg");
+}
+
+/* message-box error */
+.message-box.error {
+    border: 1px solid #ff4d4d;
+}
+
+.message-box.error::before {
+    border-right: 1px solid #ff4d4d;
+    background-image: -ms-linear-gradient(top, rgba(255, 126, 126, 1) 0%, rgba(255, 77, 77, 1) 100%);
+    background-image: linear-gradient(rgba(255, 126, 126, 1) 0%, rgba(255, 77, 77, 1) 100%);
+}
+
+.message-box.error .message-icon {
+    background-image: url("../Images/error-white.svg");
+}
+
+/* */

@@ -1,0 +1,638 @@
+﻿@using System.Runtime.InteropServices
+@using synchronizer.Controllers
+@using synchronizer.Domain.scan
+@model synchronizer.Controllers.CheckinsController.CheckinsScanningProfileViewModel
+
+@{
+    ViewBag.Title = Model.ScanningProfile == null ? "New Check-ins Scanning Configuration - TFS4JIRA Synchronizer" : "Check-ins Scanning Configuration - TFS4JIRA Synchronizer";
+}
+
+@{
+    var jiraUrl = Request.Params["jiraUrl"];
+    var model = Model.ScanningProfile ?? new JiraCheckinsScanConfig(Guid.NewGuid(), jiraUrl);
+    var guid = model.Guid;
+    var newConfig = Model.ScanningProfile == null;
+    var syncProfile = Model.SyncProfile;
+}
+
+@Html.ActionLink("Back to check-in scanning configuration list", "Index", "Checkins", new {id = string.Empty}, null)
+
+<div id="tfssrcscanhelp" style="display:none;">
+    @{Html.RenderPartial("Help/Help_CheckinsScanningProfile");}
+</div>
+
+<div id="modelguid" style="display: none">@guid</div>
+
+<div id="messages"></div>
+
+@{ Html.RenderPartial("Dialogs/_CreateRepositoryFromProfileDialog"); }
+
+<form>
+    <div id="scanconfig" class="profileform reposcanform">
+        @{
+            if (newConfig)
+            {
+                <h1>Create New Check-ins Scanning Configuration</h1>
+            }
+            else
+            {
+                <h1>Edit Check-ins Scanning Configuration</h1>
+            }
+        }
+               
+        <h3 style="margin-top: 0">JIRA Connection Configuration</h3>
+        <div class="row">
+            <div class="field">
+                <div class="label">JIRA URL</div>
+                <div class="editbox">@Html.TextBox("jiraurl", model.JiraUrl)</div>
+            </div>
+            <div class="field-description">JIRA server base URL associated with this check-ins scanning configuration.</div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Password</div>
+                <div class="editbox">@Html.Password("password", null, new {@autocomplete = "new-password"})</div>
+            </div>
+            <div class="field">
+                <div class="label"></div>
+                <div class="editbox"><a id="changepassword" href="#">Change Password</a></div>
+            </div>
+            <div class="field-description">Password used for encrypting communication between JIRA and the synchronizer.<br/>Needs to match the password set up in JIRA on TFS4JIRA Settings page.</div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label"></div>
+                <div class="getter" id="apply"><input type="button" id="applybutton" value="@(newConfig ? "Create Configuration" : "Update Configuration")" /></div>
+                <div class="worker" id="applyworker">
+                    <div class="worker-throbber"></div>
+                    <div class="worker-label">Saving the configuration...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div>
+    @{ Html.RenderPartial("_NewRepoConfig"); }
+</div>
+
+@if (!newConfig)
+{
+    <form>
+        <div id="scanconfig" class="profileform reposcanlist">
+            <h3>TFS Source Repositories</h3>
+            <div class="row">
+                @if (Model.TfsRepositories != null && Model.TfsRepositories.Any())
+                {
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>TFS URL</th>
+                                <th class="nowrap">Enabled</th>
+                                <th class="nowrap">Project Collection</th>
+                                <th class="nowrap">Folder</th>
+                                <th class="nowrap">Start Revision</th>
+                                <th class="nowrap">Scanned Rev</th>
+                                <th class="nowrap">Last Scan Time</th>
+                                <th class="nowrap">Operations</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var repo in Model.TfsRepositories)
+                            {
+                                Html.RenderPartial("_RepoConfig", repo);
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+            <div class="row">
+                <div class="newrepo">
+                    <div class="addprofile">
+                        <a href="#" class="addprofile-tfs">Add TFS Source Repository</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <form>
+        <div id="scanconfig" class="profileform reposcanlist">
+            <h3>Git Source Repositories</h3>        
+            <div class="row">
+                @if (Model.GitRepositories != null && Model.GitRepositories.Any())
+                {
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>TFS URL</th>
+                                <th class="nowrap">Enabled</th>
+                                <th class="nowrap">Project Collection</th>
+                                <th class="nowrap">Git Project / Repository</th>
+@*                                <th class="nowrap">Scanned Commits</th>*@
+                                <th class="nowrap">Last Scan Time</th>
+                                <th class="nowrap">Operations</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var repo in Model.GitRepositories)
+                            {
+                                Html.RenderPartial("_RepoConfig", repo);
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+            <div class="row">
+                <div class="newrepo">
+                    <div class="addprofile">
+                        <a href="#" class="addprofile-git">Add Git Source Repository</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+}
+
+<script type="text/javascript">
+    @{
+        if (newConfig) {
+            @: var newprofile = true;
+            if (syncProfile != null)
+            {
+                @: var syncProfileGuid = '@syncProfile.Guid';
+                @: var syncProfileName = '@syncProfile.Name';
+            }
+            else
+            {
+                @: var syncProfileGuid = null;
+            }
+            @: var guid = '';
+        }
+        else
+        {
+            @: var newprofile = false;
+            @: var syncProfileGuid = null;
+            @: var guid = '&guid=' + encodeURIComponent($('#modelguid').html());
+        }
+    }
+
+    saveOrTestTfsConfig = function(what, testOnly) {
+        var button = what;
+        var id = $(what).attr('id').split('_')[1];
+
+        $('.fielderror').removeClass('fielderror');
+        var err = false;
+        var tfsurl = $('#tfsurl_' + id).val();
+        if (tfsurl.indexOf('http://') != 0 && tfsurl.indexOf('https://') != 0) {
+            $('#tfsurl_' + id).addClass('fielderror');
+            err = true;
+        }
+        tfsurl = encodeURIComponent(tfsurl);
+        var tfshosted = $('#tfshosted_' + id).is(':checked');
+        var tfsuser = encodeURIComponent($('#tfsuser_' + id).val());
+        var tfsdomain = encodeURIComponent($('#tfsdomain_' + id).val());
+        var tfspwd = encodeURIComponent($('#tfspassword_' + id).val());
+        var tfscoll = encodeURIComponent($('#tfscoll_' + id).val());
+        var tfsfolder = encodeURIComponent($('#tfsfolder_' + id).val());
+        var tfsstartrev = parseInt($('#tfsstartrev_' + id).val());
+        var tfsscansize = parseInt($('#tfsscansize_' + id).val());
+        var tfsmaxfiles = parseInt($('#tfsmaxfiles_' + id).val());
+        var tfsgit = ($('#tfsgit_' + id).val() === 'true');
+        var tfsgitstartdate = $('#tfsgitstartdate_' + id).val();
+        var tfsgitrepo = encodeURIComponent($('#tfsgitrepo_' + id).val() || ''); 
+        if (tfsgit && !tfsgitrepo) {
+            $('#tfsgitrepo_' + id).addClass('fielderror');
+            err = true;
+        }
+        var tfsgitproject = encodeURIComponent($('#tfsgitrepo_' + id).find(":selected").attr("data-project-name") || '');
+
+        if (err) {
+            return;
+        }
+        $('.fielderror').removeClass('fielderror');
+        $(this).parent().hide();
+        $('#tfsconfig_' + id + '_applyworker').show();
+        clearMessages();
+
+        showGlass();
+
+        var url = testOnly
+            ? '@Url.Action("TestNewTfsProfile", "Checkins")?_=' + new Date().getTime()
+            : id == '0'
+                ? '@Url.Action("AddNewTfsProfile", "Checkins")?_=' + new Date().getTime()
+                : '@Url.Action("UpdateTfsProfile", "Checkins")?_=' + new Date().getTime();
+        var repoGuid = id == '0'
+            ? ''
+            : '&repoGuid=' + encodeURIComponent(id);
+
+        jQuery.ajax({
+            type: 'POST',
+            url: url,
+            data:
+                'tfsurl=' + tfsurl +
+                '&tfsuser=' + tfsuser +
+                '&tfsdomain=' + tfsdomain +
+                '&tfspassword=' + tfspwd +
+                '&tfscoll=' + tfscoll +
+                '&tfsfolder=' + tfsfolder +
+                '&tfsstartrev=' + tfsstartrev +
+                '&tfshosted=' + tfshosted +
+                '&tfsscansize=' + tfsscansize +
+                '&tfsmaxfiles=' + tfsmaxfiles +
+                '&git=' + tfsgit +
+                '&gitstartdate=' + tfsgitstartdate +
+                '&gitreponame=' + tfsgitrepo +
+                '&gitproject=' + tfsgitproject +
+                guid +
+                repoGuid,
+            complete: function () {
+                $(button).parent().show();
+                $('#tfsconfig_' + id + '_applyworker').hide();
+            },
+            success: function (data) {
+                if (testOnly) {
+                    if (data.success) {
+                        if (tfsgit) {
+                            infoDialog('body', 'Connection to Git repository was successful. This repository has the following number of branches: ' + data.info.numberOfBranches);
+                        } else {
+                            infoDialog('body', 'Connection successful. Latest changeset ID is <strong>' + data.info.latestChangeset + '</strong>');
+                        }
+                    } else {
+                        errorDialog('body', data.error, null);
+                    }
+                } else {
+                    if (data.success) {
+                        location.reload(true);
+                    } else {
+                        errorDialog('body', data.error, null);
+                    }
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                errorDialog('body', getXhrErrorResponse(xhr), null);
+            }
+        });
+    };
+
+    enableDisableTfsConfig = function (repoGuid, enabled) {
+        clearMessages();
+
+        showGlass();
+        tfsOp('@Url.Action("EnableDisableTfsProfile", "Checkins")', 'enabled=' + enabled + '&repoGuid=' + encodeURIComponent(repoGuid) + guid, function(data) { location.reload(true); });
+    };
+
+    clearTfsConfig = function (repoGuid) {
+        clearMessages();
+
+        questionDialog('body', 'Do you want to remove information about all changesets in this repository?', function() {
+            showGlass();
+            tfsOp('@Url.Action("ClearTfsProfile", "Checkins")', 'repoGuid=' + encodeURIComponent(repoGuid) + guid, function (data) { location.reload(true); });
+        });
+    };
+
+    deleteTfsConfig = function (repoGuid) {
+        clearMessages();
+
+        questionDialog('body', 'Do you want to delete this repository?', function () {
+            showGlass();
+            tfsOp('@Url.Action("DeleteTfsProfile", "Checkins")', 'repoGuid=' + encodeURIComponent(repoGuid) + guid, function(data) { location.reload(true); });
+        });
+    };
+
+    testTfsConfig = function (repoGuid) {
+        clearMessages();
+
+        showGlass();
+        tfsOp('@Url.Action("TestExistingTfsProfile", "Checkins")', 'repoGuid=' + encodeURIComponent(repoGuid) + guid, function (data) {
+            console.log(data);
+            if (data.info.git) {
+                infoDialog('body', 'Connection to Git repository was successful. This repository has the following number of branches: ' + data.info.numberOfBranches);
+            } else {
+                infoDialog('body', 'Connection successful. Latest changeset ID is <strong>' + data.info.latestChangeset + '</strong>');
+            }
+        });
+    };
+
+    tfsOp = function(url, data, success) {
+        clearMessages();
+
+        var urlEx = url + '?_=' + new Date().getTime();
+        jQuery.ajax({
+            type: 'POST',
+            url: urlEx,
+            data: data,
+            success: function (data) {
+                if (data.success) {
+                    success(data);
+                } else {
+                    errorDialog('body', data.error, null);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                errorDialog('body', getXhrErrorResponse(xhr), null);
+            }
+        });
+    };
+
+    addorUpdateProfile = function (copySyncProfileMode) {
+        var jiraUrl = $('#jiraurl').val();
+        var password = $('#password').val();
+
+        $('.fielderror').removeClass('fielderror');
+        var err = false;
+        if (!jiraUrl || jiraUrl.length == 0 || (jiraUrl.indexOf('http://') != 0 && jiraUrl.indexOf('https://') != 0)) {
+            $('#jiraurl').addClass('fielderror');
+            err = true;
+        }
+        if (newprofile && (!password || password.length == 0)) {
+            $('#password').addClass('fielderror');
+            err = true;
+        }
+        if (err) return;
+
+        var button = this;
+        $(this).parent().hide();
+        $('#applyworker').show();
+
+        jiraUrl = encodeURIComponent(jiraUrl);
+        password = encodeURIComponent(password);
+
+        clearMessages();
+
+        showGlass();
+
+        jQuery.ajax({
+            type: 'POST',
+            url: newprofile
+                ? '@Url.Action("AddNewConfig", "Checkins")?_=' + new Date().getTime()
+                : '@Url.Action("UpdateConfig", "Checkins")?_=' + new Date().getTime(),
+            data:
+                'jiraurl=' + jiraUrl +
+                '&password=' + password +
+                '&syncProfileGuid=' + syncProfileGuid +
+                '&copySyncProfileMode=' + copySyncProfileMode +
+                guid,
+            complete: function () {
+                $(button).parent().show();
+                $('#applyworker').hide();
+            },
+            success: function (data) {
+                if (data.success) {
+                    if (newprofile) {
+                        location.href = '../../Checkins/Index/' + data.guid;
+                    } else {
+                        location.reload(true);
+                    }
+                } else {
+                    errorDialog('body', data.error, null);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                errorDialog('body', getXhrErrorResponse(xhr), null);
+            }
+        });
+    };
+
+    updateGitTfsRepoState = function ($form, isGitRepository) {
+        var gitdiv = $form.find('.gitrepoparams');
+        var tfsdiv = $form.find('.tfsrepoparams');
+
+        if (isGitRepository) {
+            gitdiv.show();
+            tfsdiv.hide();
+        } else {
+            gitdiv.hide();
+            tfsdiv.show();
+        }
+    };
+
+    $(document).ready(function () {
+        $(".tfsgitstartdate").datetimepicker({
+            format: "Y-m-d H:00:00"
+        });
+
+        fillHelp('#tfssrcscanhelp');
+
+        if (!newprofile) {
+            $('#password').parents('.field').hide();
+        } else {
+            $('#changepassword').parents('.field').hide();
+        }
+
+        if ($('#jiraurl').val().length) {
+            $('#password').focus();
+        } else {
+            $('#jiraurl').focus();
+        }
+
+        $('#changepassword').click(function(e) {
+            e.preventDefault();
+            $(this).parents('.field').hide();
+            $('#password').parents('.field').show();
+        });
+
+        $('#applybutton').click(function () {
+            if (newprofile && syncProfileGuid) {
+                window.showCreateRepositoryFromProfileDialog(syncProfileName, {
+                    createGitRepository: function () {
+                        addorUpdateProfile("@CopySyncProfileMode.CopyAsGitRepository");
+                    },
+                    createTfsRepository: function () {
+                        addorUpdateProfile("@CopySyncProfileMode.CopyAsTfsRepository");
+                    },
+                    doNotCreateRepository: function () {
+                        addorUpdateProfile("@CopySyncProfileMode.None");
+                    }
+                });
+            } else {
+                addorUpdateProfile("@CopySyncProfileMode.None");
+            }
+        });
+
+        $('.tfs_test').click(function(e) {
+            e.preventDefault();
+            var guid = $(e.currentTarget).attr('id').split('_')[1];
+            testTfsConfig(guid);
+        });
+        $('.tfs_clear').click(function(e) {
+            e.preventDefault();
+            var guid = $(e.currentTarget).attr('id').split('_')[1];
+            clearTfsConfig(guid);
+        });
+        $('.tfs_enable').click(function(e) {
+            e.preventDefault();
+            var guid = $(e.currentTarget).attr('id').split('_')[1];
+            var enabled = parseInt($(e.currentTarget).attr('id').split('_')[2]) == 0;
+            enableDisableTfsConfig(guid, enabled);
+        });
+        $('.tfs_delete').click(function (e) {
+            e.preventDefault();
+            var guid = $(e.currentTarget).attr('id').split('_')[1];
+            deleteTfsConfig(guid);
+        });
+        $('.tfs_edit').click(function (e) {
+            e.preventDefault();
+            $('.tfsrepo').parents('tr').hide();
+            var guid = $(e.currentTarget).attr('id').split('_')[1];
+            var tr = $('#tfsurl_' + guid).parents('tr');
+            tr.show();
+
+            var isGitRepository = (tr.find('.tfsgit').val() === 'true');
+            updateGitTfsRepoState(tr, isGitRepository);
+        });
+
+        $('.tfsrepo_canceledit').click(function(e) {
+            e.preventDefault();
+            $('.tfsrepo').parents('tr').hide();
+        });
+
+        $(document.body).on('click', '.tfsconfig_applybutton', function () {
+            saveOrTestTfsConfig(this, false);
+        });
+
+        $(document.body).on('click', '.tfsconfig_testbutton', function () {
+            saveOrTestTfsConfig(this, true);
+        });
+
+        $(document.body).on('click', '.addprofile a', function(e) {
+            e.preventDefault();
+
+            var template = $('#new-repository-config-template').html();
+
+            $('.tfsrepo').parents('tr').hide();
+            $('.addprofile').show();
+            $('.new-repository-form').remove();
+
+            $(this).parent().hide();
+            $(this).closest('.newrepo').append(template);
+        });
+
+        $(document.body).on('click', '.addprofile-tfs', function (e) {
+            $('#tfsgit_0').val(false);
+            updateGitTfsRepoState($('.new-repository-form'), false);
+        });
+
+        $(document.body).on('click', '.addprofile-git', function (e) {
+            $('#tfsgit_0').val(true);
+            updateGitTfsRepoState($('.new-repository-form'), true);
+
+            $('.new-repository-form').find(".tfsgitstartdate").datetimepicker({
+                format: "Y-m-d H:00:00"
+            });
+        });
+
+        $(document.body).on('click', '.tfsrepo_canceladd', function(e) {
+            e.preventDefault();
+            $('.new-repository-form').remove();
+            $('.addprofile').show();
+        });
+
+        $(document.body).on('click', '.start-date-clean-button', function () {
+            $(this).closest(".field").find(".tfsgitstartdate").val("");
+        });
+
+        $(document.body).on('click', '.fetch-collection-button', function () {
+            var $collectionListElement = $(this).closest(".profileform").find(".tfscoll");
+            var $fetchCollectionButton = $(this).closest(".profileform").find(".fetch-collection-button").hide();
+            var $fetchCollectionLoadInfo = $(this).closest(".profileform").find(".fetch-collection-info").show();
+
+            var tfsUrl = $(this).closest(".profileform").find(".tfsurl").val();
+            var userName = $(this).closest(".profileform").find(".tfsuser").val();
+            var password = $(this).closest(".profileform").find(".tfspassword").val();
+            var tfsdomain = $(this).closest(".profileform").find(".tfsdomain").val();
+            var tfshosted = $(this).closest(".profileform").find(".tfshosted").is(':checked');
+
+            jQuery.ajax({
+                type: 'POST',
+                url: '@Url.Action("FetchProjectCollections", "Checkins")?_=' + new Date().getTime(),
+                data:
+                'tfsurl=' + tfsUrl +
+                '&username=' + userName +
+                '&password=' + password +
+                '&tfsdomain=' + tfsdomain +
+                '&tfshosted=' + tfshosted +
+                guid,
+                complete: function () {
+                    $fetchCollectionButton.show();
+                    $fetchCollectionLoadInfo.hide();
+                },
+                success: function (data) {
+                    if (data.success) {
+                        updateCollectionList($collectionListElement, data.collectionList);
+                    } else {
+                        errorDialog('body', data.error, null);
+                    }
+                },
+                error: function (xhr) {
+                    console.log(xhr);
+                    errorDialog('body', getXhrErrorResponse(xhr), null);
+                }
+            });
+        });
+
+        function updateCollectionList($element, list) {
+            var selectedCollection = $element.find(":selected").val();
+            $element.empty();
+            list.forEach(function (collection) {
+                $element.append($("<option>", { "value": collection.Value }).text(collection.Value));
+            });
+            $element.find("[value='" + selectedCollection + "']").prop('selected', true);
+            $element.closest(".profileform").find(".tfsgitrepo").empty();
+        }
+
+        $(document.body).on('click', '.fetch-git-repository-button', function () {
+            var $repositoryListElement = $(this).closest(".profileform").find(".tfsgitrepo");
+            var $fetchGitRepositoryButton = $(this).closest(".profileform").find(".fetch-git-repository-button").hide();
+            var $fetchGitRepositoryLoadInfo = $(this).closest(".profileform").find(".fetch-git-repository-info").show();
+
+            var tfsUrl = $(this).closest(".profileform").find(".tfsurl").val();
+            var userName = $(this).closest(".profileform").find(".tfsuser").val();
+            var password = $(this).closest(".profileform").find(".tfspassword").val();
+            var collection = $(this).closest(".profileform").find(".tfscoll").val();
+
+            jQuery.ajax({
+                type: 'POST',
+                url: '@Url.Action("FetchGitRepositories", "Checkins")?_=' + new Date().getTime(),
+                data:
+                'tfsurl=' + tfsUrl +
+                '&username=' + userName +
+                '&password=' + password +
+                '&collection=' + collection +
+                guid,
+                complete: function () {
+                    $fetchGitRepositoryButton.show();
+                    $fetchGitRepositoryLoadInfo.hide();
+                },
+                success: function (data) {
+                    if (data.success) {
+                        updateRepositoryList($repositoryListElement, data.repositoryList);
+                    } else {
+                        errorDialog('body', data.error, null);
+                    }
+                },
+                error: function (xhr) {
+                    console.log(xhr);
+                    errorDialog('body', getXhrErrorResponse(xhr), null);
+                }
+            });
+        });
+
+        function updateRepositoryList($element, list) {
+            var selectedOptionText = $element.find(":selected").attr("data-project-name-and-repository");
+            $element.empty();
+            list.forEach(function (repository) {
+                var projectNameAndRepository = repository.ProjectName + " / " + repository.Name;
+                $element.append($("<option>", { "value": repository.Name, "data-project-name": repository.ProjectName, "data-project-name-and-repository": projectNameAndRepository })
+                    .text(projectNameAndRepository));
+            });
+            $element.find("[data-project-name-and-repository='" + selectedOptionText + "']").prop('selected', true);
+        }
+    });
+
+</script>
+
+
+

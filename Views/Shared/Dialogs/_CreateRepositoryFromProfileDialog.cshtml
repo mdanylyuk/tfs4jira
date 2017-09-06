@@ -1,0 +1,49 @@
+﻿<script type="text/template" id="create-repository-from-profile-dialog-template">
+    <div class="git-executable-path-dialog">
+        <div class="message-box info">
+            <span class="message-icon"></span>
+            You can now define a source repository using data from synchronization profile
+            <div class="create-repository-from-profile-dialog-profile-name">
+                <strong><%- profileName %></strong>.
+            </div>
+            <br>
+            Please choose what kind of source repository you want to create.
+        </div>
+        <div class="create-repository-from-profile-dialog-buttons">
+            <button class="tfs4jira-rounded-button create-repository-from-profile-dialog-tfs-button">Create TFS Repository</button>
+            <button class="tfs4jira-rounded-button create-repository-from-profile-dialog-git-button">Create Git Repository</button>
+            <button class="button-link create-repository-from-profile-dialog-no-button">Don't create a repository</button>
+        </div>
+    </div>
+</script>
+
+<script>
+    window.showCreateRepositoryFromProfileDialog = function (profileName, callbacks) {
+        var dialogTemplate = _.template($("#create-repository-from-profile-dialog-template").html());
+
+        var dialogHandler = showDialog(document.body, 650, 260, 'Create source repository', dialogTemplate({ profileName: profileName }));
+
+        var $tfsButton = $('.create-repository-from-profile-dialog-tfs-button');
+        var $gitButton = $('.create-repository-from-profile-dialog-git-button');
+        var $noButton = $('.create-repository-from-profile-dialog-no-button');
+
+        $tfsButton.click(createTfsRepository);
+        $gitButton.click(createGitRepository);
+        $noButton.click(doNotCreateRepository);
+        
+        function createTfsRepository() {
+            callbacks.createTfsRepository();
+            dialogHandler.close();
+        }
+
+        function createGitRepository() {
+            callbacks.createGitRepository();
+            dialogHandler.close();
+        }
+
+        function doNotCreateRepository() {
+            callbacks.doNotCreateRepository();
+            dialogHandler.close();
+        }
+    }
+</script>

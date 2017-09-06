@@ -1,0 +1,415 @@
+﻿/* 
+    Form styles
+    Note: The styles below should be moved to some external file ('Form.css'?) when we start
+          to use them on other screens in Synchronizator
+*/
+.tfs4jira-fields-group {
+    margin-bottom: 15px;
+}
+
+.tfs4jira-fields-group .tfs4jira-fieldgroup {
+    margin-bottom: 5px;
+}
+
+.tfs4jira-fieldgroup {
+    margin-bottom: 15px;
+}
+
+.tfs4jira-fieldgroup label {
+    display: inline-block;
+    width: 200px;
+    text-align: right;
+    margin-right: 15px;
+    font-size: 16px;
+    vertical-align: middle;
+}
+
+.tfs4jira-fieldgroup input:not([type=checkbox]) {
+    margin: 0 0 0 -3px;
+    width: 360px;
+}
+
+.tfs4jira-fieldgroup-checkbox {
+    margin-left: 210px;
+    font-size: 16px;
+}
+
+.tfs4jira-field-description {
+    display: block;
+    width: 360px;
+    margin: 5px 0 15px 215px;
+    color: #777;
+    font-size: 12px;
+}
+
+.tfs4jira-fieldgroup-checkbox .tfs4jira-field-description {
+    margin-left: 5px;
+}
+
+.tfs4jira-fieldgroup-checkbox input[type="checkbox"],
+.tfs4jira-fieldgroup-checkbox label {
+    cursor: pointer;
+}
+
+.tfs4jira-field-error {
+    width: 360px;
+    margin: 5px 0 0 215px;
+    color: #ff0000;
+    font-size: 12px;
+}
+
+.tfs4jira-fieldgroup input.tfs4jira-error-border {
+    border: 1px solid #ff0000;
+}
+
+.tfs4jira-subtask-form label {
+    width: 380px;
+}
+
+.subtask-link-error,
+.subtask-link-description {
+    margin-left: 395px;
+    width: 300px;
+}
+
+/* Field mapping styles */
+
+.tfs4jira-mapping-container {
+    width: 800px;
+    margin: auto; 
+}
+
+.tfs4jira-mapping-container h2 {
+    text-align: center;
+    font-size: 15px;
+    margin-bottom: 5px;
+}
+
+.tfs4jira-mapping-header-note-jira,
+.tfs4jira-mapping-header-note-tfs {
+    margin-bottom: 5px;
+    text-align: left;
+    color: #666;
+}
+
+.tfs4jira-mapping-layout {
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.tfs4jira-mapping-layout-row {
+    display: table-row;
+}
+
+.tfs4jira-mapping-layout-column-jira {
+    display: table-cell;
+    padding-right: 20px;
+}
+
+.tfs4jira-mapping-layout-column-tfs {
+    display: table-cell;
+    padding-left: 20px;
+}
+
+.tfs4jira-mapping-select {
+    width: 100%;
+    height: 200px;
+}
+
+.tfs4jira-mapping-select option[data-is-already-mapped=true] {
+    color: #aaaaaa;
+}
+
+.tfs4jira-mapping-map-button:disabled {
+    color: #AAA;
+}
+
+.tfs4jira-mapping-table {
+    table-layout: fixed;
+    margin-bottom: 50px;
+    font-size: 16px;
+}
+
+.tfs4jira-mapping-table .tfs4jira-mapping-row {
+    border-bottom: 1px solid #CCCCCC;
+}
+
+.tfs4jira-mapping-table td {
+    padding: 12px 0;
+}
+
+.tfs4jira-mapping-row-left {
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tfs4jira-mapping-row-direction {
+    box-sizing: border-box;
+    text-align: center;
+    width: 80px;
+}
+
+.tfs4jira-mapping-row-direction div {
+    background-size: 80px 20px;
+    height: 20px;
+}
+
+.tfs4jira-mapping-row-direction-both {
+    background-image: url("../images/arrows-both-icon.svg");
+}
+
+.tfs4jira-mapping-row-direction-jira-to-tfs {
+    background-image: url("../images/arrow-right-icon.svg");
+}
+
+.tfs4jira-mapping-row-direction-tfs-to-jira {
+    background-image: url("../images/arrow-left-icon.svg");
+}
+
+div.tfs4jira-mapping-row-direction-conflict {
+    background-image: url("../images/conflict-icon.svg");
+    background-size: 6px 20px;
+    width: 6px;
+    margin: auto;    
+}
+
+.tfs4jira-mapping-value-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 35px;
+    vertical-align: middle;
+}
+
+.tfs4jira-mapping-value-text-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tfs4jira-mapping-value-invalid {
+    display: inline-block;
+    background-image: url("../images/conflict-icon.svg");
+    background-size: 6px 20px;
+    height: 20px;
+    width: 6px;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+.tfs4jira-mapping-row {
+    height: 35px;
+}
+
+.tfs4jira-mapping-row-operation {
+    width: 22px;
+    height: 22px;
+    margin: 6px auto 6px 10px;
+    padding: 2px 0 0 0;
+    float: right;
+}
+
+.tfs4jira-mapping-row-tooltip-group-name:not(:first-child) {
+    margin-top: 8px;
+}
+
+.tfs4jira-mapping-row-operation img {
+    border: none;
+    margin: auto;
+    width: 15px;
+    height: 10px;
+}
+
+.tfs4jira-mapping-edit img {
+    height: 3px;
+    width: 15px;
+    margin: auto;
+    padding: 4px 0;
+}
+
+.tfs4jira-mapping-anything-else {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 16px;
+}
+
+.tfs4jira-mapping-anything-else label {
+    margin-right: 10px;
+}
+
+.tfs4jira-mapping-help-container {
+    display: inline;
+}
+
+.tfs4jira-mapping-help-link {
+    cursor: pointer;
+    color: #326CA6;
+    font-weight: bold;
+}
+
+.tfs4jira-mapping-help-text {
+    display: block;
+    position: absolute;
+    width: 500px;
+    padding: 10px;
+    font-size: 11px;
+    z-index: 100;
+    background-color: white;
+    border: 1px solid #CCC;
+    line-height: 1.6em;
+    white-space: normal;
+}
+
+.tfs4jira-mapping-help-text ul {
+    padding-left: 15px;
+    margin: 0;
+    line-height: 1.6em;
+}
+
+.tfs4jira-mapping-no-mapped-values-container {
+    display: none;
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.tfs4jira-mapping-no-mapped-values {
+    font-size: 17px;
+    color: #777;
+    background: #f5f5f5;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+/* Framework styles */
+.wizard-container {
+    width: 800px;
+    margin: auto;    
+}
+
+.wizard-step {
+    display: none;
+}
+
+.wizard-step h1 {
+    text-align: center;
+    color: #555;
+}
+
+.wizard-navigation {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.wizard-navigation-button {
+    width: 100px;
+    height: 40px;
+    padding: 0;
+}
+
+.tfs4jira-mapping-map-button {
+    width: 80px;
+    height: 30px;
+    display: block;
+    margin: 25px auto 30px auto;
+    padding: 0;
+}
+
+.wizard-navigation-button:hover {
+	color: #555;
+}
+
+.wizard-navigation-button:active {
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+
+.subtasks-not-synchronized-info {
+    box-sizing: border-box;
+    width: 350px;
+    height: 80px;
+    margin: 30px auto;
+    font-size: 17px;
+    padding-top: 30px;
+}
+
+.tfs4jira-horizontal-separator {
+    display: block;
+    height: 0;
+    border: none;
+    border-top: 1px solid #CCC;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+.synchronization-settings-horizontal-separator {
+    margin-left: 10px;
+    margin-right: 225px;
+}
+
+.wizard-info-box {
+    font-size: 16px;
+}
+
+.wizard-value-mapping-settings {
+    width: 800px;
+    margin: auto;
+}
+
+.wizard-value-mapping-radio {
+    margin-left: 0;
+    margin-bottom: 5px;
+}
+
+.subtasks-mapping-horizontal-separator {
+    margin-left: 100px;
+    margin-right: 105px;
+}
+
+.first-screen-wrapper, .last-screen-wrapper {
+    width: 600px;
+    margin: 0 auto;
+}
+
+.clearer {
+    clear: both;
+}
+
+.wizard-screen-info-text {
+    font-size: 140%; 
+    margin-bottom: 10px;
+}
+
+.wizard-screen-buttons-wrapper {
+    margin: 50px 0;
+}
+
+.link_button_wrapper {
+    float: left;
+    line-height: 20px;
+    color: #777;
+}
+
+#start_button {
+    float: right;
+}
+
+#finish_button {
+    width: auto;
+    min-width: 100px;
+    height: 40px;
+    float: right;
+}
+
+/* Styles for Select2 controls in forms  */
+
+.tfs4jira-fieldgroup .select2-container.ts4jira-select2-form-field {
+    margin-left: -3px;
+    width: 360px;
+}
+
+.tfs4jira-fieldgroup .tfs4jira-rounded-button {
+	font-size: 13px;
+}

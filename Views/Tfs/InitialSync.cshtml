@@ -1,0 +1,597 @@
+﻿@using synchronizer.Services
+@model synchronizer.Models.InitialSyncModel
+
+@{
+    ViewBag.Title = "Initial Synchronization";
+}
+
+<a id="backlink" href="..">Back</a>
+
+@if (Model.Profile == null)
+{
+    <h1>Profile not found</h1>
+    return;
+}
+
+<div class="fixed-width-page-wrapper">
+    <h1>Initial Synchronization for &quot;@Model.Profile.Name&quot; Profile</h1>
+    
+    <div>
+        <div class="message-box info">
+            <span class="message-icon"></span>
+            <p>
+                Initial Synchronization gives you possibility to synchronize issues and work items between JIRA and TFS that was created before you installed Synchronizer.
+                <br /><br />
+                <strong>Before starting initial synchronization please consider a few rules that are described below</strong>:
+                <ul>
+                    <li>
+                        Synchronization profile should be configured properly (esp. @Html.ActionLink("Field Mappings", "Index", "Tfs", new {id = @Model.Profile.Guid, mappings = 1}, new {target = "_blank"}) section) before starting the initial synchronization.
+                    </li>
+                    <li>
+                        Regular synchronization will be paused for this profile during initial synchronization run.
+                    </li>
+                    <li>
+                        It's strongly recommended that no changes are made to JIRA and TFS projects selected in this profile until synchronization finishes as this changes won't be synchronized.
+                    </li>
+                    <li>
+                        Only issues and work items that have last update date within given range will be synchronized, others will be skipped.
+                    </li>
+                    <li>
+                        Synchronization process will stop after more than 10 errors are ecountered. In case it happens please refer to the @Html.ActionLink("log", "", "Home", new {}, new {target = "_blank"}), address the errors and start the synchronization again.
+                    </li>
+                    <li>
+                        Please note that due to implementation of JIRA issue and TFS work item pairing, even when unidirectional synchronization mode is selected, entities at source side might be modified too (which will alter their last update date).
+                    </li>
+                </ul>
+            </p>
+        </div>
+
+        @if (!Model.License.IsLicenseValid)
+        {
+            <div class="message-box error">
+                <span class="message-icon"></span>
+                <p>
+                    <strong>Your license is not valid or you have obsolete version of plug-in in your JIRA.</strong>
+                </p>
+            </div>
+        }
+        else if (Model.License.IsEvaluation)
+        {
+            <div class="message-box warning">
+                <span class="message-icon"></span>
+                <p>
+                    <strong>You have evaluation license.</strong><br/>
+                    There is a limitation in using Initial Synchronization for JIRA Server evaluation licenses (it's not applicable for JIRA Cloud).<br/>
+                    Synchronization will stop after successful sync of 30 issue / work item pairs.
+                </p>
+            </div>
+        }
+
+    </div>
+    
+    <div class="initial-sync-section">
+        <div class="initial-sync-row">
+            <span class="initial-sync-label">Items updated between:</span>
+            <div class="initial-sync-control">
+                <input id="start_date" placeholder="select date" />
+                and
+                <input id="end_date" placeholder="select date" />
+            </div>
+        </div>
+        <div class="initial-sync-row">
+            <div class="initial-sync-label">Synchronization direction:</div>
+            <div class="initial-sync-control">
+                <div class="initial-sync-radio">
+                    <input id="direction_jira_to_tfs" type="radio" name="direction" value="jira_to_tfs">
+                    <label for="direction_jira_to_tfs">JIRA -> TFS</label>
+                </div>
+                <div class="initial-sync-radio">
+                    <input id="direction_tfs_to_jira" type="radio" name="direction" value="tfs_to_jira">
+                    <label for="direction_tfs_to_jira">TFS -> JIRA</label>
+                </div>
+            </div>
+        </div>
+        <div class="initial-sync-row jira-status-control" style="display: none;">
+            <div class="initial-sync-label">Read-only JIRA statuses:</div>
+            <div class="initial-sync-control">
+                <select id="jira_status" class="chosen-select" data-placeholder="select status" multiple></select>
+            </div>
+        </div>
+        <div class="initial-sync-row jira-status-control" style="display: none;">
+            <div class="initial-sync-label"></div>
+            <div class="initial-sync-control">
+                <div class="init-sync-control-info">
+                    <div>
+                        Some JIRA statuses are read-only which means that issues being in one of them cannot be modified and so also cannot be synchronized (trying to synchronize
+                        them will lead to an error). In this field you have to select all the read-only statuses that exist in your JIRA - issues with this statuses will be skipped
+                        during synchronization. In out of the box JIRA with default workflow only Closed status is read-only. If you want to synchronize all of the issues with every
+                        possible status you can change your workflows in JIRA in a way that all of the statuses are editable - please refer
+                        to <a href="https://confluence.atlassian.com/display/JIRA/Allow+editing+of+Closed+Issues" target="_blank">this documentation</a>.
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="initial-sync-row">
+            <div class="initial-sync-label">Synchronization mode:</div>
+            <div class="initial-sync-control">
+                <div class="initial-sync-radio">
+                    <input id="mode_default" type="radio" name="mode" value="default">
+                    <label for="mode_default">Synchronize unpaired issues/work items only</label>
+                </div>
+                <div class="initial-sync-radio">
+                    <input id="mode_resync_update" type="radio" name="mode" value="resync_update">
+                    <label for="mode_resync_update">Synchronize both unpaired and already paired issues/work items (update counterparts)</label>
+                </div>
+                <div class="initial-sync-radio">
+                    <input id="mode_resync_create" type="radio" name="mode" value="resync_create">
+                    <label for="mode_resync_create">Synchronize both unpaired and already paired issues/work items (create new counterparts)</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="initial-sync-row">
+            <div class="initial-sync-label"></div>
+            <div class="initial-sync-control">
+                <div id="mode_default_jira_to_tfs_info" class="init-sync-control-info" style="display: none">
+                    <div>Only JIRA issues that are not already paired will be processed and for each such issue corresponding TFS work item will be created. Other issues will be skipped.</div>
+                    <br />
+                    <div>This is default and <strong>recommended</strong> initial synchronization mode.</div>
+                </div>
+                <div id="mode_default_tfs_to_jira_info" class="init-sync-control-info" style="display: none">
+                    <div>Only TFS work items that are not already paired will be processed and for each such work item corresponding JIRA issue will be created. Other work items will be skipped.</div>
+                    <br />
+                    <div>This is default and <strong>recommended</strong> initial synchronization mode.</div>
+                </div>
+                <div id="mode_resync_update_jira_to_tfs_info" class="init-sync-control-info" style="display: none">
+                    <div>Both unpaired and already paired JIRA issues will be processed. For each unpaired issue new corresponding TFS work item will be created. Each already paired issue will have its corresponding work item updated.</div>
+                </div>
+                <div id="mode_resync_update_tfs_to_jira_info" class="init-sync-control-info" style="display: none">
+                    <div>Both unpaired and already paired TFS work items items will be processed. For each unpaired work item new corresponding JIRA issue will be created. Each already paired work item will have its corresponding issue updated.</div>
+                </div>
+                <div id="mode_resync_create_jira_to_tfs_info" class="init-sync-control-info" style="display: none">
+                    <div>Both unpaired and already paired JIRA issues will be processed. For each unpaired issue new corresponding TFS work item will be created. Each already paired issue will be unlinked from its current corresponding work item, <strong>the work item will be removed</strong> and new corresponding work item will be created.</div>
+                    <br />
+                    <div><strong>Warning!</strong> Please note that mode may involve deleting some TFS work items. This process cannot be reverted, so it's strongly recommended that both JIRA and TFS backup is performed before running the synchronization.</div>
+                </div>
+                <div id="mode_resync_create_tfs_to_jira_info" class="init-sync-control-info" style="display: none">
+                    <div>Both unpaired and already paired TFS work items will be processed. For each unpaired work item new corresponding JIRA issue will be created. Each already paired work item will be unlinked from its current corresponding issue, <strong>the issue will be removed</strong> and new corresponding issue will be created.</div>
+                    <br />
+                    <div><strong>Warning!</strong> Please note that mode may involve deleting some JIRA issues (along with their subtasks, if any). This process cannot be reverted, so it's strongly recommended that both JIRA and TFS backup is performed before running the synchronization.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="initial-sync-row">
+            <div class="initial-sync-label"></div>
+            <div class="initial-sync-control">
+                <button id="start_button" class="initial-sync-button">Start</button>
+                <button id="stop_button" class="initial-sync-button">Stop</button>
+                <span id="in_progress_throbber" class="throbber initial-sync-throbber"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="sync-status-message-box">
+        <div id="error_limit_warning" style="display: none">
+            <div class="message-box warning">
+                <span class="message-icon"></span>
+                <p>
+                    Last initial synchronization was stopped due to reaching error limit
+                </p>
+            </div>
+        </div>
+        <div id="eval_limit_reached_warning" style="display: none">
+            <div class="message-box warning">
+                <span class="message-icon"></span>
+                <p>
+                    Last initial synchronization was stopped due to reaching limit for evaluation licenses
+                </p>
+            </div>
+        </div>
+        <div id="license_invalid_warning" style="display: none">
+            <div class="message-box warning">
+                <span class="message-icon"></span>
+                <p>
+                    Last initial synchronization was stopped because your license is not valid or you have obsolete version of plug-in installed on your JIRA.
+                </p>
+            </div>
+        </div>
+    </div>
+
+        <div class="initial-sync-section">
+            <h2>JIRA &#8658; TFS <span id="jira_to_tfs_throbber" class="throbber initial-sync-throbber"></span></h2>
+            <div class="initial-sync-row">
+                <span id="jira_to_tfs_never_performed" style="display: none">Initial synchronization was never performed</span>
+                <span id="jira_to_tfs_removing_phase" style="display: none">Removing linked TFS work items in progress...</span>
+                <span id="jira_to_tfs_in_progress" style="display: none">Initial synchronization is in progress...</span>
+                <span id="jira_to_tfs_date_range" style="display: none">
+                    <span>Last initial synchronization was performed on issues updated between dates: &nbsp;</span>
+                    <span id="jira_to_tfs_start" class="bold"></span>
+                    <span>&nbsp;-&nbsp;</span>
+                    <span id="jira_to_tfs_finish" class="bold"></span>
+                </span>
+            </div>
+            <div class="initial-sync-row">
+                <span>Synchronized / Skipped / Errors: </span>
+                <span id="synchronized_issues" class="initial-sync-synchronized bold">0</span>
+                <span> / </span>
+                <span id="skipped_issues" class="bold">0</span>
+                <span> / </span>
+                <span id="error_issues" class="initial-sync-error bold">0</span>
+                <span id="jira_to_tfs_errors" class="small-margin-left" style="display: none">
+                    @Html.ActionLink("Check error log", "", "Home", new { }, new { target = "_blank" })
+                </span>
+            </div>
+            <div id="jira_progress_bar_container" class="progress-bar-container initial-sync-row">
+                <div id="jira_progress_bar" class="progress-bar"></div>
+                <div class="progress-bar-text black">
+                    <span class="processed-issues">0</span>
+                    <span> / </span>
+                    <span class="total-issues">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="initial-sync-section">
+            <h2>TFS &#8658; JIRA <span id="tfs_to_jira_throbber" class="throbber initial-sync-throbber"></span></h2>
+            <div class="initial-sync-row">
+                <span id="tfs_to_jira_never_performed" style="display: none">Initial synchronization was never performed</span>
+                <span id="tfs_to_jira_removing_phase" style="display: none">Removing linked JIRA issues in progress...</span>
+                <span id="tfs_to_jira_in_progress" style="display: none">Initial synchronization is in progress...</span>
+                <span id="tfs_to_jira_date_range" style="display: none">
+                    <span>Last initial synchronization was performed on work items updated between dates: &nbsp;</span>
+                    <span id="tfs_to_jira_start" class="bold"></span>
+                    <span>&nbsp;-&nbsp;</span>
+                    <span id="tfs_to_jira_finish" class="bold"></span>
+                </span>
+            </div>
+            <div class="initial-sync-row">
+                <span>Synchronized / Skipped / Errors: </span>
+                <span id="synchronized_workitems" class="initial-sync-synchronized bold">0</span>
+                <span> / </span>
+                <span id="skipped_workitems" class="bold">0</span>
+                <span> / </span>
+                <span id="error_workitems" class="initial-sync-error bold">0</span>
+                <span id="tfs_to_jira_errors" class="small-margin-left" style="display: none">
+                    @Html.ActionLink("Check error log", "", "Home", new { }, new { target = "_blank" })
+                </span>
+            </div>
+            <div id="tfs_progress_bar_container" class="progress-bar-container initial-sync-row">
+                <div id="tfs_progress_bar" class="progress-bar"></div>
+                <div class="progress-bar-text">
+                    <span class="processed-workitems">0</span>
+                    <span> / </span>
+                    <span class="total-workitems">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="initial-sync-section">
+            <h2>Logs</h2>
+            <div id="initial_sync_logs" class="initial-sync-logs-container initial-sync-row">
+            </div>
+            <div class="initial-sync-row" style="text-align: right;">
+                <span id="disable_autoscroll" class="button-link">Disable autoscroll</span>
+                <span id="enable_autoscroll" class="button-link" style="display: none;">Enable autoscroll</span>
+            </div>
+        </div>
+    </div>
+
+<script>
+    var DATE_FORMAT_DISPLAY = 'YYYY-MM-DD HH:mm';
+    var DATE_FORMAT_WITH_TIMEZONE = 'YYYY-MM-DDTHH:mmZ';
+
+    var $logContainer = $('#initial_sync_logs');
+
+    var isAutoscrollEnabled = true;
+
+    var guid = "@Model.Profile.Guid";
+
+    $.ajaxSetup({
+        cache: false
+    });
+
+    $("#start_date").datetimepicker({
+        format: "Y-m-d H:i"
+    });
+
+    $("#end_date").datetimepicker({
+        format: "Y-m-d H:i",
+        value: moment().format(DATE_FORMAT_DISPLAY)
+    });
+
+    $("#start_date, #end_date, input[name=direction], input[name=mode]").change(function() {
+        showProperJiraStatusControlAndModeInfo();
+    });
+
+    function showProperJiraStatusControlAndModeInfo() {
+        var direction = getDirection();
+        var mode = getMode();
+
+        showProperJiraStatusControl(direction);
+        showProperModeInfo(mode, direction);
+        checkStartButton();
+    }
+
+    $('#start_button').click(function () {
+        var startDate = getStartDate();
+        if (!startDate) {
+            showErrorMessage("Please select start date.");
+            return;
+        }
+
+        var endDate = getEndDate();
+        if (!endDate) {
+            showErrorMessage("Please select end date.");
+            return;
+        }
+
+        var startDateWithTimezone = moment(startDate).format(DATE_FORMAT_WITH_TIMEZONE);
+        var endDateWithTimezone = moment(endDate).format(DATE_FORMAT_WITH_TIMEZONE);
+
+        var direction = getDirection();
+        var jiraToTfs = (direction == "jira_to_tfs") || (direction == "both");
+        var tfsToJira = (direction == "tfs_to_jira") || (direction == "both");
+        (jiraToTfs || tfsToJira) ? startInitialSynchronization(jiraToTfs, tfsToJira, startDateWithTimezone, endDateWithTimezone) : showErrorMessage("Please select synchronization direction.");
+    });
+
+    $('#disable_autoscroll').click(function () {
+        $('#disable_autoscroll').hide();
+        $('#enable_autoscroll').show();
+        isAutoscrollEnabled = false;
+    });
+
+    $('#enable_autoscroll').click(function () {
+        $('#enable_autoscroll').hide();
+        $('#disable_autoscroll').show();
+        isAutoscrollEnabled = true;
+    });
+
+    function startInitialSynchronization(jiraToTfs, tfsToJira, startDate, endDate) {
+        $('#start_button').attr("disabled", true);
+        $('#in_progress_throbber').css("visibility", "visible");
+        $logContainer.empty();
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("StartInitialSynchronization", "Tfs")',
+            data: 'guid=' + guid + '&startDate=' + encodeURIComponent(startDate) + '&endDate=' + encodeURIComponent(endDate) + '&jiraToTfs=' + jiraToTfs + '&tfsToJira=' + tfsToJira + '&statuses=' + getStatuses() + '&mode=' + getMode(),
+            success: function (data) {
+                data.error ? showErrorMessage(data.error) : console.log("Initial Sync for profile with GUID " + guid + " started.");
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage("There were some problems with connecting to the Synchronizer. Please refresh page and try again.");
+            }
+        });
+    }
+
+    $('#stop_button').click(function () {
+        $('#stop_button').attr("disabled", true);
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("StopInitialSynchronization", "Tfs")',
+            data: 'guid=' + guid,
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage("There were some problems with connecting to the Synchronizer. Please refresh page and try again.");
+            }
+        });
+    });
+
+    function updateControls(inProgress, inProgressJiraToTfs, inProgressTfsToJira) {
+        if (inProgress) {
+            $('#start_button').hide();
+            $('#stop_button').css("display", "inline-block").attr("disabled", false);
+            $('#start_date').attr("disabled", true);
+            $('#end_date').attr("disabled", true);
+            $('input[name=direction]').attr("disabled", true);
+            $('input[name=mode]').attr("disabled", true);
+        } else {
+            showProperJiraStatusControlAndModeInfo();
+            $('#start_button').css("display", "inline-block");
+            $('#stop_button').hide();
+            $('#start_date').attr("disabled", false);
+            $('#end_date').attr("disabled", false);
+            $('input[name=direction]').attr("disabled", false);
+            $('input[name=mode]').attr("disabled", false);
+        }
+
+        $('#in_progress_throbber').css("visibility", "hidden");
+        inProgressJiraToTfs ? $('#jira_to_tfs_throbber').css("visibility", "visible") : $('#jira_to_tfs_throbber').css("visibility", "hidden");
+        inProgressTfsToJira ? $('#tfs_to_jira_throbber').css("visibility", "visible") : $('#tfs_to_jira_throbber').css("visibility", "hidden");
+    }
+
+    function showProperJiraStatusControl(direction) {
+        $(".jira-status-control").toggle((direction == "jira_to_tfs") || (direction == "both"));
+    }
+
+    function showProperModeInfo(mode, direction) {
+        $("#mode_default_jira_to_tfs_info").toggle(mode == "default" && direction == "jira_to_tfs");
+        $("#mode_default_tfs_to_jira_info").toggle(mode == "default" && direction == "tfs_to_jira");
+        $("#mode_resync_update_jira_to_tfs_info").toggle(mode == "resync_update" && direction == "jira_to_tfs");
+        $("#mode_resync_update_tfs_to_jira_info").toggle(mode == "resync_update" && direction == "tfs_to_jira");
+        $("#mode_resync_create_jira_to_tfs_info").toggle(mode == "resync_create" && direction == "jira_to_tfs");
+        $("#mode_resync_create_tfs_to_jira_info").toggle(mode == "resync_create" && direction == "tfs_to_jira");
+    }
+
+    function checkStartButton() {
+        (!getStartDate() || !getEndDate() || !getDirection() || !getMode()) ? $('#start_button').attr("disabled", true) : $('#start_button').attr("disabled", false);
+    }
+
+    function updateDates(inProgressJiraToTfs, inProgressTfsToJira, inRemovePhase, jiraToTfsStartDate, jiraToTfsFinishDate, tfsToJiraStartDate, tfsToJiraFinishDate) {
+        function updateDate(labelSelector, dateString) {
+            var dateLocalTime = moment(dateString).format(DATE_FORMAT_DISPLAY);
+            $(labelSelector).text(dateLocalTime);
+        }
+
+        updateDate('#jira_to_tfs_start', jiraToTfsStartDate);
+        updateDate('#jira_to_tfs_finish', jiraToTfsFinishDate);
+        updateDate('#tfs_to_jira_start', tfsToJiraStartDate);
+        updateDate('#tfs_to_jira_finish', tfsToJiraFinishDate);
+
+        $('#jira_to_tfs_never_performed').hide();
+        $('#jira_to_tfs_date_range').hide();
+        $('#jira_to_tfs_in_progress').hide();
+        $('#jira_to_tfs_removing_phase').hide();
+        if (inProgressJiraToTfs && inRemovePhase) {
+            $('#jira_to_tfs_removing_phase').show();
+        } else if(inProgressJiraToTfs && !inRemovePhase) {
+            $('#jira_to_tfs_in_progress').show();
+        } else if (jiraToTfsStartDate && jiraToTfsFinishDate) {
+            $('#jira_to_tfs_date_range').show();
+        } else {
+            $('#jira_to_tfs_never_performed').show();
+        }
+
+        $('#tfs_to_jira_never_performed').hide();
+        $('#tfs_to_jira_date_range').hide();
+        $('#tfs_to_jira_in_progress').hide();
+        $('#tfs_to_jira_removing_phase').hide();
+        if (inProgressTfsToJira && inRemovePhase) {
+            $('#tfs_to_jira_removing_phase').show();
+        } else if (inProgressTfsToJira && !inRemovePhase) {
+            $('#tfs_to_jira_in_progress').show();
+        } else if (tfsToJiraStartDate && tfsToJiraFinishDate) {
+            $('#tfs_to_jira_date_range').show();
+        } else {
+            $('#tfs_to_jira_never_performed').show();
+        }
+    }
+
+    function updateProgressBar(total, processed, inProgress, $progressBarContainer, $progressBar) {
+        if (inProgress) {
+            $progressBarContainer.show();
+        }
+
+        var percentComplete = 0;
+        if (total == 0 && !inProgress) {
+            percentComplete = 100;
+        } else if (total != 0) {
+            percentComplete = (processed / total) * 100;
+        }
+        $progressBar.css('width', percentComplete + '%');
+    }
+
+    function updateLogs(logs) {
+        logs.forEach(function (log) {
+            var $log = $("<div>", {
+                "text": log.Message,
+                "class": "initial-sync-logs-message"
+            });
+
+            if (log.Type === 0) {
+                $log.addClass("initial-sync-synchronized");
+            } else if (log.Type === 2) {
+                $log.addClass("initial-sync-error");
+            }
+
+            $logContainer.append($log);
+
+            if (isAutoscrollEnabled) {
+                $logContainer.scrollTop($logContainer.prop("scrollHeight"));
+            }
+        });
+    }
+
+    function getStartDate() {
+        return $("#start_date").val();
+    }
+
+    function getEndDate() {
+        return $("#end_date").val();
+    }
+
+    function getDirection() {
+        return $('input[name=direction]:checked').val();
+    }
+
+    function getMode() {
+        return $('input[name=mode]:checked').val();
+    }
+
+    function getStatuses() {
+        return $("#jira_status").val();
+    }
+
+    function showMessageBasedOnStatus(status) {
+        $('#error_limit_warning').toggle(status == @((int)InitialSynchronizationStatus.StoppedErrorsLimit));
+        $('#eval_limit_reached_warning').toggle(status == @((int)InitialSynchronizationStatus.StoppedEvaluationLimit));
+        $('#license_invalid_warning').toggle(status == @((int)InitialSynchronizationStatus.StoppedLicenseInvalid));
+    }
+
+    var helpTimer;
+    $(".helpcontainer").hover(
+        function () {
+            clearTimeout(helpTimer);
+            $(".helpcontainer").find(".helpinfo").show();
+        }, function () {
+            helpTimer = setTimeout(function () {
+                $(".helpcontainer").find(".helpinfo").hide();
+            }, 500);
+        }
+    );
+
+    (function getJiraStatuses() {
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetJiraStatuses", "Tfs")',
+            data: 'guid=' + guid,
+            success: function (data) {
+                $.each(data, function (index, value) {
+                    var status = value.Value;
+                    var selected = (status == "Closed") ? " selected" : "";
+                    $("#jira_status").append("<option value='" + status + "' " + selected + ">" + status + "</option>");
+                });
+            },
+            error: function (xhr) {
+                showErrorMessage("Synchronizer couldn't retrieve status list from JIRA. There can be number of reasons why did it happen, please check if JIRA is up " +
+                    "and running and if user that is used in Sync Profile for JIRA connection has enough privileges to access status list.");
+                console.log(xhr);
+            },
+            complete: function () {
+                $("#jira_status").chosen();
+            }
+        });
+    })();
+
+    (function check() {
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("CheckInitialSynchronization", "Tfs")',
+            data: 'guid=' + guid,
+            complete: function () {
+                setTimeout(check, 3000);
+            },
+            success: function (data) {
+                var inRemovePhase = (data.syncStatus === @((int)InitialSynchronizationStatus.RunningRemovePhase));                
+
+                updateControls(data.inProgress, data.inProgressJiraToTfs, data.inProgressTfsToJira);
+                updateDates(data.inProgressJiraToTfs, data.inProgressTfsToJira, inRemovePhase, data.jiraToTfsStartDate, data.jiraToTfsFinishDate, data.tfsToJiraStartDate, data.tfsToJiraFinishDate);
+                showMessageBasedOnStatus(data.syncStatus);
+
+                $('.total-issues').text(data.totalIssues);
+                $('.processed-issues').text(data.processedIssues);
+                $('#synchronized_issues').text(data.synchronizedIssues);
+                $('#skipped_issues').text(data.processedIssues - (data.synchronizedIssues + data.errorIssues));
+                $('#error_issues').text(data.errorIssues);
+                (data.errorIssues) ? $('#jira_to_tfs_errors').show() : $('#jira_to_tfs_errors').hide();
+                updateProgressBar(data.totalIssues, data.processedIssues, data.inProgressJiraToTfs, $('#jira_progress_bar_container'), $('#jira_progress_bar'));
+
+                $('.total-workitems').text(data.totalWorkItems);
+                $('.processed-workitems').text(data.processedWorkItems);
+                $('#synchronized_workitems').text(data.synchronizedWorkItems);
+                $('#skipped_workitems').text(data.processedWorkItems - (data.synchronizedWorkItems + data.errorWorkItems));
+                $('#error_workitems').text(data.errorWorkItems);
+                (data.errorWorkItems) ? $('#tfs_to_jira_errors').show() : $('#tfs_to_jira_errors').hide();
+
+                updateProgressBar(data.totalWorkItems, data.processedWorkItems, data.inProgressTfsToJira, $('#tfs_progress_bar_container'), $('#tfs_progress_bar'));
+
+                updateLogs(data.logs);
+            },
+            error: function (xhr) {
+                console.log(xhr);
+            }
+        });
+    })();
+</script>

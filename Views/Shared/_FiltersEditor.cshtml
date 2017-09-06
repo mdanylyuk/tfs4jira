@@ -1,0 +1,372 @@
+﻿@using synchronizer.Domain
+@using synchronizer.Domain.Entity
+@model synchronizer.Domain.Entity.SyncProfile
+
+<div id="filters-container">
+    <div class="message-box info">
+        <span class="message-icon"></span>
+        <p>By default synchronization profile has no filters and all issues and work items are synchronized. 
+        When there is only one filter for JIRA / TFS then these issues / work items that match this filter are synchronized.</p>
+    </div>
+
+    <div class="filter-section">
+        <div class="filter-header-container">
+            <span class="filter-header-text">JIRA filters</span>
+            <button id="add-jira-filter-button" class="button-link filter-text">+ Add JIRA Filter</button>
+        </div>
+        
+        <div id="jira-filter-matching-section">
+            <span class="filter-text">Each issue will be synchronized when it matches</span>
+            <select id="jira-filter-matching" class="ts4jira-select2-form-field short-field small-left-separator">
+                <option value="@FilterMatching.AtLeastOneFilter">@FilterMatching.AtLeastOneFilter.GetView()</option>
+                <option value="@FilterMatching.AllFilters">@FilterMatching.AllFilters.GetView()</option>
+            </select>
+        </div>
+
+        <div id="jira-filters">
+            <div class="no-filter-info filter-text">Currently there are no JIRA filters added.</div>
+        </div>
+    </div>
+
+    <div class="filter-section">
+        <div class="filter-header-container">
+            <span class="filter-header-text">TFS filters</span>
+            <button id="add-tfs-filter-button" class="button-link filter-text">+ Add TFS Filter</button>
+        </div>
+        
+        <div id="tfs-filter-matching-section">
+            <span class="filter-text">Each work item will be synchronized when it matches</span>
+            <select id="tfs-filter-matching" class="ts4jira-select2-form-field short-field small-left-separator">
+                <option value="@FilterMatching.AtLeastOneFilter">@FilterMatching.AtLeastOneFilter.GetView()</option>
+                <option value="@FilterMatching.AllFilters">@FilterMatching.AllFilters.GetView()</option>
+            </select>
+        </div>
+
+        <div id="tfs-filters">
+            <div class="no-filter-info filter-text">Currently there are no TFS filters added.</div>
+        </div>
+    </div>
+</div>
+
+<script type="text/template" id="filter-show-template">
+    <div class="filter-row-show filter-text">
+        <span>Field</span>
+
+        <span class="filter-field-name bold"><%- fieldName %></span>
+
+        <span class="filter-operator"><%- operatorName %></span>
+
+        <span class="filter-field-value bold">"<%- fieldValue %>"</span>
+            
+        <div class="filter-operations-button-container">
+            <button class="filter-edit-button tfs4jira-rounded-button tfs4jira-icon-button" data-filter-id="<%- filterId %>">
+                <img src="@VirtualPathUtility.ToAbsolute("~/Content/Images/edit-icon.svg")" />
+            </button>
+            <button class="filter-delete-button tfs4jira-rounded-button tfs4jira-icon-button" data-filter-id="<%- filterId %>">
+                <img src="@VirtualPathUtility.ToAbsolute("~/Content/Images/delete-icon.svg")" />
+            </button>
+        </div>
+    </div>
+</script>
+
+<script type="text/template" id="filter-edit-template">
+    <div class="filter-row-edit filter-text">
+        <div>
+            <span class="filter-text">Field</span>
+
+            <select class="filter-fields ts4jira-select2-form-field medium-field small-left-separator"></select>
+
+            <select class="filter-operators ts4jira-select2-form-field short-field small-left-separator">
+                <option value="@FilterOperator.Equals">@FilterOperator.Equals.GetView()</option>
+                <option value="@FilterOperator.NotEquals">@FilterOperator.NotEquals.GetView()</option>
+                <option value="@FilterOperator.StartsWith">@FilterOperator.StartsWith.GetView()</option>
+                <option value="@FilterOperator.DoesntStartWith">@FilterOperator.DoesntStartWith.GetView()</option>
+                <option value="@FilterOperator.Contains">@FilterOperator.Contains.GetView()</option>
+                <option value="@FilterOperator.DoesntContain">@FilterOperator.DoesntContain.GetView()</option>
+            </select>
+
+            <input type="text" placeholder="Field value" class="filter-field-value tfs4jira-input-field medium-field small-left-separator">
+        </div>
+
+        <div class="filter-button-container">
+            <button class="cancel-filter-button button-link filter-text">Cancel</button>
+            <button class="save-filter-button tfs4jira-rounded-button filter-button filter-text" data-filter-id="<%- id %>" data-filter-type="<%- type %>">Save filter</button>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/javascript">
+    $(function () {
+        var filterShowTemplate = _.template($("#filter-show-template").html());
+        var filterEditTemplate = _.template($("#filter-edit-template").html());
+        var filters = [];
+        var jiraFields = [];
+        var tfsFields = [];
+
+        // Add JIRA Filter Handler
+        $("#add-jira-filter-button").click(function () {
+            createNewFilter("@FilterType.Jira", $("#jira-filters"), jiraFields);
+        });
+
+        // Add TFS Filter Handler
+        $("#add-tfs-filter-button").click(function () {
+            createNewFilter("@FilterType.Tfs", $("#tfs-filters"), tfsFields);
+        });
+
+        // Change JIRA Filter Matching Handler
+        $("#jira-filter-matching").change(function () {
+            updateFilterMatching($(this).select2("data").id, "@FilterType.Jira");
+
+        });
+
+        // Change TFS Filter Matching Handler
+        $("#tfs-filter-matching").change(function () {
+            updateFilterMatching($(this).select2("data").id, "@FilterType.Tfs");
+        });
+
+        // Filter Save Handler
+        $("#filters-container").on("click", ".save-filter-button", function () {
+            var $filterRow = $(this).closest(".filter-row-edit");
+            var filterId = $(this).data("filter-id");
+
+            var filter = {
+                filterType: $(this).data("filter-type"),
+                filterOperator: $filterRow.find(".filter-operators").select2("data").id,
+                fieldId: $filterRow.find(".filter-fields").select2("data").id,
+                fieldName: $filterRow.find(".filter-fields").select2("data").text,
+                fieldValue: $filterRow.find(".filter-field-value").val()
+            };
+
+            (filterId === "new") ? addFilter(filter) : updateFilter(filterId, filter);
+        });
+
+        // Filter Cancel Handler
+        $("#filters-container").on("click", ".cancel-filter-button", function () {
+            $(this).closest(".filter-row-edit").remove();
+            renderFilters();
+        });
+
+        // Filter Edit Handler
+        $("#filters-container").on("click", ".filter-edit-button", function (event) {
+            event.preventDefault();
+            var filterId = $(this).data("filter-id");
+            var filterData = _.find(filters, function (filter) { return filter.filterId === filterId; });
+            editFilter($(this).closest(".filter-row-show"), filterData, getFieldList(filterData.filterType));
+        });
+
+        // Filter Delete Handler
+        $("#filters-container").on("click", ".filter-delete-button", function (event) {
+            event.preventDefault();
+            deleteFilter($(this).data("filter-id"));
+            $(this).closest(".filter-row-show").remove();
+            checkNoFilterInfo();
+            checkFilterMatchingOptionsVisibility();
+        });
+
+        init();
+
+        function init() {
+            showSpinner();
+            getAllFields()
+                .done(function () {
+                    return getFilters();
+                })
+                .done(function () {
+                    hideSpinner();
+                });
+        }
+
+        function createNewFilter(type, $container, fields) {
+            $container.find(".no-filter-info").hide();
+            hideAddFilterButtons();
+
+            var $newFilter = $(filterEditTemplate({
+                type: type,
+                id: "new"
+            }));
+            $container.prepend($newFilter);
+            initializeFilterFields($newFilter, fields);
+        }
+
+        function editFilter($oldFilter, filterData, fields) {
+            hideAddFilterButtons();
+
+            var $newFilter = $(filterEditTemplate({
+                type: filterData.filterType,
+                id: filterData.filterId
+            }));
+            $oldFilter.replaceWith($newFilter);
+            initializeFilterFields($newFilter, fields);
+
+            $newFilter.find(".filter-fields").select2("val", filterData.fieldId);
+            $newFilter.find(".filter-operators").select2("val", filterData.filterOperatorId);
+            $newFilter.find(".filter-field-value").val(filterData.fieldValue);
+        }
+
+        function getFieldList(type) {
+            if (type === "@FilterType.Jira") {
+                return jiraFields;
+            } else if (type === "@FilterType.Tfs") {
+                return tfsFields;
+            } else {
+                console.error("Unknown filter type: " + type);
+                return [];
+            }
+        }
+
+        function initializeFilterFields($filter, fields) {
+            fields.forEach(function (field) {
+                $filter.find(".filter-fields").append($("<option>", {
+                    value: field.Key,
+                    text: field.Value
+                }));
+            });
+            $filter.find(".filter-fields").select2({ minimumResultsForSearch: 10 });
+            $filter.find(".filter-operators").select2({ minimumResultsForSearch: 10 });
+        }
+
+        function hideAddFilterButtons() {
+            $("#add-jira-filter-button").css("visibility", "hidden");
+            $("#add-tfs-filter-button").css("visibility", "hidden");
+        }
+
+        function showAddFilterButtons() {
+            $("#add-jira-filter-button").css("visibility", "visible");
+            $("#add-tfs-filter-button").css("visibility", "visible");
+        }
+
+        function checkNoFilterInfo() {
+            var $jiraNoFilterInfo = $("#jira-filters .no-filter-info");
+            var $tfsNoFilterInfo = $("#tfs-filters .no-filter-info");
+            ($("#jira-filters .filter-row-show").length === 0) ? $jiraNoFilterInfo.show() : $jiraNoFilterInfo.hide();
+            ($("#tfs-filters .filter-row-show").length === 0) ? $tfsNoFilterInfo.show() : $tfsNoFilterInfo.hide();
+        }
+
+        function checkFilterMatchingOptionsVisibility() {
+            var $jiraFilterMatchingSection = $("#jira-filter-matching-section");
+            var $tfsFilterMatchingSection = $("#tfs-filter-matching-section");
+            ($("#jira-filters .filter-row-show").length > 1) ? $jiraFilterMatchingSection.show() : $jiraFilterMatchingSection.hide();
+            ($("#tfs-filters .filter-row-show").length > 1) ? $tfsFilterMatchingSection.show() : $tfsFilterMatchingSection.hide();
+        }
+
+        function initializeFilterMatchingOptions(jiraFilterMatching, tfsFilterMatching) {
+            $("#jira-filter-matching").select2({ minimumResultsForSearch: 10 }).select2("val", jiraFilterMatching);
+            $("#tfs-filter-matching").select2({ minimumResultsForSearch: 10 }).select2("val", tfsFilterMatching);
+            checkFilterMatchingOptionsVisibility();
+        }
+
+        function renderFilters(jiraFilterMatching, tfsFilterMatching) {
+            $("#jira-filters").find(".filter-row-show, .filter-row-edit").remove();
+            $("#tfs-filters").find(".filter-row-show, .filter-row-edit").remove();
+
+            _.each(filters, function (filter) {
+                var $container = getFilterContainer(filter.filterType);
+                if ($container) {
+                    $container.append(filterShowTemplate({
+                        filterId: filter.filterId,
+                        fieldName: filter.fieldName,
+                        fieldValue: filter.fieldValue,
+                        operatorName: filter.filterOperatorName
+                    }));
+                }
+            });
+
+            checkNoFilterInfo();
+            showAddFilterButtons();
+            initializeFilterMatchingOptions(jiraFilterMatching, tfsFilterMatching);
+        }
+
+        function getFilterContainer(type) {
+            if (type === "@FilterType.Jira") {
+                return $("#jira-filters");
+            } else if (type === "@FilterType.Tfs") {
+                return $("#tfs-filters");
+            } else {
+                console.error("Unknown filter type: " + type);
+                return null;
+            }
+        }
+
+        function getAllFields() {
+            return makeAjaxCall('@Url.Action("GetAllFields", "Tfs")?without-system-fields=false', {})
+                .done(function (data) {
+                    if (data.success) {
+                        jiraFields = data.result.jirafields;
+                        tfsFields = data.result.tfsfields;
+                    } else {
+                        showErrorMessage(data.error);
+                    }
+                });
+        }
+
+        function getFilters() {
+            return makeAjaxCall('@Url.Action("GetSynchronizationFilters", "Tfs")', {})
+                .done(function(data) {
+                    if (data.success) {
+                        var filterData = data.result.Data;
+                        filters = filterData.filters.reverse();
+                        renderFilters(filterData.jiraFilterMatching, filterData.tfsFilterMatching);
+                        hideSpinner();
+                    }
+                });
+        }
+
+        function addFilter(filter) {
+            showSpinner();
+            return makeAjaxCall('@Url.Action("AddSynchronizationFilter", "Tfs")', filter)
+                .done(function (data) {
+                    if (data.success) {
+                        getFilters();
+                    }
+                });
+        }
+
+        function updateFilter(filterId, filter) {
+            var ajaxData = $.extend({ filterId: filterId }, filter);
+
+            showSpinner();
+            return makeAjaxCall('@Url.Action("UpdateSynchronizationFilter", "Tfs")', ajaxData)
+                .done(function (data) {
+                    if (data.success) {
+                        getFilters();
+                    }
+                });
+        }
+
+        function updateFilterMatching(filterMatching, filterType) {
+            var ajaxData = { filterMatching: filterMatching, filterType: filterType };
+
+            return makeAjaxCall('@Url.Action("UpdateFilterMatching", "Tfs")', ajaxData);
+        }
+
+        function deleteFilter(filterId) {
+            return makeAjaxCall('@Url.Action("RemoveSynchronizationFilter", "Tfs")', { filterId: filterId })
+                .done(function (data) {
+                    if (data.success) {
+                        getFilters();
+                    }
+                });
+        }
+
+
+        function makeAjaxCall(action, data) {
+            var ajaxData = $.extend({ guid: "@Model.Guid" }, data);
+
+            return $.ajax({
+                type: "POST",
+                url: action + (action.indexOf('?') > 0 ? '&' : '?') + '_=' + new Date().getTime(),
+                data: ajaxData
+            })
+            .done(function(data) {
+                if (!data.success) {
+                    showErrorMessage(data.error);
+                }
+            })
+            .fail(function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            });
+        }
+    });
+</script>

@@ -1,0 +1,136 @@
+﻿@using synchronizer.Controllers
+@{
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
+    <h1>Custom Fields</h1>
+    
+    <div class="tfs4jira-fieldgroup">
+        <label for="jira-custom-field">Custom field in JIRA</label>
+        <select id="jira-custom-field" data-minimumresultsforsearch="5"></select>
+        <div class="tfs4jira-field-error"></div>
+        <div class="tfs4jira-field-description">
+            Custom field in JIRA that will be used to store id of paired TFS work item.
+            See <a href="https://confluence.spartez.com/display/TFS4JIRA/Creating+a+synchronization+profile#Creatingasynchronizationprofile-CustomfieldinJIRA" target="_blank">online help</a> for details.
+        </div>
+    </div>
+    <div class="tfs4jira-fieldgroup">
+        <label for="tfs-custom-field">Custom field in TFS</label>
+        <select id="tfs-custom-field" data-minimumresultsforsearch="5"></select>
+        <div class="tfs4jira-field-error"></div>
+        <div class="tfs4jira-field-description">
+            Custom field in TFS that will be used to store key of paired JIRA issue.
+            See <a href="https://confluence.spartez.com/display/TFS4JIRA/Creating+a+synchronization+profile#Creatingasynchronizationprofile-CustomfieldinTFS" target="_blank">online help</a> for details.
+            This field will be inactive when 'Use TFS History' option is checked.
+        </div>
+    </div>
+    <div class="tfs4jira-fieldgroup-checkbox">
+        <input type="checkbox" id="tfs-history">
+        <label for="tfs-history">Use TFS History instead of custom field</label>
+        <div class="tfs4jira-field-error"></div>
+        <div class="tfs4jira-field-description">
+            If you're using Visual Studio Online then this option will be checked by default.
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('#@id').on("@NavigationEvents.ActivateView", function(event, parameters) {
+            initializeForm();
+            getJiraCustomFields();
+            getTfsCustomFields();
+            checkUseTfsHistory();
+
+            $("#tfs-history").change(function() {
+                $("#tfs-history").attr("checked")
+                    ? $("#tfs-custom-field").select2("enable", false)
+                    : $("#tfs-custom-field").select2("enable", true);
+            });
+            
+        });
+
+        function initializeForm() {
+            $('#@id').find('select').each(function() {
+                makeFieldSelect2($(this), "ts4jira-select2-form-field");
+            });
+        }
+
+        function getJiraCustomFields() {
+            blockingAjax({
+                type: 'POST',
+                url: '@Url.Action("GetJiraCustomFields", "Tfs")?_=' + new Date().getTime(),
+                data: { user: synchronizationProfile.JiraUser, password: synchronizationProfile.JiraPassword, url: synchronizationProfile.JiraUrl, project: synchronizationProfile.JiraProject }
+            }).done(function (data) {
+                $("#jira-custom-field").empty();
+                data.customfields.forEach(function (customfield) {
+                    $("#jira-custom-field").append($("<option>", {
+                        value: customfield.Key,
+                        text: customfield.Value,
+                        selected: (customfield.Key === synchronizationProfile.JiraTfsCustomFieldId)
+                    }));
+                });
+                makeFieldSelect2($("#jira-custom-field"), "ts4jira-select2-form-field");
+            });
+        }
+
+        function getTfsCustomFields() {
+            blockingAjax({
+                type: 'POST',
+                url: '@Url.Action("GetTfsCustomFields", "Tfs")?_=' + new Date().getTime(),
+                data: { hostedtfs: synchronizationProfile.HostedTfs, user: synchronizationProfile.TfsUser, domain: synchronizationProfile.TfsDomain,
+                    password: synchronizationProfile.TfsPassword, url: synchronizationProfile.TfsUrl, project: synchronizationProfile.TfsProject,
+                    collection: synchronizationProfile.TfsCollection }
+            }).done(function (data) {
+                $("#tfs-custom-field").empty();
+                data.customfields.forEach(function (customfield) {
+                    $("#tfs-custom-field").append($("<option>", {
+                        value: customfield.Key,
+                        text: customfield.Value,
+                        selected: (customfield.Key === synchronizationProfile.TfsJiraCustomFieldName)
+                    }));
+                });
+                makeFieldSelect2($("#tfs-custom-field"), "ts4jira-select2-form-field");
+            });
+        }
+
+        function checkUseTfsHistory() {
+            if (synchronizationProfile.UseTfsHistory) {
+                $("#tfs-history").attr("checked", true);
+                $("#tfs-custom-field").select2("enable", false);
+            } else {
+                $("#tfs-history").attr("checked", false);
+                $("#tfs-custom-field").select2("enable", true);
+            }
+        }
+
+        function validate() {
+            var isValid = true;
+
+            clearFieldError("jira-custom-field");
+            if ($("#jira-custom-field").select2("val") === null) {
+                setFieldError("jira-custom-field", "Please choose JIRA Custom Field.");
+                isValid = false;
+            }
+
+            clearFieldError("tfs-custom-field");
+            if ($("#tfs-custom-field").select2("val") === null && !$("#tfs-history").attr("checked")) {
+                setFieldError("tfs-custom-field", "Please choose TFS Custom Field or select 'Use TFS History'.");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        $('#@id').on("@NavigationEvents.NextButtonClicked", function () {
+            if (validate()) {
+                synchronizationProfile.JiraTfsCustomFieldId = $("#jira-custom-field").select2("val");
+                synchronizationProfile.TfsJiraCustomFieldName = $("#tfs-custom-field").select2("val") || "";
+                synchronizationProfile.UseTfsHistory = $("#tfs-history").is(":checked");
+
+                SaveModelAndGoToNextStep();
+            }
+        });
+    });
+</script>

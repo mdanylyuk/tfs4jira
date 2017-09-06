@@ -1,0 +1,110 @@
+﻿@model synchronizer.Controllers.CheckinsController.CheckinsScanningProfileListViewModel
+
+@{
+    ViewBag.Title = "Check-ins Scanning Configurations - TFS4JIRA Synchronizer";
+}
+
+<div id="tfssrcscanhelp" style="display:none;">
+    @{Html.RenderPartial("Help/Help_CheckinsScanningList");}
+</div>
+
+<div class="message-box info" id="checkin-policy-plugin-info">
+    <span class="message-icon"></span>
+    <p>
+        If you are interested in TFS check-ins synchronization you may be also interested in our open source
+        @HelpHelpers.LinkToOnlineDocumentation("checkins_vs_policy_plugin", "JIRA issue key check-in policy plugin for Visual Studio.")
+        Please take a look at its @HelpHelpers.LinkToOnlineDocumentation("checkins_vs_policy_plugin", "home page") for details or <a id="checkin-policy-plugin-info-hide" href="#">hide this message</a>.
+    </p>
+</div>
+
+<div class="fixed-width-page-wrapper">
+    <h1>
+        Check-ins Scanning Configuration
+            
+    </h1>
+
+    <div style="margin-bottom: 10px;">
+        <div style="float: left"><h2 class="nomargin">Check-in Scanning Configurations</h2></div>
+
+        <div style="float: right"><div class="addprofile"><a href="@Url.Action("Index", "Checkins", new { id = "new" }, null)">Create Check-in Scanning Configuration</a></div></div>
+        <div style="clear: both"></div>
+    </div>
+
+    <table id="configs">
+        <thead>
+            <tr>
+                <th>JIRA URL</th>
+                <th class="nowrap">Scan Configurations Count</th>
+                <th class="nowrap">Operations</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            @{
+                foreach (var p in @Model.ScanningProfiles)
+                {
+                    <tr>
+                        <td>
+                            @Html.ActionLink(@p.JiraUrl, "Index", "Checkins", new { id = @p.Guid }, null)
+                        </td>
+                        <td class="nowrap" style="text-align: right">@p.RepoConfigs.Count</td>
+                        <td class="nowrap">
+                            @Html.ActionLink("Edit", "Index", "Checkins", new { id = @p.Guid }, null)
+                            &nbsp;|&nbsp;
+                            <a href="#" class="deleteprofile" id="deleteconfig_@(p.Guid)">Delete</a>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var checkinPolicyPluginCookieKey = "tfs4jira.is.vs.checkin.policy.plugin.info.visible";
+
+        var $checkinPolicyPluginInfo = $("#checkin-policy-plugin-info");
+        var $checkinPolicyPluginInfoHide = $("#checkin-policy-plugin-info-hide");
+
+        function isCheckinPolicyPluginInfoVisible() {
+            return $.cookie(checkinPolicyPluginCookieKey) == null;
+        }
+
+        $checkinPolicyPluginInfo.toggle(isCheckinPolicyPluginInfoVisible());
+
+        $checkinPolicyPluginInfoHide.click(function() {
+            $.cookie(checkinPolicyPluginCookieKey, true, { path: '/', expires: 30 });
+            $checkinPolicyPluginInfo.hide();
+            return false;
+        });
+
+        fillHelp('#tfssrcscanhelp');
+
+        $('#menu-check-ins-config').addClass('selected');
+
+        $('.deleteprofile').click(function(e) {
+            e.preventDefault();
+            var id = e.currentTarget.id.split('_')[1];
+            questionDialog('body', 'Do you want to delete this configuration?', function() {
+                jQuery.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("DeleteConfig", "Checkins")?_=' + new Date().getTime(),
+                    data: 'guid=' + encodeURIComponent(id),
+                    success: function (data) {
+                        //console.log(data);
+                        if (data.success) {
+                            location.reload(true);
+                        } else {
+                            errorDialog('body', data.error, null);
+                        }
+                    },
+                    error: function (xhr) {
+                        console.log(xhr);
+                        errorDialog('body', getXhrErrorResponse(xhr), null);
+                    }
+                });
+            });
+        });
+    });
+</script>

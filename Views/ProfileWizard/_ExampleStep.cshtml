@@ -1,0 +1,25 @@
+﻿@using synchronizer.Controllers
+@{
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
+    <button id="go-to-values-mapping">Values Mapping</button>
+</div>
+
+<script>
+    // TODO - this step is just an example, should be removed
+    $(function() {
+        $('#@id').on("@NavigationEvents.NextButtonClicked", function () {
+            // TODO: Verify model
+
+            SaveModelAndGoToNextStep();
+        });
+
+        $('#go-to-values-mapping').click(function () {
+            // This is an example of handling events inside view. In this example we go to side view for values mapping. 
+            // Notice the way arguments are passed to target view
+            SaveModelAndGoToSideStep("@WizardStep.ValuesMapping", { argument: 14 });
+        });
+    })
+</script>

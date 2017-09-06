@@ -1,0 +1,205 @@
+﻿@using Microsoft.Practices.ObjectBuilder2
+@model synchronizer.Domain.Entity.SyncProfile
+
+@*<script src="@Url.Content("~/Scripts/fieldselectors/jquery.fieldsel.js")" type="text/javascript"> </script>*@
+
+<div id="profileguid" style="display: none;">@Model.Guid</div>
+
+<div id="messages"></div>
+
+<div class="profileform" style="margin-bottom: 2em">
+    <h1 style="margin-bottom: 0.5em">Active Directory Integration</h1>
+    
+    <div class="message-box info">
+        <span class="message-icon"></span>
+        <p>
+            This setting is only relevant for you if you're using custom user name attribute, which means other than <strong>sAMAccountName</strong>. In any other case Active Directory doesn't need additional setup
+        </p>
+        <p>
+            Also, all of the conditions listed below need to be true. Otherwise, the setting does not change the behaviour of the synchronizer:
+        </p>
+        <ul>
+            <li>You have mapped at least one user field between JIRA and TFS (e.g. Assignee)</li>
+            <li>You are using the "Copy Value" mode of user mapping - you have not mapped user pairs between JIRA and TFS manually</li>
+            <li>Your JIRA and TFS are connected to the same Active Directory instance and JIRA uses Active Directory for user authentication</li>
+            <li>You have configured JIRA to use the "User Name Attribute" as user login name different than the default of <strong>sAMAccountName</strong></li>
+        </ul>
+    </div>
+
+    <div class="row">
+        <div class="field">
+            <div class="label">Custom User Name Attribute</div>
+            <div class="editbox">
+                @Html.CheckBox("ad_custom", Model.UseCustomAdUserProperty)
+            </div>
+        </div>
+    </div>
+    <div id="ad_hideable">
+        <div class="row">
+            <div class="field">
+                <div class="label">Attribute Name</div>
+                <div class="editbox">
+                    <select id="ad_property">
+                        @*                    <option value="sAMAccountName">sAMAccountName (default)</option>*@
+                        <option value="userPrincipalName" 
+                            @if("userPrincipalName".Equals(Model.CustomAdIdentityType)) { 
+                                @: selected="selected" 
+                            }
+                        >userPrincipalName</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field-description">
+                Currently, only the <strong>userPrincipalName</strong> custom attribute is supported. 
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Active Directory Server</div>
+                <div class="editbox">
+                    @Html.TextBox("ad_server", Model.CustomAdHost, new { @class = "input" })
+                </div>
+                <div class="field-description">
+                    Domain or Active Directory server name. You can leave this field empty if would like to use the domain which the synchronizer's host computer is in.
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Username</div>
+                <div class="editbox">
+                    @Html.TextBox("ad_user", Model.CustomAdLogin, new { @class = "input" })
+                </div>
+                <div class="field-description">
+                    User name for logging in to the Active Directory server. You can leave this field empty if you wnat to use default credentials used by your IIS user.
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Password</div>
+                <div class="editbox">
+                    @Html.Password("ad_password", Model.CustomAdPassword, new { @class = "input" })
+                </div>
+                <div class="field-description">
+                    Password for logging in to the Active Directory server. You can leave this field empty if you wnat to use default credentials used by your IIS user.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="field">
+            <div class="label"></div>
+            <div class="editbox">
+                <input type="button" id="ad_save" value="Save" />
+                <input type="button" id="ad_test" value="Test connection..." />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="tfsadvancedhelp" style="display: none;">
+    @{ Html.RenderPartial("Help/Help_EditAdvancedSettings"); }
+</div>
+
+<script type="text/javascript">
+    setAdConfigState = function () {
+        if ($('#ad_custom').is(':checked')) {
+            $('#ad_hideable').show();
+            $('#ad_test').show();
+        } else {
+            $('#ad_hideable').hide();
+            $('#ad_test').hide();
+        }
+    };
+
+    testConnection = function () {
+        showSpinner();
+        var host = $('#ad_server').val() ? 'host=' + encodeURIComponent($('#ad_server').val()) : '';
+        var user = $('#ad_user').val() ? 'user=' + encodeURIComponent($('#ad_user').val()) : '';
+        var password = $('#ad_password').val() ? 'password=' + encodeURIComponent($('#ad_password').val()) : '';
+        var type = $('#ad_property').val() ? 'type=' + encodeURIComponent($('#ad_property').val()) : '';
+        var data = 'guid=@Model.Guid&' + host + '&' + user + '&' + password + '&' + type;
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("TestActiveDirectoryConfiguration", "Tfs")?_=' + new Date().getTime(),
+            data: data,
+            success: function (data) {
+                if (data.success) {
+                    hideSpinner();
+                    infoDialog('body', 'Connection to your Active Directory server successful');
+                } else {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            },
+        });
+    };
+
+    getConfig = function () {
+        showSpinner();
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("GetActiveDirectoryConfiguration", "Tfs")?_=' + new Date().getTime(),
+            data: 'guid=@Model.Guid',
+            success: function (data) {
+                if (data.success) {
+                    // oh well;
+                    location.reload(true);
+                } else {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            },
+        });
+
+    };
+
+    saveConfig = function() {
+        showSpinner();
+        var enabled = 'enabled=' + ($('#ad_custom').is(':checked') ? 'true' : 'false');
+        var host = $('#ad_server').val() ? 'host=' + encodeURIComponent($('#ad_server').val()) : '';
+        var user = $('#ad_user').val() ? 'user=' + encodeURIComponent($('#ad_user').val()) : '';
+        var password = $('#ad_password').val() ? 'password=' + encodeURIComponent($('#ad_password').val()) : '';
+        var type = $('#ad_property').val() ? 'type=' + encodeURIComponent($('#ad_property').val()) : '';
+        var data = 'guid=@Model.Guid&' + enabled + '&' + host + '&' + user + '&' + password + '&' + type;
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetActiveDirectoryConfiguration", "Tfs")?_=' + new Date().getTime(),
+            data: data,
+            success: function (data) {
+                if (data.success) {
+                    getConfig();
+                } else {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            },
+        });
+    };
+
+    $(document).ready(function () {
+        fillHelp('#tfsadvancedhelp');
+        setAdConfigState();
+        $('#ad_custom').change(function () {
+            setAdConfigState();
+        });
+
+        $('#ad_save').click(function () {
+            saveConfig();
+        });
+        $('#ad_test').click(function () {
+            testConnection();
+        });
+    });
+
+</script>
