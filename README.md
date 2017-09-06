@@ -31,11 +31,11 @@ The default user/pass is Alice/contoso!
 ### How to change the user/password ###
 
 * Edit the App_Data/security/users.xml
-* Commit the changes and git push to the origin/master
+* Commit the changes and git push to the origin/master  (git commit -a  and  git push origin master )
 
 ### How to update the synchronizer ###
 
 * git fetch tfs4jira - download the newest version
 * git rebase tfs4jira/master - to preserve user/pass changes
-* git push origin master
+* git push origin master --force
 
