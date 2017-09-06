@@ -7,7 +7,7 @@ This document is a howto for running the TFS4JIRA [Synchronizer](https://spartez
 You have to have a basic [git](https://git-scm.com/) skills.
 
 
-### The fastest way - an 1 hour eval ###
+### The fastest way ###
 
 * go to the [Azure App Service](https://azure.microsoft.com/en-us/try/app-service/web/?language=cs)
 * choose (click) "ASP.NET Empty Site"
