@@ -217,12 +217,12 @@ else
                 txt += '<td class="nowrap">' + (error.JiraIssueKey ? ('<a target="_blank" href="' + error.IssueUrl + '">' + error.JiraIssueKey + '</a>') : 'None') + '</td>';
                 txt += '<td class="nowrap">' + (error.TfsWorkItemId ? ('<a target="_blank" href="' + error.WorkItemUrl + '">#' + error.TfsWorkItemId + '</a>') : 'None') + '</td>';
                 txt += '<td class="nowrap">' + getFormattedDate(error.Timestamp) + '</td>';
-                txt += '<td>' + (error.ErrorSummary ? '<a title="Click for details" href="#" class="syncerrdetails" id="syncerrdetails-' + error.SynchronizationErrorId + '">' + error.ErrorSummary + '</a>' : 'None') + '</td>';
-                txt += '<td class="nowrap sync-errors-operations"><a href="#" class="syncerrack" id="syncerrack-' + error.SynchronizationErrorId + '">Acknowledge (forget)</a>&nbsp;|&nbsp;';
+                txt += '<td>' + (error.ErrorSummary ? '<a title="Click for details" href="#" class="syncerrdetails" id="syncerrdetails-' + error.Id + '">' + error.ErrorSummary + '</a>' : 'None') + '</td>';
+                txt += '<td class="nowrap sync-errors-operations"><a href="#" class="syncerrack" id="syncerrack-' + error.Id + '">Acknowledge (forget)</a>&nbsp;|&nbsp;';
 
                 txt += (error.ForceSynchronization) 
                     ? '<span class="sync-errors-resynchronization-forced">Resynchronization forced</span>'
-                    : '<a href="#" class="syncerrforce" id="syncerrforce-' + error.SynchronizationErrorId + '">Force resynchronization</a>';
+                    : '<a href="#" class="syncerrforce" id="syncerrforce-' + error.Id + '">Force resynchronization</a>';
 
                 txt += '</td>';
                 txt += '</tr>';
@@ -237,7 +237,7 @@ else
                     };
                     errorData.mapping = mappingData;
                 }
-                $('#syncerrors').data(error.SynchronizationErrorId.toString(), errorData);
+                $('#syncerrors').data(error.Id.toString(), errorData);
             }
             txt += '</tbody>';
             txt += '</table>';
