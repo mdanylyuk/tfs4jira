@@ -53,7 +53,7 @@ The bare instance is now ready, now you need to configure it for the Synchronize
 
 * Go to the freshly created service (App services >> name of your service).
 * Go to Deployment >> Deployment credentials and set the deployment username and password. Remember to save it.
-* Go to Deplomnett >> Deployment option and choose the "**local Git Repository**" as a Deployment Source.
+* Go to Deployment >> Deployment option and choose the "**local Git Repository**" as a Deployment Source.
 * Go to Settings >> Application settings and: 
     * disable PHP,
     * set "Always On" to "On"
@@ -61,7 +61,7 @@ The bare instance is now ready, now you need to configure it for the Synchronize
 * Go to Settings >> Properties and take note of the "**GIT URL**". You will need it in the next step.
 
 Installing the synchronizer:
-The steps below are to be executed on any mashine with a git client installed.
+The steps below are to be executed on any machine with a git client installed.
 
 * Use git client and clone the repo - **git clone WEB_APP_GIT_URL** . 
 * Go to the newly created repo. 
@@ -70,7 +70,7 @@ The steps below are to be executed on any mashine with a git client installed.
 * Upload the synchronizer to Azure - **git push origin master**
 
 Go to your web app site. You should see the Synchronizer login screen.
-One last thing: **Change the default user/pasword!!!**
+One last thing: **Change the default user/password!!!**
 
 ### How to change the user/password ###
 
