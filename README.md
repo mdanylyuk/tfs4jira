@@ -85,7 +85,7 @@ One last thing: **Change the default user/password!!!**
 * **git rebase tfs4jira/master** - to preserve user/pass changes
 * **git push origin master --force**
 
-### How to do a backup ###
+### How to do a backup/restore ###
 We recommend to use the Azure's site backup/restore.
 
 * Stop the application. Go to App services >> name of your service >> Overview and click "Stop"
@@ -96,7 +96,7 @@ We recommend to use the Azure's site backup/restore.
 
 If your backup ends up with "Partially Succeeded" - this means you forgot to stop the app or did not wait for long enough for your synchronizer to stop.
 
-#### restore ###
+#### restore ####
 
 * Go to App services >> name of your service >> Settings >> Backups
 * Click restore, choose the backup to restore from and click "Ok"
