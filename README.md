@@ -55,9 +55,9 @@ The bare instance is now ready, now you need to configure it for the Synchronize
 * Go to Deployment >> Deployment credentials and set the deployment username and password. Remember to save it.
 * Go to Deplomnett >> Deployment option and choose the "**local Git Repository**" as a Deployment Source.
 * Go to Settings >> Application settings and: 
-* * disable PHP,
-* * set "Always On" to "On"
-* * Save the changes.
+ * disable PHP,
+ * set "Always On" to "On"
+ * Save the changes.
 * Go to Settings >> Properties and take note of the "**GIT URL**". You will need it in the next step.
 
 Installing the synchronizer:
@@ -76,8 +76,8 @@ One last thing: **Change the default user/pasword!!!**
 
 * Edit the App_Data/security/users.xml
 * Commit the changes and git push to the origin/master  
-* * **git commit -a** 
-* * **git push origin master**
+ * **git commit -a** 
+ * **git push origin master**
 
 ### How to update the synchronizer ###
 
