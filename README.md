@@ -55,8 +55,8 @@ The bare instance is now ready, now you need to configure it for the Synchronize
 * Go to Deployment >> Deployment credentials and set the deployment username and password. Remember to save it.
 * Go to Deployment >> Deployment option and choose the "**local Git Repository**" as a Deployment Source.
 * Go to Settings >> Application settings and: 
-    * disable PHP,
-    * set "Always On" to "On"
+    * Disable PHP,
+    * Set "Always On" to "On"
     * Save the changes.
 * Go to Settings >> Properties and take note of the "**GIT URL**". You will need it in the next step.
 
@@ -92,9 +92,9 @@ We recommend to use the Azure's site backup/restore.
 * Wait for your Synchronizer to stop. You can see this in the azure portal Activity Log.
 * Go to Settings >> Backups (if you have not configured it before, there will be a nice wizard to guide you trough it)
 * Click "Backup" to make a backup.
-* After it has succeeded go to Overview and and start your Synchronizer.
+* After it has succeeded go to Overview and start your Synchronizer.
 
-If your backup ends up with "Partially Succeeded" - this means you forgot to stop the app or did not wait for long enough for your synchronizer to stop.
+If your backup ends up with "Partially Succeeded" - this means you forgot to stop the app or did not wait long enough for your synchronizer to stop.
 
 #### restore ####
 
