@@ -1911,4 +1911,27 @@ input.tfs4jira-input-field,
     background-image: url("../Images/error-white.svg");
 }
 
+/* floating side component */
+
+#side-container .wizard-side-component {
+    position: relative;
+    right: unset;
+    height: unset;
+    min-height: 200px;
+    max-height: 500px;
+}
+
+#side-container .wizard-side-component.should-be-fixed {
+    position: fixed;
+}
+
+#side-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
 /* */

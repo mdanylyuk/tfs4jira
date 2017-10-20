@@ -196,12 +196,19 @@
 <div id="tfsspehelp" style="display: none;">
     @if (Model == SyncProfile.Empty)
     {
-       Html.RenderPartial("Help/Help_NewProfile");
+        Html.RenderPartial("Help/Help_NewProfile");
     }
     else
     {
-       Html.RenderPartial("Help/Help_EditProfileSettings");
+        Html.RenderPartial("Help/Help_EditProfileSettings");
     }
+</div>
+
+<div id="side-container">
+    <div id="tfs4jira-vue-container">
+        <wizard-side-component profile-guid="@Model.Guid"></wizard-side-component>
+    </div>
+    <script src="@Url.Content("~/FrontendResources/bundle.js")" type="text/javascript"></script>
 </div>
 
 <script type="text/javascript">
@@ -209,6 +216,21 @@
     var newprofile = profileguid === '00000000-0000-0000-0000-000000000000';
     
     $(document).ready(function () {
+        var $sideComponent = $(".wizard-side-component");
+        var $w = $(window);
+        if ($sideComponent.length) {
+            var sideComponentPosY = $sideComponent.offset().top;
+            var isSideComponentPositionFixed = false;
+            $w.scroll(function() {
+                var scrollTop = $w.scrollTop();
+                var isScrolledBellowSideComponent = scrollTop > sideComponentPosY;
+                if (isScrolledBellowSideComponent !== isSideComponentPositionFixed) {
+                    $sideComponent.toggleClass("should-be-fixed", isScrolledBellowSideComponent);
+                    isSideComponentPositionFixed = isScrolledBellowSideComponent;
+                }
+            });
+        }
+
         showSpinner();
 
         $('#interval').jStepper({ minValue: 1, defaultValue: 60, allowDecimals: false });
@@ -339,7 +361,20 @@
         );
     };
 
-
+    getProfileData = function() {
+        return {
+            JiraUrl: $('#jiraurl').val(),
+            JiraUser: $('#jirauser').val(),
+            JiraPassword: $('#jirapassword').val(),
+            OnDemandJira: $('#jiraondemand')[0].checked ? "true" : "false",
+            TfsUrl: $('#tfsurl').val(),
+            TfsDomain: $('#tfsdomain').val(),
+            TfsUser: $('#tfsuser').val(),
+            TfsPassword: $('#tfspassword').val(),
+            TfsIsCloud: $('#hostedtfs')[0].checked ? "true" : "false"
+        }
+    }
+    
     $('#jiratestgetterbtn').click(function() {
         var button = this;
         $(this).parent().hide();
@@ -374,6 +409,9 @@
                 errorDialog('body', getXhrErrorResponse(xhr), null);
             }
         });
+
+        window.Spartez.Shared.profileDirt = getProfileData();
+        window.Spartez.Shared.jiraDirty = true;
     });
 
     $('#tfstestgetterbtn').click(function() {
@@ -412,6 +450,9 @@
                 errorDialog('body', getXhrErrorResponse(xhr), null);
             }
         });
+
+        window.Spartez.Shared.profileDirt = getProfileData();
+        window.Spartez.Shared.tfsDirty = true;
     });
 
     $('#jiraproject').fieldsel({

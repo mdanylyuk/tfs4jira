@@ -21,6 +21,7 @@
         <label for="tfs-password">Password</label>
         <input id="tfs-password" type="password" />
         <div class="tfs4jira-field-error"></div>
+        <div id="tfs-visualstudio-hint" class="tfs4jira-field-description">Remember, that in order to connect with visualstudio.com instance, you have to enable and use Alternate Credentials. See <a href="https://confluence.spartez.com/pages/viewpage.action?pageId=8781995" target="_blank">documentation page</a></div>
     </div>
     <div class="tfs4jira-fieldgroup">
         <label for="tfs-login">Domain</label>
@@ -51,16 +52,26 @@
             if (validate()) {
                 saveFocusedElement();
 
-                testConnection()
-                    .done(function testSuccessedAfterNextButtonClicked() {
-                        synchronizationProfile.TfsUrl = $("#tfs-url").val().trim();
-                        synchronizationProfile.TfsUser = $("#tfs-login").val().trim();
-                        synchronizationProfile.TfsDomain = $("#tfs-domain").val().trim();
-                        synchronizationProfile.TfsPassword = $("#tfs-password").val();
-                        synchronizationProfile.HostedTfs = $("#tfs-is-hosted")[0].checked;
+                synchronizationProfile.TfsUrl = $("#tfs-url").val().trim();
+                synchronizationProfile.TfsUser = $("#tfs-login").val().trim();
+                synchronizationProfile.TfsDomain = $("#tfs-domain").val().trim();
+                synchronizationProfile.TfsPassword = $("#tfs-password").val();
+                synchronizationProfile.HostedTfs = $("#tfs-is-hosted")[0].checked;
 
-                        SaveModelAndGoToNextStep();
-                    });
+                SaveModel().done(function() {
+                    testConnection()
+                        .done(function testSuccessedAfterNextButtonClicked() {
+                            SaveModelAndGoToNextStep();
+                        });
+                    window.Spartez.Shared.profileDirt = {
+                        TfsUrl: synchronizationProfile.TfsUrl,
+                        TfsUser: synchronizationProfile.TfsUser,
+                        TfsDomain: synchronizationProfile.TfsDomain,
+                        TfsPassword: synchronizationProfile.TfsPassword,
+                        HostedTfs: synchronizationProfile.HostedTfs,
+                    }
+                    window.Spartez.Shared.tfsDirty = true;
+                });
             }
         });
 
@@ -68,10 +79,36 @@
             if (validate()) {
                 saveFocusedElement();
 
-                testConnection()
-                    .done(function testSuccessed() {
-                        infoDialog('body', 'Success! TFS server location and credentials seem to be fine.', restoreFocus);
-                    });
+                synchronizationProfile.TfsUrl = $("#tfs-url").val().trim();
+                synchronizationProfile.TfsUser = $("#tfs-login").val().trim();
+                synchronizationProfile.TfsDomain = $("#tfs-domain").val().trim();
+                synchronizationProfile.TfsPassword = $("#tfs-password").val();
+                synchronizationProfile.HostedTfs = $("#tfs-is-hosted")[0].checked;
+
+                SaveModel().done(function() {
+                    testConnection()
+                        .done(function testSuccessed() {
+                            infoDialog('body', 'Success! TFS server location and credentials seem to be fine.', restoreFocus);
+                        });
+                    window.Spartez.Shared.profileDirt = {
+                        TfsUrl: synchronizationProfile.TfsUrl,
+                        TfsUser: synchronizationProfile.TfsUser,
+                        TfsDomain: synchronizationProfile.TfsDomain,
+                        TfsPassword: synchronizationProfile.TfsPassword,
+                        HostedTfs: synchronizationProfile.HostedTfs,
+                    }           
+                    window.Spartez.Shared.tfsDirty = true;
+                });
+            }
+        });
+
+        $("#tfs-url").change(function() {
+            var $tfsVisualstudioHint = $("#tfs-visualstudio-hint");
+            var tfsUrl = $("#tfs-url").val().trim();
+            if (tfsUrl && tfsUrl.indexOf('.visualstudio.com') !== -1) {
+                $tfsVisualstudioHint.show();
+            } else {
+                $tfsVisualstudioHint.hide();
             }
         });
 

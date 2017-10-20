@@ -36,7 +36,15 @@
 
 @{ Html.RenderPartial("_Scripts"); }
 
+@if (Model.Guid.ToString() != "00000000-0000-0000-0000-000000000000") {
+    <div id="tfs4jira-vue-container">
+        <wizard-side-component profile-guid="@Model.Guid"></wizard-side-component>
+    </div>
+    <script src="@Url.Content("~/FrontendResources/bundle.js")" type="text/javascript"></script>
+}
+
 <script>
+    window.Spartez = window.Spartez || { Shared:{} };
     var EMPTY_GUID = "00000000-0000-0000-0000-000000000000";
 
     var steps = @Html.Raw(JsonConvert.SerializeObject(WizardStep.Steps));
@@ -68,6 +76,7 @@
         $currentStep.trigger("@NavigationEvents.ActivateView", parameters);
 
         currentStep = step;
+        window.Spartez.Shared.currentWizardStep = step.Id;
 
         updateControlButtons(currentStep);
     }
@@ -125,6 +134,27 @@
                 }
         );
 
+        return result.promise();
+    }
+
+    function SaveModel() {
+        var result = $.Deferred();
+        //TODO show throbber or some other progress indicator
+
+        var currentStepIdx = getStepIndexInStepsList(currentStep);
+
+        sendProfileUpdateRequest(
+            function() {
+                if (currentStepIdx === null) {
+                    throw "Cannot find step: " + step.Id;
+                }
+                result.resolve();
+            },
+            function(error) {
+                console.log(error);
+                result.reject(error);
+                //TODO errorDialog('body', getXhrErrorResponse(xhr), null);
+            });
         return result.promise();
     }
 

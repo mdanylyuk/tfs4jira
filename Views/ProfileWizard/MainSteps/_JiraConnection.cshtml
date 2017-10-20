@@ -45,15 +45,26 @@
             if (validate()) {
                 saveFocusedElement();
 
-                testConnection()
-                    .done(function testSuccessedAfterNextButtonClicked() {
-                        synchronizationProfile.JiraUrl = $("#jira-url").val().trim();
-                        synchronizationProfile.JiraUser = $("#jira-login").val().trim();
-                        synchronizationProfile.JiraPassword = $("#jira-password").val();
-                        synchronizationProfile.OnDemandJira = $("#jira-is-cloud")[0].checked;
+                synchronizationProfile.JiraUrl = $("#jira-url").val().trim();
+                synchronizationProfile.JiraUser = $("#jira-login").val().trim();
+                synchronizationProfile.JiraPassword = $("#jira-password").val();
+                synchronizationProfile.OnDemandJira = $("#jira-is-cloud")[0].checked;
 
-                        SaveModelAndGoToNextStep();
-                    });
+                SaveModel().done(
+                    function() {
+                        testConnection()
+                            .done(function testSuccessedAfterNextButtonClicked() {
+                                SaveModelAndGoToNextStep();
+                            });
+                        window.Spartez.Shared.profileDirt = {
+                            JiraUrl: synchronizationProfile.JiraUrl,
+                            JiraUser: synchronizationProfile.JiraUser,
+                            JiraPassword: synchronizationProfile.JiraPassword,
+                            OnDemandJira: synchronizationProfile.OnDemandJira
+                        }
+                        window.Spartez.Shared.jiraDirty = true;
+                    }
+                );
             }
         });
 
@@ -61,10 +72,28 @@
             if (validate()) {
                 saveFocusedElement();
 
-                testConnection()
-                    .done(function testSuccessed() {
-                        infoDialog('body', 'Success! JIRA server location and credentials seem to be fine.', restoreFocus);
-                    });
+                synchronizationProfile.JiraUrl = $("#jira-url").val().trim();
+                synchronizationProfile.JiraUser = $("#jira-login").val().trim();
+                synchronizationProfile.JiraPassword = $("#jira-password").val();
+                synchronizationProfile.OnDemandJira = $("#jira-is-cloud")[0].checked;
+
+                SaveModel().done(
+                    function() {
+                        testConnection()
+                            .done(function testSuccessed() {
+                                infoDialog('body',
+                                    'Success! JIRA server location and credentials seem to be fine.',
+                                    restoreFocus);
+                            });
+                        window.Spartez.Shared.profileDirt = {
+                            JiraUrl: synchronizationProfile.JiraUrl,
+                            JiraUser: synchronizationProfile.JiraUser,
+                            JiraPassword: synchronizationProfile.JiraPassword,
+                            OnDemandJira: synchronizationProfile.OnDemandJira
+                        }
+                        window.Spartez.Shared.jiraDirty = true;
+                    }
+                );
             }
         });
 

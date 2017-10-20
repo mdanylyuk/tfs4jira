@@ -1,6 +1,6 @@
 <Users>
-  <User>
-    <UserName>Alice</UserName>
-    <Password>contoso!</Password>
-  </User>
+    <User>
+        <UserName>Alice</UserName>
+        <Password>contoso!</Password>
+    </User>
 </Users>
