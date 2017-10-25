@@ -537,6 +537,11 @@ div.tfs4jira-tooltip-theme {
 
 /* Synchronization profile form
 ----------------------------------------------------------*/
+
+form.configForm {
+    margin-right: 30%;
+}
+
 .profileform
 {
 	position: relative;

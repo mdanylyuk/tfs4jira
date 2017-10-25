@@ -8,7 +8,7 @@
 
 <div id="messages"></div>
 
-<form>
+<form class="configForm">
     <div id="syncprofileform" class="profileform">
         @* Ugly hack for Chrome - it prevents autocompletion on JIRA User Login and Password fields. *@
         <input style="display:none">
@@ -171,13 +171,15 @@
                     </div>
                     <div class="field-description">If you check this option then paired JIRA issue key will be stored in work item History instead of a custom field.</div>
                 </div>
-        <div class="row">
-            <div class="field">
-                <div class="label">Map JIRA Reporter To</div>
-                <div class="editbox">@Html.TextBox("tfsjirareporter", Model.TfsJiraReporter, new {@class = "input"})</div>
+        @if (!string.IsNullOrEmpty(Model.TfsJiraReporter)) {
+            <div class="row">
+                <div class="field">
+                    <div class="label">Map JIRA Reporter To</div>
+                    <div class="editbox">@Html.TextBox("tfsjirareporter", Model.TfsJiraReporter, new {@class = "input"})</div>
+                </div>
+                <div class="field-description">Optional. TFS work item field to be set to JIRA issue reporter name during synchronization.</div>
             </div>
-            <div class="field-description">Optional. TFS work item field to be set to JIRA issue reporter name during synchronization.</div>
-        </div>
+        }
         <h2 class="headerh2"></h2>
                 <div class="row">
         <div class="field">
