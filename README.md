@@ -29,8 +29,6 @@ The default user/pass is Alice/contoso!
 
 ### The production ready way ###
 
-*This is not yet ready for production*
-
 #### prerequisites ####
 
 * Microsoft Azure account with active subscription.
@@ -81,6 +79,7 @@ One last thing: **Change the default user/password!!!**
 
 ### How to update the synchronizer ###
 
+* Go to the directory, where your web app git repo is. (or just clone it again,  see "Installing the synchronizer" above.)
 * **git fetch tfs4jira** - download the newest version
 * **git rebase tfs4jira/master** - to preserve user/pass changes
 * **git push origin master --force**
