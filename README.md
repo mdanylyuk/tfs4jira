@@ -2,7 +2,7 @@
 
 This document is a howto for running the TFS4JIRA [Synchronizer](https://spartez.com/products/tfs4jira) as an [Azure Web App](https://azure.microsoft.com/en-us/services/app-service/web/).
 We prepared this deployment option for those, who doesn't want to host the Stynchronizer using their own infrastructure, 
-but are OK with running it, **by themselves**, as a Azure cloud app.
+but are OK with running it, **by themselves**, as a cloud app.
 
 ### The fastest way - for a quick, 1h eval###
 
