@@ -10,6 +10,7 @@
 <h2>Basic Mappings</h2>
 <div id="basicmappings">
     <ul class="mapping-section">
+        <li><a href="@Url.Action("MappingsLinks", "Profiles", new {guid = @Model.Guid})">Links Mapping</a></li>
         <li>
             <span>Synchronization Direction</span>
             <div>
@@ -268,7 +269,7 @@
         for (var i = 0; i < mappings.length; ++i) {
             if (mappings[i].jira === 'issuetype') {
                 issueTypeMapping = mappings[i].id;
-                issueTypeMappingHtmlElement = '<li class="dynamic-content"><a href="' + location.href + '&mappingid=' + mappings[i].id + '&subtasks=false" class="editmapping" id="editmapping' + mappings[i].id + '">JIRA Issue Type/TFS Work Item Type</a></li>';
+                issueTypeMappingHtmlElement = '<li class="dynamic-content"><a href="' + location.href.replace('#/', '') + '&mappingid=' + mappings[i].id + '&subtasks=false" class="editmapping" id="editmapping' + mappings[i].id + '">JIRA Issue Type/TFS Work Item Type</a></li>';
             } else if (mappings[i].jira === '###TFS4JIRA###.JIRA.subtask.issuetype') {
                 subtaskMapping = mappings[i].id;
             } else if (mappings[i].jira === '###TFS4JIRA###.JIRA.Status') {

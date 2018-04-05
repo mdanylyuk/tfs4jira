@@ -1,0 +1,7 @@
+﻿@{
+    var Guid = ViewData["Guid"];
+}
+<a id="backlink" href="@Url.Action("Index", "Tfs", new {id = @Guid})?mappings=1'">Back</a>
+<div class="vue-container" id="tfs4jira-vue-container">
+    <link-mapping profile-guid="@Guid" load-on-init="true"></link-mapping>
+</div>

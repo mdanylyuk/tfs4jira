@@ -36,6 +36,7 @@
         });
 
         $root.on("@NavigationEvents.NextButtonClicked", function () {
+            window.Spartez.Shared.notifyComponent('link-mapping');
             SaveModelAndGoToNextStep();
         });
     });

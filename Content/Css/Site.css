@@ -1930,13 +1930,15 @@ input.tfs4jira-input-field,
     position: fixed;
 }
 
+
 #side-container {
-    display: flex;
+    display: block;
     flex-direction: row;
     justify-content: flex-end;
     position: absolute;
     right: 0;
     top: 0;
+    width: auto;
 }
 
 /* */

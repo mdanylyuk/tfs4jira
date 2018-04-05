@@ -17,7 +17,7 @@
         // All steps are added to DOM, but they are hidden
         foreach (var step in WizardStep.Steps)
         {
-            Html.RenderPartial(step.PartialName, new { Id = step.Id, Class = stepContainerClass });
+            Html.RenderPartial(step.PartialName, new { Id = step.Id, Class = stepContainerClass, Guid = Model.Guid });
         }
 
         foreach (var step in WizardStep.SideSteps)
@@ -37,10 +37,9 @@
 @{ Html.RenderPartial("_Scripts"); }
 
 @if (Model.Guid.ToString() != "00000000-0000-0000-0000-000000000000") {
-    <div id="tfs4jira-vue-container">
+    <div class="vue-container" id="tfs4jira-vue-container">
         <wizard-side-component profile-guid="@Model.Guid"></wizard-side-component>
-    </div>
-    <script src="@Url.Content("~/FrontendResources/bundle.js")" type="text/javascript"></script>
+    </div>    
 }
 
 <script>
