@@ -1,4 +1,5 @@
-﻿@using synchronizer.Services
+﻿@using synchronizer.Models
+@using synchronizer.Services
 @model synchronizer.Models.InitialSyncModel
 
 @{
@@ -46,27 +47,27 @@
             </p>
         </div>
 
-        @if (!Model.License.IsLicenseValid)
+        @if (Model.License.Error != LicenseError.NoError)
         {
             <div class="message-box error">
                 <span class="message-icon"></span>
                 <p>
-                    <strong>Your license is not valid or you have obsolete version of plug-in in your JIRA.</strong>
-                </p>
-            </div>
-        }
-        else if (Model.License.IsEvaluation)
-        {
-            <div class="message-box warning">
-                <span class="message-icon"></span>
-                <p>
-                    <strong>You have evaluation license.</strong><br/>
-                    There is a limitation in using Initial Synchronization for JIRA Server evaluation licenses (it's not applicable for JIRA Cloud).<br/>
-                    Synchronization will stop after successful sync of 30 issue / work item pairs.
+                    <strong>@Model.License.ErrorMessage</strong>
                 </p>
             </div>
         }
 
+        @if (Model.License.IsEvaluation) {
+            <div class="message-box warning">
+                <span class="message-icon"></span>
+                <p>
+                    <strong>You have evaluation license</strong><br />
+                    There is a limitation in using Initial Synchronization for JIRA Server
+                    evaluation licenses (it's not applicable for JIRA Cloud).<br />
+                    Synchronization will stop after successful sync of 30 issue / work item pairs.
+                </p>
+            </div>
+        }
     </div>
     
     <div class="initial-sync-section">
