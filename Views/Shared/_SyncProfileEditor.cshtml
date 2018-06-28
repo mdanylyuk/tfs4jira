@@ -208,7 +208,7 @@
 
 <div id="side-container">
     <div class="vue-container" id="tfs4jira-vue-container">
-        <wizard-side-component profile-guid="@Model.Guid"></wizard-side-component>
+        <wizard-side profile-guid="@Model.Guid"></wizard-side>
     </div>    
 </div>
 
@@ -266,6 +266,14 @@
                         if (data.result.values.tfsjirareporter) {
                             $('#tfsjirareporter').fieldsel("setSel", data.result.values.tfsjirareporter.Key, data.result.values.tfsjirareporter.Value);
                         }
+                        let profileData = getProfileData();
+                        profileData.jiraDirty = true;
+                        profileData.tfsDirty = true;                        
+                        window.Spartez.Shared.sendNotification(
+                            'WizardSide', {
+                                profileDataToOverride: profileData
+                            }
+                        );
                         clearMessages();
                     } else {
                         showErrorMessage(data.error);
@@ -396,8 +404,13 @@
             }
         });
 
-        window.Spartez.Shared.profileDirt = getProfileData();
-        window.Spartez.Shared.jiraDirty = true;
+        let profileData = getProfileData();
+        profileData.jiraDirty = true;        
+        window.Spartez.Shared.sendNotification(
+            'WizardSide', {
+                profileDataToOverride: profileData
+            }
+        );        
     });
 
     $('#tfstestgetterbtn').click(function() {
@@ -437,8 +450,13 @@
             }
         });
 
-        window.Spartez.Shared.profileDirt = getProfileData();
-        window.Spartez.Shared.tfsDirty = true;
+        let profileData = getProfileData();
+        profileData.tfsDirty = true;
+        window.Spartez.Shared.sendNotification(
+            'WizardSide', {
+                profileDataToOverride: profileData
+            }
+        );        
     });
 
     $('#jiraproject').fieldsel({

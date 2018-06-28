@@ -56,13 +56,17 @@
                             .done(function testSuccessedAfterNextButtonClicked() {
                                 SaveModelAndGoToNextStep();
                             });
-                        window.Spartez.Shared.profileDirt = {
-                            JiraUrl: synchronizationProfile.JiraUrl,
-                            JiraUser: synchronizationProfile.JiraUser,
-                            JiraPassword: synchronizationProfile.JiraPassword,
-                            OnDemandJira: synchronizationProfile.OnDemandJira
-                        }
-                        window.Spartez.Shared.jiraDirty = true;
+                        window.Spartez.Shared.sendNotification(
+                            'WizardSide', {
+                                profileDataToOverride:{
+                                    JiraUrl: synchronizationProfile.JiraUrl,
+                                    JiraUser: synchronizationProfile.JiraUser,
+                                    JiraPassword: synchronizationProfile.JiraPassword,
+                                    OnDemandJira: synchronizationProfile.OnDemandJira,
+                                    jiraDirty: true
+                                }
+                            }
+                        );      
                     }
                 );
             }
@@ -85,13 +89,17 @@
                                     'Success! JIRA server location and credentials seem to be fine.',
                                     restoreFocus);
                             });
-                        window.Spartez.Shared.profileDirt = {
-                            JiraUrl: synchronizationProfile.JiraUrl,
-                            JiraUser: synchronizationProfile.JiraUser,
-                            JiraPassword: synchronizationProfile.JiraPassword,
-                            OnDemandJira: synchronizationProfile.OnDemandJira
-                        }
-                        window.Spartez.Shared.jiraDirty = true;
+                        window.Spartez.Shared.sendNotification(
+                            'WizardSide', {
+                                profileDataToOverride: {
+                                    JiraUrl: synchronizationProfile.JiraUrl,
+                                    JiraUser: synchronizationProfile.JiraUser,
+                                    JiraPassword: synchronizationProfile.JiraPassword,
+                                    OnDemandJira: synchronizationProfile.OnDemandJira,
+                                    jiraDirty: true
+                                }
+                            }
+                        );                        
                     }
                 );
             }

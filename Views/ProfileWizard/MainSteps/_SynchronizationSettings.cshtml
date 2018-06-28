@@ -35,7 +35,15 @@
             <option value="3">Both Directions</option>
         </select>
     </div>
-    
+    <div class="tfs4jira-fieldgroup">
+        <label for="remotelinks-synchronization">Web Links / Hyperlinks Synchronization</label>
+        <select id="remotelinks-synchronization">
+            <option value="0" selected="selected">Not Synchronized</option>
+            <option value="1">From TFS to JIRA</option>
+            <option value="2">From JIRA to TFS</option>
+            <option value="3">Both Directions</option>
+        </select>
+    </div>
     <div class="tfs4jira-horizontal-separator synchronization-settings-horizontal-separator"></div>
     
     <div class="tfs4jira-fieldgroup">
@@ -194,6 +202,7 @@
                 synchronizationProfile.SyncDirection = $("#synchronization-direction").select2("val");
                 synchronizationProfile.CommentSyncDirection = $("#comment-synchronization").select2("val");
                 synchronizationProfile.AttachmentMappingMode = $("#attachment-synchronization").select2("val");
+                synchronizationProfile.RemoteLinksMappingMode = $("#remotelinks-synchronization").select2("val");
                 synchronizationProfile.TfsCollection = $("#tfs-collection").select2("val");
 
                 if (shouldUpdateSubtaskSyncDirection()) {

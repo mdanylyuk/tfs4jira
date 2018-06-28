@@ -63,14 +63,18 @@
                         .done(function testSuccessedAfterNextButtonClicked() {
                             SaveModelAndGoToNextStep();
                         });
-                    window.Spartez.Shared.profileDirt = {
-                        TfsUrl: synchronizationProfile.TfsUrl,
-                        TfsUser: synchronizationProfile.TfsUser,
-                        TfsDomain: synchronizationProfile.TfsDomain,
-                        TfsPassword: synchronizationProfile.TfsPassword,
-                        HostedTfs: synchronizationProfile.HostedTfs,
-                    }
-                    window.Spartez.Shared.tfsDirty = true;
+                    window.Spartez.Shared.sendNotification(
+                        'WizardSide', {
+                            profileDataToOverride:{
+                            TfsUrl: synchronizationProfile.TfsUrl,
+                            TfsUser: synchronizationProfile.TfsUser,
+                            TfsDomain: synchronizationProfile.TfsDomain,
+                            TfsPassword: synchronizationProfile.TfsPassword,
+                            HostedTfs: synchronizationProfile.HostedTfs,
+                            tfsDirty: true
+                            }
+                        }
+                    );
                 });
             }
         });
@@ -90,14 +94,18 @@
                         .done(function testSuccessed() {
                             infoDialog('body', 'Success! TFS server location and credentials seem to be fine.', restoreFocus);
                         });
-                    window.Spartez.Shared.profileDirt = {
-                        TfsUrl: synchronizationProfile.TfsUrl,
-                        TfsUser: synchronizationProfile.TfsUser,
-                        TfsDomain: synchronizationProfile.TfsDomain,
-                        TfsPassword: synchronizationProfile.TfsPassword,
-                        HostedTfs: synchronizationProfile.HostedTfs,
-                    }           
-                    window.Spartez.Shared.tfsDirty = true;
+                    window.Spartez.Shared.sendNotification(
+                        'WizardSide', {
+                            profileDataToOverride: {
+                                TfsUrl: synchronizationProfile.TfsUrl,
+                                TfsUser: synchronizationProfile.TfsUser,
+                                TfsDomain: synchronizationProfile.TfsDomain,
+                                TfsPassword: synchronizationProfile.TfsPassword,
+                                HostedTfs: synchronizationProfile.HostedTfs,
+                                tfsDirty: true
+                            }
+                        }
+                    );
                 });
             }
         });

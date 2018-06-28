@@ -38,7 +38,7 @@
 
 @if (Model.Guid.ToString() != "00000000-0000-0000-0000-000000000000") {
     <div class="vue-container" id="tfs4jira-vue-container">
-        <wizard-side-component profile-guid="@Model.Guid"></wizard-side-component>
+        <wizard-side profile-guid="@Model.Guid"></wizard-side>
     </div>    
 }
 
@@ -76,7 +76,7 @@
 
         currentStep = step;
         window.Spartez.Shared.currentWizardStep = step.Id;
-
+        window.Spartez.Shared.sendNotification('WizardSide', {wizardStep: step.Id});
         updateControlButtons(currentStep);
     }
 
@@ -276,6 +276,7 @@
         data += getRequestDataPartForProfileAttribute('SubtaskSyncDirection', 'subtasksyncdirection');
         data += getRequestDataPartForProfileAttribute('CommentSyncDirection', 'commentsyncdirection');
         data += getRequestDataPartForProfileAttribute('AttachmentMappingMode', 'attachmentmappingmode');
+        data += getRequestDataPartForProfileAttribute('RemoteLinksMappingMode', 'remotelinksmappingmode');
         data += getRequestDataPartForProfileAttribute('ProfileWizardStep', 'profilewizardstep');
 
         return data;

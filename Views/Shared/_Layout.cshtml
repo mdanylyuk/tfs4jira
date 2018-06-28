@@ -10,14 +10,23 @@
         <link href="@Url.Content("~/Content/Css/select2-3.5.2.min.css")" rel="stylesheet" type="text/css" />
         <link href="@Url.Content("~/Content/Css/jquery.tooltipster.css")" rel="stylesheet" type="text/css" />
         <link href="@Url.Content("~/Content/Css/dropit.css")" rel="stylesheet" type="text/css" />
+        <link href="@Url.Content("~/FrontendResources/static/css/app.css")" rel="stylesheet" type="text/css"/>
         
-            <link href="@Url.Content("~/FrontendResources/static/css/app.css")" rel="stylesheet" type="text/css"/>
-        
-        <script>
+        <script type="text/javascript">
             var contextPath = "@Url.Content("~")".replace(/\/$/, '');
             console.log("Synchronizer context path : \"" + contextPath + "\"");
+            window.Spartez = {
+                Shared: {
+                    notification: null,
+                    notifications: [],
+                    sendNotification: function(receiver, payload) {
+                        this.notification = { receiver: receiver, payload: payload, dispatched: false };
+                        this.notifications.push(this.notification);
+                    }
+                }
+            };
+            window.Spartez.Shared.sendNotification('AppConfig', {contextPath: contextPath});
         </script>
-
         <script src="@Url.Content("~/Scripts/jquery-1.7.2.min.js")" type="text/javascript"></script>
         <script src="@Url.Content("~/Scripts/jquery.cookie.js")" type="text/javascript"></script>
         <script src="@Url.Content("~/Scripts/jquery.jstepper.min.js")" type="text/javascript"></script>
@@ -34,14 +43,14 @@
         <script src="@Url.Content("~/Scripts/moment.min.js")" type="text/javascript"></script>
         <script src="@Url.Content("~/Scripts/underscore.js")" type="text/javascript"></script>
         <script src="@Url.Content("~/Scripts/dropit.js")" type="text/javascript"></script>
-                
-
-        
         <meta http-equiv="Cache-control" content="no-cache" />
     </head>
     <body>
        
     <div class="page">
+        <div class="vue-container" id="notification-handler">
+            <notification-handler></notification-handler>
+        </div>
         <div id="header">
             <a href="@Url.Action("Index", "Tfs", new { id = string.Empty }, null)"><div id="applogo">TFS4JIRA Synchronizer</div></a>
             <div id="logindisplay" style="min-height: 2em;">
@@ -92,9 +101,8 @@
     </div>
     </body>
     
-        <script src="@Url.Content("~/FrontendResources/static/js/manifest.js")" type="text/javascript"></script>
-        <script src="@Url.Content("~/FrontendResources/static/js/vendor.js")" type="text/javascript"></script>
-        <script src="@Url.Content("~/FrontendResources/static/js/app.js")" type="text/javascript"></script>
-    
-        
+    <script src="@Url.Content("~/FrontendResources/static/js/manifest.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/FrontendResources/static/js/vendor.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/FrontendResources/static/js/app.js")" type="text/javascript"></script>
+   
 </html>

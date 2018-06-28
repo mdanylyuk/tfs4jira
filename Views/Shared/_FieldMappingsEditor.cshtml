@@ -38,6 +38,15 @@
             <br><span><strong>Note: </strong>Comments synchronized from TFS to JIRA are created as publicly available to all users</span>
         </div>
     </div>
+    <h2>Web links / Hyperlinks Synchronization Mode</h2>
+    <div class="mapping-section">
+        <select id="remotelinksmappingmode" >
+            <option value="0">Not Synchronized</option>
+            <option value="1">From TFS To JIRA</option>
+            <option value="2">From JIRA To TFS</option>
+            <option value="3">Both Directions</option>
+        </select>
+    </div>
     <h2>Attachment Synchronization Mode</h2>
     <div class="mapping-section">
         <select id="attachmentmappingmode" disabled="disabled">
@@ -115,6 +124,7 @@
     var mappings = [];
     var availableFields = {};
     var attachmentMapping = 0;
+    var remoteLinksMapping = 0;
     var commentMapping = 0;
     var subtaskSyncDirection = 0;
     var subtaskLinkTypes = null;
@@ -313,6 +323,7 @@
         $('#attachmentmappingmode option[value="' + attachmentMapping + '"]').attr('selected', 'selected');
         $('#syncdirection option[value="' + syncDirection + '"]').attr('selected', 'selected');
         $('#commentsyncdirection option[value="' + commentMapping + '"]').attr('selected', 'selected');
+        $('#remotelinksmappingmode option[value="' + remoteLinksMapping + '"]').attr('selected', 'selected');
         $('#subtasksyncdirection option[value="' + subtaskSyncDirection + '"]').attr('selected', 'selected');
 
         // Enable controls after mappings are loaded from server
@@ -429,6 +440,7 @@
                     attachmentMapping = data.result.attachmentMapping ? data.result.attachmentMapping : 0;
                     syncDirection = data.result.syncDirection ? data.result.syncDirection : 3;
                     commentMapping = data.result.commentMapping ? data.result.commentMapping : 0;
+                    remoteLinksMapping = data.result.remoteLinksMapping ? data.result.remoteLinksMapping : 0;
                     subtaskSyncDirection = data.result.subtaskMapping ? data.result.subtaskMapping : 0;
                     subtaskLinkType = data.result.subtaskLinkType;
 
@@ -597,6 +609,26 @@
             success: function (data) {
                 if (data.success) {
                     attachmentMapping = data.result.attachmentMapping ? data.result.attachmentMapping : 0;
+                    showMappings();
+                } else {
+                    showErrorMessage(data.error);
+                }
+            },
+            error: function (xhr) {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            }
+        });
+    });
+    
+    $('#remotelinksmappingmode').live('change', function() {
+        jQuery.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetRemoteLinksMappingMode", "Tfs")?_=' + new Date().getTime(),
+            data: 'guid=@Model.Guid&remoteLinksMappingMode=' + $('#remotelinksmappingmode').val(),
+            success: function (data) {
+                if (data.success) {
+                    remoteLinksMapping = data.result.remoteLinksMapping ? data.result.remoteLinksMapping : 0;
                     showMappings();
                 } else {
                     showErrorMessage(data.error);

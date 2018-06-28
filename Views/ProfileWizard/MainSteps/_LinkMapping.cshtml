@@ -15,7 +15,7 @@
 <script type="text/javascript">
     $(function () {
         $('#@id').on("@NavigationEvents.ActivateView", function (event, parameters) {
-            window.Spartez.Shared.notifyComponent('link-mapping');
+            window.Spartez.Shared.sendNotification('RefreshLinkMappingComponent', {});
         });
 
         $('#@id').on("@NavigationEvents.NextButtonClicked",
