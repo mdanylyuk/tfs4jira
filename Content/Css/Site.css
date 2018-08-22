@@ -907,8 +907,39 @@ input.mapbutton {
     font-size:8px;
 }
 
+/* ----------------------------------------------------------*/
 
-
+/* Styles for hierarchy section
+-----------------------------------------------------------*/
+.hierarchy-section {
+    border-bottom: .3px solid lightgray;
+    padding-top: 1em;
+    width: 50%;
+}
+.hierarchy-section p {
+    margin: 0;
+    font-size: 16px;
+}
+.tfs4jira-group-checkbox input[type="checkbox"],
+.tfs4jira-group-checkbox label {
+    cursor: pointer;
+}
+#hierarchy-vue-container {
+    padding-bottom: 1em;
+}
+.wizard-subtask-ckeckbox {
+    padding: 0 6.1em;
+    margin-left: 0;
+    font-size: 16px;
+}
+#hierarchy-mapping {
+    padding: 0 7em;
+}
+.hierarchy-wizard-step p {
+  margin-left: 4em;
+  margin-right: 4em;
+  font-size: 14px;
+}
 /* ----------------------------------------------------------*/
 
 /* Styles for validation helpers

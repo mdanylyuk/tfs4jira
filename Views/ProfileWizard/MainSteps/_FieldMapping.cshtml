@@ -7,8 +7,13 @@
 
 <div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
     <h1>Field Mapping</h1>
-    
-    @MappingHelpers.MappingComponent(@mappingComponentId)
+    @if (Model.GetType().GetProperty("Guid") != null && @Model.GetType().GetProperty("Guid").GetValue(Model).ToString() != "00000000-0000-0000-0000-000000000000")
+    {
+        <div class="vue-container" id="@mappingComponentId">
+            <fields-mapping load-on-init="true" is-wizard-view="true" profile-guid="@Model.GetType().GetProperty("Guid").GetValue(Model).ToString()"></fields-mapping>
+        </div>
+    }
+    @*@MappingHelpers.MappingComponent(@mappingComponentId)*@
 </div>
 
 <script>
@@ -21,7 +26,8 @@
         var mappedValues;
 
         $root.on("@NavigationEvents.ActivateView", function activateView(event, parameters) {
-            showSpinner();
+            window.Spartez.Shared.sendNotification('RefreshFieldsMappingComponent', {});
+            @*showSpinner();
 
             var possibleFieldsLoader = nonBlockingAjax({
                 url: '@Url.Action("GetAllFields", "Tfs")?without-system-fields=true&_=' + new Date().getTime(),
@@ -47,14 +53,14 @@
 
                 $mapping.trigger('@MappingEvents.Init', mappingOptions);
                 hideSpinner();
-            });
+            });*@
         });
 
         $root.on("@NavigationEvents.NextButtonClicked", function () {
             SaveModelAndGoToNextStep();
         });
 
-        $mapping.on("@MappingEvents.AddMappingButtonClicked", function (event, mappedValue) {
+        @*$mapping.on("@MappingEvents.AddMappingButtonClicked", function (event, mappedValue) {
             nonBlockingAjax({
                 url: '@Url.Action("MapFields", "Tfs")?_=' + new Date().getTime(),
                 data: { guid: synchronizationProfile.Guid, jira: mappedValue.jiraId, tfs: mappedValue.tfsId }
@@ -74,7 +80,7 @@
                 data.mappedValue = mappedValue;
                 $mapping.trigger('@MappingEvents.RemoveMapping', data);
             });
-        });
+        });*@
 
         $mapping.on("@MappingEvents.EditMappingButtonClicked", function (event, mappedValue) {
             SaveModelAndGoToSideStep("@WizardStep.ValuesMapping", mappedValue.mappingId);

@@ -23,6 +23,43 @@
         </li>
     </ul>
 </div>
+<div>
+    <h2>Hierarchy Mapping</h2>
+    <div class="mapping-section">
+        <div class="hierarchy-section" style="padding-top: 0">
+            <div class="vue-container" id="hierarchy-vue-container">
+                <hierarchy profile-guid="@Model.Guid" load-on-init="true"></hierarchy>
+            </div>
+        </div>
+        <div class="hierarchy-section" style="border-bottom: 0;">
+            <p>Subtasks </p>
+            <div style="padding-top: .5em;">
+                <select id="subtasksyncdirection" disabled="disabled">
+                    <option value="0">Not Synchronized</option>
+                    <option value="1">From TFS To JIRA</option>
+                    <option value="2">From JIRA To TFS</option>
+                    <option value="3">Both Directions</option>
+                </select>
+                <div class="subtasks-details-container">
+                    <br>
+                    <div>
+                        <ul style="margin-bottom: 0" class="hidden-on-load subtasks-details">
+                            <li> TFS link type that maps to JIRA subtasks <select id="subtaskslinktype"></select> </li>
+                            <li><a href="#" id="subtasksmapping">Subtasks Mappings</a></li>
+                        </ul>
+                    </div>
+                    <div class="vue-container subtasks-details" id="subtasks-notification" style="display: none;">
+                        <notification class="hierarchy-notification info" icon-name="info-circle" icon-class="info-message">
+                            <p><strong>Jira REST API does not support converting issues to sub-tasks and vice-versa.</strong></p>
+                            <p>This means that if you link a "standalone" TFS work item to a parent work item, or unlink a TFS task from its parent work item,
+                                the corresponding JIRA issue <strong>will not</strong> be changed to/from subtask.</p>
+                        </notification>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div>
     <h2>Comment Synchronization</h2>
@@ -38,15 +75,6 @@
             <br><span><strong>Note: </strong>Comments synchronized from TFS to JIRA are created as publicly available to all users</span>
         </div>
     </div>
-    <h2>Web links / Hyperlinks Synchronization Mode</h2>
-    <div class="mapping-section">
-        <select id="remotelinksmappingmode" >
-            <option value="0">Not Synchronized</option>
-            <option value="1">From TFS To JIRA</option>
-            <option value="2">From JIRA To TFS</option>
-            <option value="3">Both Directions</option>
-        </select>
-    </div>
     <h2>Attachment Synchronization Mode</h2>
     <div class="mapping-section">
         <select id="attachmentmappingmode" disabled="disabled">
@@ -55,63 +83,32 @@
             <option value="2">From JIRA To TFS</option>
             <option value="3">Both Directions</option>
         </select>
-        <div>
-            <br><span>
-                    <strong>Note: </strong>The "Attachment" field in JIRA must not be hidden for attachment synchronization to work. 
-                    JIRA and TFS attachment size limits (10MB and 4MB respectively) may prevent successful synchronization.
-                </span>
+        <div class="vue-container attachments-info" id="attachments-notification" style="width: 50%; display: none;">
+            <notification class="hierarchy-notification info" icon-name="info-circle" icon-class="info-message">
+                <p><strong>Attachment synchronization may not work correctly if:</strong></p>
+                <ul>
+                    <li>The "Attachment" field is hidden inside your Jira project Field Configuration screen</li>
+                    <li>The size of the file exceeds TFS and Jira attachment size limits</li>
+                </ul>
+            </notification>
         </div>
     </div>
-    <h2>Subtasks Synchronization</h2>
+    <h2>Web links / Hyperlinks Synchronization Mode</h2>
     <div class="mapping-section">
-        <select id="subtasksyncdirection" disabled="disabled">
+        <select id="remotelinksmappingmode">
             <option value="0">Not Synchronized</option>
             <option value="1">From TFS To JIRA</option>
             <option value="2">From JIRA To TFS</option>
             <option value="3">Both Directions</option>
         </select>
-        <div>
-            <br>
-            <span>
-                <strong>Note: </strong> JIRA remote API does not support changing issues to subtasks and subtasks to issues.<br>
-                This means that if you link a "standalone" TFS work item to a parent work item, or unlink a TFS task from its parent work item,<br>
-                a corresponding JIRA issue <strong>will not</strong> be changed to/from subtask.
-            </span>
-        </div>
-        <ul style="margin-bottom: 0" class="hidden-on-load">
-            <li>
-                TFS link type that maps to JIRA subtasks <select id="subtaskslinktype"></select>
-            </li>
-            <li><a href="#" id="subtasksmapping">Subtasks Mappings</a></li>
-        </ul>
     </div>
-
 </div>
 
 <h2>Other Mappings</h2>
 <div class="fieldlistwrap">
-    <div class="fieldlistcontent">
-        <div class="fieldlistleft">
-            <div class="fieldlisthead">JIRA Fields</div>
-            <select id="jirafields" size="10" class="fieldlist">
-            </select>
-        </div>
-
-        <div class="fieldlistmiddle"><input type="button" value="Map" id="mapfields" class="mapbutton"/></div>
-
-        <div class="fieldlistright">
-            <div class="fieldlisthead">TFS Fields</div>
-            <select id="tfsfields" size="10" class="fieldlist">
-            </select>
-        </div>
-    
-        <div style="clear: both"></div>
-        
-        <div id="mappings">
-        </div>
-        
+    <div class="vue-container" id="fields-mapping">
+        <fields-mapping load-on-init="true" profile-guid="@Model.GetType().GetProperty("Guid").GetValue(Model).ToString()"></fields-mapping>
     </div>
-    
     
 </div>
 
@@ -280,6 +277,7 @@
             if (mappings[i].jira === 'issuetype') {
                 issueTypeMapping = mappings[i].id;
                 issueTypeMappingHtmlElement = '<li class="dynamic-content"><a href="' + location.href.replace('#/', '') + '&mappingid=' + mappings[i].id + '&subtasks=false" class="editmapping" id="editmapping' + mappings[i].id + '">JIRA Issue Type/TFS Work Item Type</a></li>';
+                window.Spartez.Shared.sendNotification('SetIssueTypeMappingId', {id: mappings[i].id });
             } else if (mappings[i].jira === '###TFS4JIRA###.JIRA.subtask.issuetype') {
                 subtaskMapping = mappings[i].id;
             } else if (mappings[i].jira === '###TFS4JIRA###.JIRA.Status') {
@@ -331,6 +329,12 @@
         $('#attachmentmappingmode').removeAttr('disabled');
         $('#subtasksyncdirection').removeAttr('disabled');
 
+        if (attachmentMapping) {
+            $('#attachmentmappingmode').parent().find('.attachments-info').fadeIn();
+        } else {
+            $('#attachmentmappingmode').parent().find('.attachments-info').fadeOut();
+        }
+
         //console.log(data.result);
         $('#subtaskslinktype').html('');
         for (var i = 0; i < subtaskLinkTypes.length; ++i) {
@@ -343,10 +347,11 @@
         }
 
         if (subtaskSyncDirection) {
-            $('#subtasksyncdirection').parent().find('ul').show();
+            $('#subtasksyncdirection').parent().find('.subtasks-details').fadeIn();
         } else {
-            $('#subtasksyncdirection').parent().find('ul').hide();
+            $('#subtasksyncdirection').parent().find('.subtasks-details').fadeOut();
         }
+
 
         if (subtaskLinkType) {
             $('#subtaskslinktype option[value="' + subtaskLinkType + '"]').attr('selected', 'selected');
@@ -564,9 +569,9 @@
     $('#subtasksyncdirection').live('change', function () {
         var val = $('#subtasksyncdirection').val();
         if (val > 0) {
-            $('#subtasksyncdirection').parent().find('ul').show();
+            $('#subtasksyncdirection').parent().find('.subtasks-details').fadeIn();
         } else {
-            $('#subtasksyncdirection').parent().find('ul').hide();
+            $('#subtasksyncdirection').parent().find('.subtasks-details').fadeOut();
         }
     });
 
