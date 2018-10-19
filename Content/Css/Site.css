@@ -658,6 +658,7 @@ form.configForm {
 
 .profileform select {
     width: 306px;
+    box-sizing: border-box;
 }
 
 .profileform .fetch-button-container {
@@ -667,13 +668,15 @@ form.configForm {
 }
 
 .profileform .fetch-git-repository-button,
-.profileform .fetch-collection-button
+.profileform .fetch-collection-button,
+.profileform .fetch-project-button
  {
     vertical-align: middle;
 }
 
 .profileform .fetch-git-repository-info,
-.profileform .fetch-collection-info
+.profileform .fetch-collection-info,
+.profileform .fetch-project-info
  {
     vertical-align: middle; 
     font-style: italic; 
@@ -1230,9 +1233,13 @@ body.loading .spinner {
 
 /* Add profile button
 -----------------------------------------------------------*/
-.addprofile
-{
-	text-align: right;
+
+.header-with-add-button {
+  margin-bottom: 1em;
+}
+
+.addprofile {
+  text-align: right;
 }  
 
 .addprofile a

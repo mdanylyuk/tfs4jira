@@ -81,6 +81,19 @@
         <div class="tfsrepoparams">
             <div class="row">
                 <div class="field">
+                    <div class="label">Project Name</div>
+                    <div class="editbox">
+                        <select id="tfsProjectName_0" class="tfsProject">
+                        </select>
+                    </div>
+                    <div class="fetch-button-container">
+                        <span class="fetch-project-button button-link">Fetch projects</span>
+                        <span class="fetch-project-info">Fetching projects...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
                     <div class="label">Folder</div>
                     <div class="editbox">@Html.TextBox("tfsfolder_0", "$/", new {@class = "tfsfolder"})</div>
                 </div>

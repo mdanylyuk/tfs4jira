@@ -125,6 +125,20 @@
             <div class="tfsrepoparams">
                 <div class="row">
                     <div class="field">
+                        <div class="label">Project Name</div>
+                        <div class="editbox">
+                            <select id="@("tfsProjectName_" + @Model.Guid)" class="tfsProject">
+                                <option value="@Model.TfsProject">@Model.TfsProject</option>
+                            </select>
+                        </div>
+                        <div class="fetch-button-container">
+                            <span class="fetch-project-button button-link">Fetch projects</span>
+                            <span class="fetch-project-info">Fetching projects...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field">
                         <div class="label">Folder</div>
                         <div class="editbox">@Html.TextBox("tfsfolder_" + Model.Guid, Model.Folder, new { @class = "tfsfolder" })</div>
                     </div>

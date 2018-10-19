@@ -193,6 +193,7 @@
         var tfsdomain = encodeURIComponent($('#tfsdomain_' + id).val());
         var tfspwd = encodeURIComponent($('#tfspassword_' + id).val());
         var tfscoll = encodeURIComponent($('#tfscoll_' + id).val());
+        var tfsproject = encodeURIComponent($('#tfsProjectName_' + id).val());
         var tfsfolder = encodeURIComponent($('#tfsfolder_' + id).val());
         var tfsstartrev = parseInt($('#tfsstartrev_' + id).val());
         var tfsscansize = parseInt($('#tfsscansize_' + id).val());
@@ -234,6 +235,7 @@
                 '&tfsdomain=' + tfsdomain +
                 '&tfspassword=' + tfspwd +
                 '&tfscoll=' + tfscoll +
+                '&tfsproject=' + tfsproject +
                 '&tfsfolder=' + tfsfolder +
                 '&tfsstartrev=' + tfsstartrev +
                 '&tfshosted=' + tfshosted +
@@ -573,11 +575,84 @@
             });
         });
 
+        $(document.body).on('click', '.fetch-project-button', function () {
+            let doc = $(this);
+            let $tfsProjectListElement = doc.closest('.profileform').find('.tfsProject');
+            let $fetchTfsProjectButton = $(this).closest('.profileform').find('.fetch-project-button');
+            let $fetchTfsProjectLoadInfo = $(this).closest('.profileform').find('.fetch-project-info');
+
+            $fetchTfsProjectButton.hide();
+            $fetchTfsProjectLoadInfo.show();
+
+            let dataForRequest = parseRequestData(doc);
+            console.log(dataForRequest);
+
+            jQuery.ajax({
+                type: 'POST',
+                url: '@Url.Action("FetchProjectNames", "Checkins")?_=' + new Date().getTime(),
+                data: dataForRequest.toString() + guid,
+                complete: function() {
+                    $fetchTfsProjectButton.show();
+                    $fetchTfsProjectLoadInfo.hide();
+                },
+                success: function(data) {
+                    if (data.success) {
+                        updateCollectionList($tfsProjectListElement, data.projectsList);
+                    } else {
+                        errorDialog('body', data.error, null);
+                    }
+                },
+                error: function(xhr) {
+                    errorDialog('body', getXhrErrorResponse(xhr), null);
+                }
+            });
+        });
+
+        $(document.body).on('change', '.tfsProject', function() {
+            let $tfsProjectListElement = $(this).closest('.profileform').find('.tfsProject');
+            let selectedProjectName = $tfsProjectListElement.find(':selected').val();
+            if (selectedProjectName !== '') {
+                setTfsFolderName($tfsProjectListElement, selectedProjectName);
+            }
+        });
+
+        function parseRequestData(container) {
+            let $selectedCollection = container.closest('.profileform').find('.tfscoll').find(':selected');
+            let selectedCollectionKey = $selectedCollection.attr('key');
+            if (!selectedCollectionKey) {
+                selectedCollectionKey = '';
+            }
+            let data = {
+                tfsUrl: container.closest('.profileform').find('.tfsurl').val(),
+                userName: container.closest('.profileform').find('.tfsuser').val(),
+                password: container.closest('.profileform').find('.tfspassword').val(),
+                tfsdomain: container.closest('.profileform').find('.tfsdomain').val(),
+                tfshosted: container.closest('.profileform').find('.tfshosted').is(':checked'),
+                selectedCollectionName: $selectedCollection.val(),
+                selectedCollectionKey: selectedCollectionKey,
+                toString: function () {
+                    return 'tfsurl=' + this.tfsUrl +
+                        '&username=' + this.userName +
+                        '&password=' + this.password +
+                        '&tfsdomain=' + this.tfsdomain +
+                        '&tfshosted=' + this.tfshosted +
+                        '&collectionKey=' + this.selectedCollectionKey +
+                        '&collectionName=' + this.selectedCollectionName;
+                }
+            }
+            return data;
+        }
+
+        function setTfsFolderName($tfsProjectListElement, folderName) {
+            let $folderElement = $tfsProjectListElement.closest('.profileform').find('.tfsfolder');
+            $folderElement.val('$/' + folderName);
+        }
+
         function updateCollectionList($element, list) {
             var selectedCollection = $element.find(":selected").val();
             $element.empty();
             list.forEach(function (collection) {
-                $element.append($("<option>", { "value": collection.Value }).text(collection.Value));
+                $element.append($("<option>", {"key": collection.Key , "value": collection.Value}).text(collection.Value));
             });
             $element.find("[value='" + selectedCollection + "']").prop('selected', true);
             $element.closest(".profileform").find(".tfsgitrepo").empty();
