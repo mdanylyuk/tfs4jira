@@ -1208,13 +1208,14 @@ body.loading .spinner {
 -----------------------------------------------------------*/
 #help 
 {
-	position: absolute;
-	right: 0;
-	top: 0;
-	height: 100px;
-	width: 400px;
-	margin:10px;
-	margin-right: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100px;
+    width: 400px;
+    margin:10px;
+    margin-right: 0;
+    display: none;
     background-color: #f5f5f5;
 }
 

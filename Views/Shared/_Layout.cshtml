@@ -1,4 +1,5 @@
-﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+﻿@using synchronizer.Tfs4jira2.Utils
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
     <head>
         <title>@ViewBag.Title</title>
@@ -66,7 +67,9 @@
                         @if (ViewBag.isAuthorized != null && ViewBag.isAuthorized)
                         {
                             <li id="menu-config">@Html.ActionLink("Synchronization Configuration", "Index", "Tfs", new {id = string.Empty}, null)</li>
-                            <li id="menu-check-ins-config">@Html.ActionLink("Check-ins Scanning", "Index", "Checkins", new {id = string.Empty}, null)</li>
+                            <li id="menu-check-ins-config">@Html.ActionLink("Check-ins Scanning", "Index", "Checkins", new { id = string.Empty }, null)</li>
+                            <li id="menu-logging-events">@Html.ActionLink("Errors", "Index", "LoggingEvents")</li>
+                            <li id="menu-settings">@Html.ActionLink("Settings", "Index", "Settings")</li>
                             <li id="menu-activity">@Html.ActionLink("Log", "Index", "Home")</li>
                         }
                         <li id="menu-about">@Html.ActionLink("About", "About", "Home")</li>
