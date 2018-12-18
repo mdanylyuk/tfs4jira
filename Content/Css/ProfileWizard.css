@@ -33,7 +33,9 @@
     margin-left: 210px;
     font-size: 16px;
 }
-
+.jira-connection .only-for-cloud {
+    display: none;
+}
 #synchronize-subtasks-checkbox {
     margin:.5em .5em 0 0;
     font-size: 16px;
@@ -418,4 +420,7 @@ div.tfs4jira-mapping-row-direction-conflict {
 
 .tfs4jira-fieldgroup .tfs4jira-rounded-button {
 	font-size: 13px;
+}
+#tfs-connection-step .tfs4jira-fieldgroup-checkbox {
+    margin-bottom: 1em;
 }

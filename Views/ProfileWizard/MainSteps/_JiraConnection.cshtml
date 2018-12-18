@@ -3,35 +3,56 @@
     string id = @Model.GetType().GetProperty("Id").GetValue(Model);
 }
 
-<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
-    <h1>JIRA Settings</h1>
-
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model) jira-connection">
+    <h1>Jira Connection</h1>
     <div class="tfs4jira-fieldgroup">
         <label for="jira-url">URL</label>
         <input id="jira-url" placeholder="JIRA URL starting with http:// or https://" />
         <div class="tfs4jira-field-error"></div>
-        <div class="tfs4jira-field-description">JIRA base URL with optional port number, e.g. http://myjira:8080.</div>
+        <div class="tfs4jira-field-description">Jira base URL with optional port number, e.g. http://myjira:8080.</div>
+    </div>
+    <div class="tfs4jira-fieldgroup-checkbox">
+        <input type="checkbox" id="jira-is-cloud">
+        <label for="jira-is-cloud">Jira Cloud</label>
+        <div class="tfs4jira-field-description">Check this option if you want to connect with Jira Cloud.</div>
+        <div class="tfs4jira-field-error"></div>
     </div>
     <div class="tfs4jira-fieldgroup">
-        <label for="jira-login">User Name</label>
+        <label for="jira-login">
+            <span class="only-for-server">User Name</span>
+            <span class="only-for-cloud">Email Address</span>
+        </label>
         <input id="jira-login" />
         <div class="tfs4jira-field-error"></div>
     </div>
     <div class="tfs4jira-fieldgroup">
-        <label for="jira-password">Password</label>
+        <label for="jira-password">
+            <span class="only-for-server">Password</span>
+            <span class="only-for-cloud">API Token</span>
+        </label>
         <input id="jira-password" type="password" />
         <div class="tfs4jira-field-error"></div>
-    </div>
-
-    <div class="tfs4jira-fieldgroup-checkbox">
-        <input type="checkbox" id="jira-is-cloud">
-        <label for="jira-is-cloud">This is JIRA Cloud</label>
-        <div class="tfs4jira-field-error"></div>
+        <div class="tfs4jira-field-description only-for-cloud">
+            Click <a href="https://confluence.spartez.com/display/TFS4JIRA/API+Token+authentication+in+Jira+Cloud" target="_blank">here</a> 
+            to find out how to generate API Tokens.
+        </div>
     </div>
 </div>
 
 <script>
     $(function () {
+        $("#jira-is-cloud").change(function() {
+            if ($(this).is(":checked")) {
+                $(".jira-connection .only-for-cloud").show();
+                $(".jira-connection .only-for-server").hide();
+            } else {
+                $(".jira-connection .only-for-cloud").hide();
+                $(".jira-connection .only-for-server").show();
+            }
+            clearFieldError("jira-login");
+            clearFieldError("jira-password");
+        });
+        
         $('#@id').on("@NavigationEvents.ActivateView", function activateView(event, parameters) {
             $("#jira-url").focus();
 
@@ -39,6 +60,7 @@
             $("#jira-login").val(synchronizationProfile.JiraUser);
             $("#jira-password").val(synchronizationProfile.JiraPassword);
             $("#jira-is-cloud")[0].checked = synchronizationProfile.OnDemandJira;
+            $("#jira-is-cloud").trigger("change");
         });
 
         $('#@id').on("@NavigationEvents.NextButtonClicked", function nextButtonClicked() {
@@ -130,7 +152,8 @@
             }
 
             if (_.isEmpty(password)) {
-                setFieldError("jira-password", "Please provide user password.");
+                let fieldName = ($("#jira-is-cloud")[0].checked) ? 'API Token' : 'user password';
+                setFieldError("jira-password", `Please provide ${fieldName}.`);
                 isValid = false;
             } else {
                 clearFieldError("jira-password");

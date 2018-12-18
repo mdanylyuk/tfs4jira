@@ -541,7 +541,9 @@ div.tfs4jira-tooltip-theme {
 form.configForm {
     margin-right: 30%;
 }
-
+.configForm .jira-connection .link-to-api-token-docs {
+    padding-top: 0.5em;
+}
 .profileform
 {
 	position: relative;

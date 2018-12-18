@@ -4,13 +4,18 @@
 }
 
 <div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
-    <h1>TFS Settings</h1>
+    <h1>TFS Connection</h1>
 
     <div class="tfs4jira-fieldgroup">
         <label for="tfs-url">URL</label>
         <input id="tfs-url" placeholder="TFS server URL starting with http:// or https://" />
         <div class="tfs4jira-field-error"></div>
         <div class="tfs4jira-field-description">TFS base URL with optional port number, e.g. http://mytfs:8080/tfs. </div>
+    </div>
+    <div class="tfs4jira-fieldgroup-checkbox">
+        <input type="checkbox" id="tfs-is-hosted">
+        <label for="tfs-is-hosted">This is visualstudio.com instance</label>
+        <div class="tfs4jira-field-error"></div>
     </div>
     <div class="tfs4jira-fieldgroup">
         <label for="tfs-login">User Name</label>
@@ -28,11 +33,6 @@
         <input id="tfs-domain" />
         <div class="tfs4jira-field-error"></div>
         <div class="tfs4jira-field-description">Leave the field empty if your TFS server is not in any domain.</div>
-    </div>
-    <div class="tfs4jira-fieldgroup-checkbox">
-        <input type="checkbox" id="tfs-is-hosted">
-        <label for="tfs-is-hosted">This is visualstudio.com instance</label>
-        <div class="tfs4jira-field-error"></div>
     </div>
 </div>
 

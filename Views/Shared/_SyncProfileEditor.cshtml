@@ -50,33 +50,45 @@
                 }
             </div>
         </div>
-                <h2 class="headerh2">JIRA Configuration</h2>
-                <div class="row">
-                    <div class="field">
-                        <div class="label">JIRA Cloud</div>
-                        <div class="editbox">@Html.CheckBox("jiraondemand", Model.OnDemandJira)</div>
-                    </div>
-                    <div class="field-description">Check this option if you want to connect with JIRA Cloud.</div>
-                </div>
+            <div class="jira-connection">
+                <h2 class="headerh2">Jira Configuration</h2>
                 <div class="row">
                     <div class="field">
                         <div class="label">URL</div>
                         <div class="editbox">@Html.TextBox("jiraurl", Model.JiraUrl, new {@class = "jira-auth"})</div>
                     </div>
-                    <div class="field-description">JIRA server base URL including scheme name, with optional port number, e.g. http://myjira:8080</div>
+                    <div class="field-description">Jira server base URL including scheme name, with optional port number, e.g. http://myjira:8080</div>
                 </div>
                 <div class="row">
                     <div class="field">
-                        <div class="label">User Login</div>
+                        <div class="label">Jira Cloud</div>
+                        <div class="editbox">@Html.CheckBox("jiraondemand", Model.OnDemandJira)</div>
+                    </div>
+                    <div class="field-description">Check this option if you want to connect with Jira Cloud.</div>
+                </div>
+                <div class="row">
+                    <div class="field">
+                        <div class="label">
+                            <span class="only-for-server">User Name</span>
+                            <span class="only-for-cloud">Email Address</span>
+                        </div>
                         <div class="editbox">@Html.TextBox("jirauser", Model.JiraUser, new {@class = "jira-auth"})</div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="field">
-                        <div class="label">Password</div>
+                        <div class="label">
+                            <span class="only-for-server">Password</span>
+                            <span class="only-for-cloud">API Token</span>
+                        </div>
                         <div class="editbox">@Html.Password("jirapassword", Model.JiraPassword, new {@class = "jira-auth"})</div>
+                        <div class="field-description link-to-api-token-docs only-for-cloud">
+                            Click <a href="https://confluence.spartez.com/display/TFS4JIRA/API+Token+authentication+in+Jira+Cloud" target="_blank">here</a> 
+                            to find out how to generate API Tokens.
+                        </div>
                     </div>
                 </div>
+            </div>
                 <div class="row" style="padding-bottom: 1em;">
                     <div class="field">
                         <div class="label"></div>
@@ -103,17 +115,17 @@
                 <h2 class="headerh2">TFS Configuration</h2>
         <div class="row">
             <div class="field">
-                <div class="label">Visual Studio Online</div>
-                <div class="editbox">@Html.CheckBox("hostedtfs")</div>
-            </div>
-            <div class="field-description">Check this option if you want to connect with Visual Studio Online (cloud version of TFS). Paired JIRA issue will be stored in work item's history (it's currently impossible to create custom field in Visual Studio Online).</div>
-        </div>
-        <div class="row">
-            <div class="field">
                 <div class="label">URL</div>
                 <div class="editbox">@Html.TextBox("tfsurl", Model.TfsUrl, new {@class = "tfs-auth"})</div>
             </div>
             <div class="field-description">TFS server base URL including scheme name, with optional port number, e.g.  http://mytfs:8080/tfs.</div>
+        </div>
+        <div class="row">
+            <div class="field">
+                <div class="label">Visual Studio Online</div>
+                <div class="editbox">@Html.CheckBox("hostedtfs")</div>
+            </div>
+            <div class="field-description">Check this option if you want to connect with Visual Studio Online (cloud version of TFS). Paired JIRA issue will be stored in work item's history (it's currently impossible to create custom field in Visual Studio Online).</div>
         </div>
         <div class="row">
             <div class="field">
@@ -729,8 +741,16 @@
 
     $('#jiraondemand').change(function() {
         setCheckinsScanningUrl();
+        if ($(this).is(":checked")) {
+            $(".jira-connection .only-for-cloud").show();
+            $(".jira-connection .only-for-server").hide();
+        } else {
+            $(".jira-connection .only-for-cloud").hide();
+            $(".jira-connection .only-for-server").show();
+        }
     });
-    
+    $("#jiraondemand").trigger('change');
+
     $('#jiraurl').change(function() {
         setCheckinsScanningUrl();
     });
