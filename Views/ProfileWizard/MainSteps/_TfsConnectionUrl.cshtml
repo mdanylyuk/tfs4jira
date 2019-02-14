@@ -1,0 +1,59 @@
+﻿@using synchronizer.Controllers
+@{
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
+    <h1>TFS Connection</h1>
+    <div class="tfs4jira-fieldgroup">
+        <label for="tfs-url">URL</label>
+        <input id="tfs-url" placeholder="TFS server URL starting with http:// or https://" />
+        <div class="tfs4jira-field-error"></div>
+        <div class="tfs4jira-field-description">TFS base URL with optional port number, e.g. http://mytfs:8080/tfs. </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('#@id').on("@NavigationEvents.ActivateView", function activateView(event, parameters) {
+            $("#tfs-url").focus();
+            $("#tfs-url").val(synchronizationProfile.TfsUrl);
+        });
+
+        $('#@id').on("@NavigationEvents.NextButtonClicked", function nextButtonClicked() {
+            if (validate()) {
+                saveFocusedElement();
+                synchronizationProfile.TfsUrl = $("#tfs-url").val().trim();
+                testTfsDeploymentType().done(function testSucceededAfterNextButtonClicked(data) {
+                    if (data && data.deploymentType) {
+                        window.Spartez.Shared.discoveredTfsDeploymentType = data.deploymentType;
+                        synchronizationProfile.HostedTfs = (data.deploymentType === 'cloud');
+                    }
+                    SaveModelAndGoToNextStep();
+                });
+            }
+        });
+
+        function validate() {
+            var url = $("#tfs-url").val().trim();
+            if (_.isEmpty(url)) {
+                setFieldError("tfs-url", "Please enter TFS URL.");
+                return false;
+            }
+            if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0) {
+                setFieldError("tfs-url", "TFS URL should start with protocol name ('http://' or 'https://').");
+                return false;
+            }
+            clearFieldError("tfs-url");
+            return true;
+        }
+
+        function testTfsDeploymentType() {
+            var url = encodeURIComponent($("#tfs-url").val().trim());
+            return blockingApiAjax({
+                url: `${contextPath}/api/connection/tfs/deployment-type?url=${url}&_=${Date.now()}`,
+                type: 'GET'
+            });
+        }
+    });
+</script>

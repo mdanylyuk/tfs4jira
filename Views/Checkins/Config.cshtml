@@ -409,7 +409,37 @@
             gitdiv.hide();
             tfsdiv.show();
         }
+        var $tfsIsHosted = $form.find('input.tfshosted[type="checkbox"]');
+        prepareTfsRepoView($form, $tfsIsHosted.is(":checked"));
     };
+
+    function changeTfsRepoViewWithAnimation($repositoryForm, tfsIsHosted) {
+        if (tfsIsHosted) {
+            $repositoryForm.find(".only-for-tfs-server").hide();
+            $repositoryForm.find(".only-for-tfs-cloud").fadeIn();
+            $repositoryForm.find(".link-to-api-token-docs").slideDown();
+            $repositoryForm.find(".tfs-domain").slideUp();
+        } else {
+            $repositoryForm.find(".only-for-tfs-cloud").hide();
+            $repositoryForm.find(".only-for-tfs-server").fadeIn();
+            $repositoryForm.find(".tfs-domain").slideDown();
+            $repositoryForm.find(".link-to-api-token-docs").slideUp();
+        }
+    }
+
+    function prepareTfsRepoView($repositoryForm, tfsIsHosted) {
+        if (tfsIsHosted) {
+            $repositoryForm.find(".only-for-tfs-server").hide();
+            $repositoryForm.find(".tfs-domain").hide();
+            $repositoryForm.find(".only-for-tfs-cloud").show();
+            $repositoryForm.find(".link-to-api-token-docs").show();
+        } else {
+            $repositoryForm.find(".only-for-tfs-cloud").hide();
+            $repositoryForm.find(".link-to-api-token-docs").hide();
+            $repositoryForm.find(".only-for-tfs-server").show();
+            $repositoryForm.find(".tfs-domain").show();
+        }
+    }
 
     $(document).ready(function () {
         $(".tfsgitstartdate").datetimepicker({
@@ -452,6 +482,21 @@
             } else {
                 addorUpdateProfile("@CopySyncProfileMode.None");
             }
+        });
+
+        $(document.body).on('click', '#tfshosted_0', function () {
+            var $newRepoForm = $(this).closest('.newrepo');
+            var tfsIsHosted = $(this).is(":checked");
+            changeTfsRepoViewWithAnimation($newRepoForm, tfsIsHosted);
+        });
+
+        $('.tfsrepo').each(function () {
+            var $currentRepo = $(this);
+            var $currentRepoTfsIsHostedCheckbox = $currentRepo.find('input.tfshosted[type="checkbox"]');
+            $currentRepoTfsIsHostedCheckbox.on('change', function (e) {
+                var tfsIsHosted = $currentRepoTfsIsHostedCheckbox.is(":checked");
+                changeTfsRepoViewWithAnimation($currentRepo, tfsIsHosted);
+            });
         });
 
         $('.tfs_test').click(function(e) {

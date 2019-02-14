@@ -1,0 +1,59 @@
+﻿@using synchronizer.Controllers
+@{
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model) jira-connection">
+    <h1>Jira Connection</h1>
+    <div class="tfs4jira-fieldgroup">
+        <label for="jira-url">URL</label>
+        <input id="jira-url" placeholder="Jira URL starting with http:// or https://" />
+        <div class="tfs4jira-field-error"></div>
+        <div class="tfs4jira-field-description">Jira base URL with optional port number, e.g. http://myjira:8080.</div>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        $('#@id').on("@NavigationEvents.ActivateView", function activateView(event, parameters) {
+            $("#jira-url").focus();
+            $("#jira-url").val(synchronizationProfile.JiraUrl);
+        });
+
+        $('#@id').on("@NavigationEvents.NextButtonClicked", function nextButtonClicked() {
+            if (validate()) {
+                saveFocusedElement();
+                synchronizationProfile.JiraUrl = $("#jira-url").val().trim();
+                testJiraDeploymentType().done(function testSuccessedAfterNextButtonClicked(data) {
+                    if (data && data.deploymentType) {
+                        window.Spartez.Shared.discoveredJiraDeploymentType = data.deploymentType;
+                        synchronizationProfile.OnDemandJira = (data.deploymentType === 'cloud');
+                    }
+                    SaveModelAndGoToNextStep();
+                });
+            }
+        });
+
+        function validate() {
+            const url = $("#jira-url").val().trim();
+            if (_.isEmpty(url)) {
+                setFieldError("jira-url", "Please enter Jira URL.");
+                return false;
+            } else if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0) {
+                setFieldError("jira-url", "Jira URL should start with protocol name ('http://' or 'https://').");
+                return false;
+            } else {
+                clearFieldError("jira-url");
+            }
+            return true;
+        }
+
+        function testJiraDeploymentType() {
+            const url = encodeURIComponent($("#jira-url").val().trim());
+            return blockingApiAjax({
+                url: `${contextPath}/api/connection/jira/deployment-type?url=${url}&_=${Date.now()}`,
+                type: 'GET'
+            });
+        }
+    });
+</script>

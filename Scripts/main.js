@@ -371,5 +371,6 @@ $(document).ready(function () {
         e.preventDefault();
         showHelp();
     });
-    fillHelp(null);    
+    fillHelp(null);
+    window.Spartez.Shared.sendNotification('CookieStore', {cookieStore: $.cookie});
 });

@@ -8,203 +8,280 @@
 
 <div id="messages"></div>
 
-<form class="configForm">
-    <div id="syncprofileform" class="profileform">
-        @* Ugly hack for Chrome - it prevents autocompletion on JIRA User Login and Password fields. *@
+<form class="config-form">
+    <div id="syncprofileform" class="edit-profile-form">
+        @* Ugly hack for Chrome - it prevents autocompletion on Jira User Login and Password fields. *@
         <input style="display:none">
         <input type="password" style="display:none">
-        
-        <h2 class="headerh2">General Settings</h2>
-        <div class="row">
-            <div class="field">
-                <div class="label">Profile Name</div>
-                <div class="editbox">@Html.TextBox("name", Model.Name)</div>
+        <div class="profile-form-section">
+            <h2>General Settings</h2>
+            <div class="row">
+                <div class="left-col">
+                    <div class="label">Profile Name</div>
+                </div>
+                <div class="right-col">
+                    <div class="field">
+                        <div class="editbox">@Html.TextBox("name", Model.Name)</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="left-col">
+                    <div class="label">Synchronization Interval</div>
+                </div>
+                <div class="right-col">
+                    <div class="field">
+                        <div class="editbox">@Html.TextBox("interval", Model.SyncInterval)</div>
+                        <div class="field-description">TFS and Jira querying interval in seconds.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="left-col">
+                    <div class="label"></div>
+                </div>
+                <div class="right-col">
+                    <div class="field">
+                        <div class="editbox"><span id="checkins_setup"><a href="#">Configure Check-ins Scanning</a></span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="display: none;">
+                <div class="left-col">
+                    <div class="label">Enabled</div>
+                </div>
+                <div class="right-col">
+                    <div class="editbox">
+                        @*what with draft?*@
+                        @if (Model.State == SyncProfileState.Enabled) {
+                            <input type="checkbox" checked id="enabled"/>
+                        } else {
+                            <input type="checkbox" id="enabled"/>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="row">
-            <div class="field">
-                <div class="label">Synchronization Interval</div>
-                <div class="editbox">@Html.TextBox("interval", Model.SyncInterval)</div>
-            </div>
-            <div class="field-description">TFS and JIRA querying interval in seconds.</div>           
-        </div>
-        <div class="row">
-            <div class="field">
-                <div class="label"></div>
-                <div class="editbox"><span id="checkins_setup"><a href="#">Configure Check-ins Scanning</a></span></div>
-            </div>
-        </div>
-
-        <div class="row" style="display: none;">
-            <!--<div class="row">-->
-            <div class="label">Enabled</div>
-            <div class="editbox">
-                @*what with draft?*@
-                @if (Model.State == SyncProfileState.Enabled)
-                {
-                    <input type="checkbox" checked id="enabled" />
-                }
-                else
-                {
-                    <input type="checkbox" id="enabled" />
-                }
-            </div>
-        </div>
+        <div class="profile-form-section">
             <div class="jira-connection">
-                <h2 class="headerh2">Jira Configuration</h2>
+                <h2>Jira Configuration</h2>
                 <div class="row">
-                    <div class="field">
+                    <div class="left-col">
                         <div class="label">URL</div>
-                        <div class="editbox">@Html.TextBox("jiraurl", Model.JiraUrl, new {@class = "jira-auth"})</div>
                     </div>
-                    <div class="field-description">Jira server base URL including scheme name, with optional port number, e.g. http://myjira:8080</div>
-                </div>
-                <div class="row">
-                    <div class="field">
-                        <div class="label">Jira Cloud</div>
-                        <div class="editbox">@Html.CheckBox("jiraondemand", Model.OnDemandJira)</div>
-                    </div>
-                    <div class="field-description">Check this option if you want to connect with Jira Cloud.</div>
-                </div>
-                <div class="row">
-                    <div class="field">
-                        <div class="label">
-                            <span class="only-for-server">User Name</span>
-                            <span class="only-for-cloud">Email Address</span>
+                    <div class="right-col">
+                        <div class="field">
+                            <div class="editbox">@Html.TextBox("jiraurl", Model.JiraUrl, new {@class = "jira-auth"})</div>
+                            <div class="field-description">Jira server base URL including scheme name, with optional port number, e.g. http://myjira:8080 </div>
+                            <div class="field">
+                                <div class="editbox">@Html.CheckBox("jiraondemand", Model.OnDemandJira)<label> Jira Cloud</label></div>
+                                <div class="field-description">Check this option if you want to connect with Jira Cloud.</div>
+                            </div>
                         </div>
-                        <div class="editbox">@Html.TextBox("jirauser", Model.JiraUser, new {@class = "jira-auth"})</div>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="field">
+                    <div class="left-col">
                         <div class="label">
-                            <span class="only-for-server">Password</span>
-                            <span class="only-for-cloud">API Token</span>
+                            <span class="only-for-jira-server">User Name</span>
+                            <span class="only-for-jira-cloud">Email Address</span>
                         </div>
-                        <div class="editbox">@Html.Password("jirapassword", Model.JiraPassword, new {@class = "jira-auth"})</div>
-                        <div class="field-description link-to-api-token-docs only-for-cloud">
-                            Click <a href="https://confluence.spartez.com/display/TFS4JIRA/API+Token+authentication+in+Jira+Cloud" target="_blank">here</a> 
-                            to find out how to generate API Tokens.
+                    </div>
+                    <div class="right-col">
+                        <div class="field">
+                            <div class="editbox">@Html.TextBox("jirauser", Model.JiraUser, new {@class = "jira-auth"})</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="left-col">
+                        <div class="label">
+                            <span class="only-for-jira-server">Password</span>
+                            <span class="only-for-jira-cloud">API Token</span>
+                        </div>
+                    </div>
+                    <div class="right-col">
+                        <div class="field">
+                            <div class="editbox">@Html.Password("jirapassword", Model.JiraPassword, new {@class = "jira-auth"})</div>
+                            <div class="field-description link-to-api-token-docs">
+                                <a href="https://confluence.spartez.com/display/TFS4JIRA/API+Token+authentication+in+Jira+Cloud?source=tfs4jirasynchronizer" target="_blank">
+                                    How to generate API Token?
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-                <div class="row" style="padding-bottom: 1em;">
-                    <div class="field">
-                        <div class="label"></div>
-                        <div class="getter" id="jiratestgetter"><input type="button" id="jiratestgetterbtn" value="Test connection..." /></div>
-                        <div class="worker" id="jiratestworker">
-                            <div class="worker-throbber"></div>
-                            <div class="worker-label">Testing connection with JIRA server...</div>
-                        </div>
+            <div class="row" style="padding-bottom: 1em;">
+                <div class="left-col">
+                </div>
+                <div class="right-col">
+                    <div class="getter" id="jiratestgetter"><input type="button" id="jiratestgetterbtn" value="Test connection..." /></div>
+                    <div class="worker" id="jiratestworker">
+                        <div class="worker-throbber"></div>
+                        <div class="worker-label">Testing connection with Jira server...</div>
                     </div>
                 </div>
-                <div class="row">
+            </div>
+            <div class="row">
+                <div class="left-col">
+                    <div class="label">Project</div>
+                </div>
+                <div class="right-col">
                     <div class="field">
-                        <div class="label">Project</div>
                         <div class="editbox">@Html.TextBox("jiraproject", Model.JiraProject, new {@class = "input"})</div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="field">
-                        <div class="label">TFS Custom Field Name</div>
-                        <div class="editbox">@Html.TextBox("jiratfscustomfield", Model.JiraTfsCustomFieldId, new { @class = "input" })</div>
-                    </div>
-                    <div class="field-description">Name of JIRA issue custom field that will be used to store paired TFS work item data. See @HelpHelpers.LinkToOnlineDocumentation("new_profile", "online help") for details.</div>
-                </div>
-                <h2 class="headerh2">TFS Configuration</h2>
-        <div class="row">
-            <div class="field">
-                <div class="label">URL</div>
-                <div class="editbox">@Html.TextBox("tfsurl", Model.TfsUrl, new {@class = "tfs-auth"})</div>
             </div>
-            <div class="field-description">TFS server base URL including scheme name, with optional port number, e.g.  http://mytfs:8080/tfs.</div>
-        </div>
-        <div class="row">
-            <div class="field">
-                <div class="label">Visual Studio Online</div>
-                <div class="editbox">@Html.CheckBox("hostedtfs")</div>
-            </div>
-            <div class="field-description">Check this option if you want to connect with Visual Studio Online (cloud version of TFS). Paired JIRA issue will be stored in work item's history (it's currently impossible to create custom field in Visual Studio Online).</div>
-        </div>
-        <div class="row">
-            <div class="field">
-                <div class="label">User Login</div>
-                <div class="editbox">@Html.TextBox("tfsuser", Model.TfsUser, new {@class = "tfs-auth"})</div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="field">
-                <div class="label">Password</div>
-                <div class="editbox">@Html.Password("tfspassword", Model.TfsPassword, new { @class = "tfs-auth" })</div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="field">
-                <div class="label">Domain</div>
-                <div class="editbox">@Html.TextBox("tfsdomain", Model.TfsDomain, new {@class = "tfs-auth"})</div>
-            </div>
-            <div class="field-description">Leave the field empty, if your TFS server is not in any domain.</div>
-        </div>
-        <div class="row" style="padding-bottom: 1em;">
-                    <div class="field">
-                        <div class="label"></div>
-                        <div class="getter" id="tfstestgetter"><input type="button" id="tfstestgetterbtn" value="Test connection..." /></div>
-                        <div class="worker" id="tfstestworker">
-                            <div class="worker-throbber"></div>
-                            <div class="worker-label">Testing connection with TFS server...</div>
-                        </div>
-                    </div>
-                </div>
-       
-                <div class="row">
-                    <div class="field">
-                    <div class="label">Project Collection</div>
-                    <div class="editbox">@Html.TextBox("tfscollection", Model.TfsCollection, new { @class = "input" })</div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="field">
-                    <div class="label">Project</div>
-                    <div class="editbox">@Html.TextBox("tfsproject", Model.TfsProject, new {@class = "input"})</div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="field">
-                        <div class="label">JIRA Custom Field Name</div>
-                        <div class="editbox">@Html.TextBox("tfsjiracustomfield", Model.TfsJiraCustomFieldName, new {@class = "input"})</div>
-                    </div>
-                    <div class="field-description">Name of TFS work item custom field that will be used to store paired JIRA issue key. See @HelpHelpers.LinkToOnlineDocumentation("new_profile", "online help") for details.</div>
-                </div>
-                <div class="row">
-                    <div class="field">
-                        <div class="label">Store JIRA Issue Key in History</div>
-                        <div class="editbox">@Html.CheckBox("isissueinhistory")</div>
-                    </div>
-                    <div class="field-description">If you check this option then paired JIRA issue key will be stored in work item History instead of a custom field.</div>
-                </div>
-        @if (!string.IsNullOrEmpty(Model.TfsJiraReporter)) {
             <div class="row">
-                <div class="field">
-                    <div class="label">Map JIRA Reporter To</div>
-                    <div class="editbox">@Html.TextBox("tfsjirareporter", Model.TfsJiraReporter, new {@class = "input"})</div>
+                <div class="left-col">
+                    <div class="label">TFS Custom Field Name</div>
                 </div>
-                <div class="field-description">Optional. TFS work item field to be set to JIRA issue reporter name during synchronization.</div>
+                <div class="right-col">
+                    <div class="field">
+                        <div class="editbox">@Html.TextBox("jiratfscustomfield", Model.JiraTfsCustomFieldId, new { @class = "input" })</div>
+                        <div class="field-description">Name of Jira issue custom field that will be used to store paired TFS work item Id. See @HelpHelpers.LinkToOnlineDocumentation("new_profile", "online help") for details.</div>
+                    </div>
+                </div>
             </div>
-        }
-        <h2 class="headerh2"></h2>
+        </div>
+        <div class="profile-form-section">
+            <h2>TFS Configuration</h2>
+            <div class="tfs-connection">
                 <div class="row">
-        <div class="field">
-                        <div class="label"></div>
-                        <div class="getter" id="apply"><input type="button" id="applybutton" value="@(Model == SyncProfile.Empty ? "Create Profile " : "Save Profile")" /></div>
-                        <div class="worker" id="applyworker">
-                            <div class="worker-throbber"></div>
-                            <div class="worker-label">Saving the profile...</div>
+                    <div class="left-col">
+                        <div class="label">URL</div>
+                    </div>
+                    <div class="right-col">
+                        <div class="editbox">@Html.TextBox("tfsurl", Model.TfsUrl, new { @class = "tfs-auth" })</div>
+                        <div class="field-description">TFS base URL with optional port number, e.g. http://mytfs.mycompany.com:8080/tfs. </div>
+                        <div class="editbox">@Html.CheckBox("hostedtfs", Model.HostedTfs)<label>Azure DevOps</label></div>
+                        <div class="field-description">Check this option if you want to connect with Azure DevOps (formerly VSTS).</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="left-col">
+                        <div class="label">User Login</div>
+                    </div>
+                    <div class="right-col">
+                        <div class="field">
+                            <div class="editbox">@Html.TextBox("tfsuser", Model.TfsUser, new { @class = "tfs-auth" })</div>
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="left-col">
+                        <div class="label">
+                            <span class="only-for-tfs-server">Password</span>
+                            <span class="only-for-tfs-cloud">Personal Access Token</span>
+                        </div>
+                    </div>
+                    <div class="right-col">
+                        <div class="field">
+                            <div class="editbox">@Html.Password("tfspassword", Model.TfsPassword, new { @class = "tfs-auth" })</div>
+                            <div class="field-description link-to-api-token-docs">
+                                <a href="https://confluence.spartez.com/pages/viewpage.action?pageId=8781995&source=tfs4jirasynchronizer" target="_blank">How to generate Personal Access Token?</a> <br />
+                                Note, you can also use Alternate Credentials Password here instead of Token.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tfs-domain">
+                    <div class="row">
+                        <div class="left-col">
+                            <div class="label">Domain</div>
+                        </div>
+                        <div class="right-col">
+                            <div class="field">
+                                <div class="editbox">@Html.TextBox("tfsdomain", Model.TfsDomain, new {@class = "tfs-auth"})</div>
+                                <div class="field-description">Leave the field empty, if your TFS server is not in any domain.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="padding-bottom: 1em;">
+                <div class="left-col">
+                </div>
+                <div class="right-col">
+                    <div class="getter" id="tfstestgetter"><input type="button" id="tfstestgetterbtn" value="Test connection..." /></div>
+                    <div class="worker" id="tfstestworker">
+                        <div class="worker-throbber"></div>
+                        <div class="worker-label">Testing connection with TFS...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="left-col">
+                    <div class="label">Project Collection</div>
+                </div>
+                <div class="right-col">
+                    <div class="field">
+                        <div class="editbox">@Html.TextBox("tfscollection", Model.TfsCollection, new {@class = "input"})</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="left-col">
+                    <div class="label">Project</div>
+                </div>
+                <div class="right-col">
+                    <div class="field">
+                        <div class="editbox">@Html.TextBox("tfsproject", Model.TfsProject, new {@class = "input"})</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="left-col">
+                    <div class="label">Custom Field Name to store Jira Issue Key</div>
+                </div>
+                <div class="right-col">
+                    <div class="field">
+                        <div class="editbox">@Html.TextBox("tfsjiracustomfield", Model.TfsJiraCustomFieldName, new {@class = "input"})</div>
+                        <div class="field-description">See @HelpHelpers.LinkToOnlineDocumentation("new_profile", "online help") for details.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="left-col">
+                    <div class="label">Store Jira Issue Key in History</div>
+                </div>
+                <div class="right-col">
+                    <div class="field">
+                        <div class="editbox">@Html.CheckBox("isissueinhistory")</div>
+                        <div class="field-description">If you check this option, key of paired Jira issue will be stored in work item History instead of a custom field.</div>
+                    </div>
+                </div>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.TfsJiraReporter)) {
+                <div class="row">
+                    <div class="left-col">
+                        <div class="label">Map Jira Reporter To</div>
+                    </div>
+                    <div class="right-col">
+                        <div class="field">
+                            <div class="editbox">@Html.TextBox("tfsjirareporter", Model.TfsJiraReporter, new {@class = "input"})</div>
+                            <div class="field-description">Optional. TFS work item field to be set to Jira issue reporter name during synchronization.</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="profile-form-section">
+            <h2></h2>
+            <div class="row">
+                <div class="left-col">
+                </div>
+                <div class="right-col">
+                    <div class="getter" id="apply"><input type="button" id="applybutton" value="@(Model == SyncProfile.Empty ? "Create Profile " : "Save Profile")" /></div>
+                    <div class="worker" id="applyworker">
+                        <div class="worker-throbber"></div>
+                        <div class="worker-label">Saving the profile...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-@*    <div style="clear: left"></div>*@
 </form>
 
 <div id="tfsspehelp" style="display: none;">
@@ -405,7 +482,7 @@
                     $('#jirapassword').focus();
                 };
                 if (data.success) {
-                    infoDialog('body', 'Success! JIRA server location and credentials seem to be fine.', onClose);
+                    infoDialog('body', 'Success! Jira server location and credentials seem to be fine.', onClose);
                 } else {
                     errorDialog('body', data.error, onClose);
                 }
@@ -563,21 +640,9 @@
     var isIssueInHistory = $('#isissueinhistory');
     isIssueInHistory.change(function () {
         if (isIssueInHistory[0].checked) {
+            $("#tfsjiracustomfield + .selectedfield .clearfield").trigger("click");
             tfsJiraCustomField.attr('disabled', true);
         } else {
-            tfsJiraCustomField.removeAttr('disabled');
-        }
-    });
-
-    var hostedTfs = $('#hostedtfs');
-    hostedTfs.change(function () {
-        if (hostedTfs[0].checked) {
-            isIssueInHistory[0].checked = true;
-            isIssueInHistory.attr('disabled', true);
-            tfsJiraCustomField.attr('disabled', true);
-        } else {
-            isIssueInHistory[0].checked = false;
-            isIssueInHistory.removeAttr('disabled');
             tfsJiraCustomField.removeAttr('disabled');
         }
     });
@@ -742,11 +807,13 @@
     $('#jiraondemand').change(function() {
         setCheckinsScanningUrl();
         if ($(this).is(":checked")) {
-            $(".jira-connection .only-for-cloud").show();
-            $(".jira-connection .only-for-server").hide();
+            $(".jira-connection .only-for-jira-server").hide();
+            $(".jira-connection .only-for-jira-cloud").fadeIn();
+            $(".jira-connection .link-to-api-token-docs").slideDown();
         } else {
-            $(".jira-connection .only-for-cloud").hide();
-            $(".jira-connection .only-for-server").show();
+            $(".jira-connection .only-for-jira-cloud").hide();
+            $(".jira-connection .only-for-jira-server").fadeIn();
+            $(".jira-connection .link-to-api-token-docs").slideUp();
         }
     });
     $("#jiraondemand").trigger('change');
@@ -754,4 +821,21 @@
     $('#jiraurl').change(function() {
         setCheckinsScanningUrl();
     });
+
+    $('#hostedtfs').change(function () {
+        setCheckinsScanningUrl();
+        if ($(this).is(":checked")) {
+            $(".tfs-connection .only-for-tfs-server").hide();
+            $(".tfs-connection .only-for-tfs-cloud").fadeIn();
+            $(".tfs-connection .link-to-api-token-docs").slideDown();
+            $(".tfs-domain").slideUp();
+        } else {
+            $(".tfs-connection .only-for-tfs-cloud").hide();
+            $(".tfs-connection .only-for-tfs-server").fadeIn();
+            $(".tfs-domain").slideDown();
+            $(".tfs-connection .link-to-api-token-docs").slideUp();
+        }
+    });
+    $("#hostedtfs").trigger('change');
+
 </script>

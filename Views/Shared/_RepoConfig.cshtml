@@ -47,18 +47,17 @@
             
             <div class="row">
                 <div class="field">
-                    <div class="label">TFS Server URL</div>
+                    <div class="label">URL</div>
                     <div class="editbox">@Html.TextBox("tfsurl_" + Model.Guid, Model.Url, new { @class = "tfsurl" })</div>
-                    <div class="field-description">TFS server base URL including scheme name, with optional port number, e.g.  http://mytfs:8080/tfs.</div>
+                    <div class="field-description">TFS server base URL with optional port number, e.g.  http://mytfs.mycompany.com:8080/tfs. </div>
                 </div>
             </div>
             <div class="row">
                 <div class="field">
-                    <div class="label">Visual Studio Online</div>
+                    <div class="label">Azure DevOps</div>
                     <div class="editbox">@Html.CheckBox("tfshosted_" + Model.Guid, Model.HostedTfs, new { @class = "tfshosted" })</div>
                     <div class="field-description">
-                        Check this option if you want to connect with Visual Studio Online (Cloud version of TFS). Alternate credentials on Visual Studio Online should be enabled. 
-                        @HelpHelpers.LinkToOnlineDocumentation("hosted_tfs_config", "More info")
+                        Check this option if you want to connect with Azure DevOps (formerly VSTS).
                     </div>
                 </div>
             </div>
@@ -70,12 +69,17 @@
             </div>
             <div class="row">
                 <div class="field">
-                    <div class="label">Password</div>
+                    <div class="label only-for-tfs-server">Password</div>
+                    <div class="label only-for-tfs-cloud">Personal Access Token</div>
                     <div class="editbox">@Html.Password("tfspassword_" + Model.Guid, Model.Password, new { @class = "tfspassword", @autocomplete = "new-password" })</div>
+                    <div class="field-description link-to-api-token-docs">
+                        <a href="https://confluence.spartez.com/pages/viewpage.action?pageId=8781995&source=tfs4jirasynchronizer" target="_blank">How to generate Personal Access Token?</a> <br />
+                        Note, you can also use Alternate Credentials Password here instead of Token.
+                    </div>
                 </div>
             </div>
             <div class="row">
-                <div class="field">
+                <div class="field tfs-domain">
                     <div class="label">Domain</div>
                     <div class="editbox">@Html.TextBox("tfsdomain_" + Model.Guid, Model.Domain, new {@class = "tfsdomain"})</div>
                 </div>

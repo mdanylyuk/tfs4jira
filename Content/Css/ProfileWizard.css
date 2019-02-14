@@ -29,6 +29,11 @@
     width: 360px;
 }
 
+.tfs4jira-fieldgroup .readonly-value {
+    text-align: center;
+    font-size: 1.4em;
+}
+
 .tfs4jira-fieldgroup-checkbox {
     margin-left: 210px;
     font-size: 16px;

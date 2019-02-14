@@ -1,7 +1,7 @@
 ﻿(function ($) {
     var defaults = {
         getvalues: null
-        , width: '200px'
+        , width: '18em'
         , border: '1px solid #CCCCCC'
         , selection: null
         , fieldCache: {}

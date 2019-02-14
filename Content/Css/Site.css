@@ -361,49 +361,49 @@ ul#menu li.selected a {
 
 /* Login form
 ----------------------------------------------------------*/
-#login-form {
-    padding: 0 2em 2em 2em;
-    margin: 0;
-    position: relative;
-    left: 50%;
-    width: 300px;
-    margin-left: -150px;
+.flex-container {
+    display: flex;
+    flex-direction: row;
 }
 
-#login-form .row 
-{
-	position: relative;
-    margin-bottom: 10px;
-	margin-left: 2em;
+.flex-container form {
+    flex: 2;
+}
+
+.flex-container .login-help {
+    flex: 1;
+}
+
+#login-form {
+    padding: 8em 0;
+    margin: 0 auto;
+    width: 27em;
+}
+
+#login-form .row {
+    margin: 1em 0;
 }
 
 #login-form .row .field {
-    position: relative;
     overflow: auto;
 }
 
-#login-form .row .label 
-{
+#login-form .row .label {
     float: left;
-	position: relative;
-	left: 0;
-	top: 0;
-	width: 80px;
-	text-align: right;
-	height: 2em;
-	line-height: 2em;
+    width: 6em;
+    text-align: right;
+    height: 2em;
+    line-height: 2em;
+    font-size: 1.2em;
 }
 
-#login-form .row .editbox 
-{
+#login-form .row .editbox {
     float: left;
-	position: relative;
-    margin-left: 10px;
-	top: 0;
+    margin-left: 1em;
 }
 
 #login-form .row input {
-    width: 160px !important;
+    padding: 0.3em;
 }
 
 #login-form .row input[type="checkbox"] {
@@ -414,10 +414,26 @@ ul#menu li.selected a {
     width: 100px !important;
 }
 
-#login-form legend 
-{
-    font-size: 11px;
-    margin-bottom: 10px;
+#login-form legend {
+    font-size: 0.8em;
+    margin-bottom: 0.8em;
+}
+
+.login-help-container {
+    display: block;
+    width: 32em;
+    padding: 2em;
+    border: 0.5px solid lightgrey;
+    box-shadow: 0.1em -0.1em 0.5em #e5e5e5;
+}
+.login-help-container p {
+    margin: 0.8em 0;
+}
+
+.login-help-container .acl-file-dir {
+    font-family: monospace;
+    font-size: small;
+    word-wrap: break-word;
 }
 
 /* ----------------------------------------------------------
@@ -538,18 +554,154 @@ div.tfs4jira-tooltip-theme {
 /* Synchronization profile form
 ----------------------------------------------------------*/
 
-form.configForm {
-    margin-right: 30%;
+form.config-form {
+    margin-right: 25%;
 }
-.configForm .jira-connection .link-to-api-token-docs {
-    padding-top: 0.5em;
+
+.edit-profile-form {
+    position: relative;
+    width: 45em;
+    margin: 0 auto;
 }
-.profileform
-{
-	position: relative;
-	left:50%;
-	width: 600px;
-	margin-left:-300px;
+
+.edit-profile-form .profile-form-section {
+    border: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.edit-profile-form .profile-form-section h2 {
+    font-size: 1.3em;
+    letter-spacing: 0.5px;
+    padding-left: .5em;
+    padding-bottom: 0.3em;
+    color: #666;
+    border-bottom: 1px solid #D7D7D7;
+}
+
+.edit-profile-form .row {
+    display: flex;
+    flex-direction: row;
+    margin: 0.2em;
+    padding: 0.2em;
+}
+
+.edit-profile-form .label {
+    text-align: right;
+    cursor: pointer;
+    padding-top: 0.6em;
+}
+
+.edit-profile-form .left-col {
+    flex: 1;
+}
+
+.edit-profile-form .right-col {
+    flex: 2;
+    padding: 0.2em 1em;
+}
+
+.edit-profile-form .field {
+    font-size: 1em;
+}
+
+.edit-profile-form input[type="text"],
+.edit-profile-form input[type="password"],
+.edit-profile-form input[type="email"],
+.edit-profile-form input[type="number"] {
+    border: 1px solid #CCC;
+    padding: 0.2em;
+    font-size: 1.2em;
+    color: #444;
+    width: 18em;
+}
+
+.edit-profile-form input[type="submit"],
+.edit-profile-form input[type="button"] {
+    font-size: 1.2em;
+    padding: 0.1em .2em;
+}
+
+.edit-profile-form .field-description {
+    font-size: 0.8em;
+    margin: 0;
+    width: 28em;
+    padding-top: 0.3em;
+}
+
+.edit-profile-form input[type="checkbox"] {
+    margin: 0.5em 0.5em 0.5em 0;
+}
+
+.edit-profile-form .row .worker {
+    display: none;
+    height: 2em;
+    line-height: 2em;
+}
+
+.edit-profile-form .row .worker-label {
+    margin-left: 0.5em;
+}
+
+.edit-profile-form .row .worker-throbber {
+    position: relative;
+    clear: left;
+    float: left;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    background-image: url(../Images/ajax-loader.gif);
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.edit-profile-form .fieldswrap {
+    position: relative;
+}
+
+.edit-profile-form .fieldswrap .input:disabled {
+    background-color: rgba(0,0,0,.03);
+}
+
+.edit-profile-form .selectedfield {
+    font-size: 1.2em;
+    z-index: 1;
+    border: solid 1px #ccc;
+    display: none;
+    height: 1.2em;
+    line-height: 1.2em;
+    padding: 0.2em;
+    width: 18em;
+    position: relative;
+}
+
+.edit-profile-form .clearfield {
+    border: solid 1px #FFF;
+    background-color: #FFF;
+    background-image: url('../Images/close.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    right: 0;
+    top: 0.15em;
+    width: 1em;
+    height: 1em;
+    text-align: center;
+    cursor: pointer;
+    position: absolute;
+}
+
+.edit-profile-form .selectedfieldname {
+    float: left;
+    overflow-x: hidden;
+    height: 1.2em;
+}
+
+.profileform {
+    position: relative;
+    left: 50%;
+    width: 600px;
+    margin-left: -300px;
 }
 
 .profileform .row
@@ -888,6 +1040,7 @@ input.mapbutton {
 .mapping-section
 {
     padding-left: 40px;
+    clear: both;
 }
 
 .jeditable
@@ -910,6 +1063,49 @@ input.mapbutton {
 {
     display:none;
     font-size:8px;
+}
+
+.header-video-link-group h2 {
+    display: inline-block;
+}
+
+.inproduct-video-link {
+    margin: 0 1em;
+    display: inline-block;
+    padding: 0.2em 0.8em;
+    vertical-align: middle;
+    background-color: #FFF;
+    cursor: pointer;
+    text-shadow: 0 1px 0 rgba(255,255,255, 0.8);
+    text-align: center;
+    font-weight: 700;
+    font-family: helvetica, arial, sans-serif;
+    border-radius: 4px;
+    border: 1px solid rgba(216, 230, 243, 0.8);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.inproduct-video-link:hover {
+    text-decoration: none;
+}
+
+.inproduct-video-link span {
+    display: inline-block;
+    line-height: 1.5em;
+}
+
+.video-icon {
+    background-image: url(../../Content/Images/film.svg);
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 1.5em;
+    width: 1.5em;
+    float: left;
+}
+
+.video-link-text {
+    color: #555;
+    margin-left: 0.3em;
 }
 
 /* ----------------------------------------------------------*/
@@ -950,7 +1146,9 @@ input.mapbutton {
 /* Styles for validation helpers
 -----------------------------------------------------------*/
 .field-validation-error {
-    color: #ff0000;
+    color: #F00;
+    display: block;
+    padding-top: 0.5em;
 }
 
 .field-validation-valid {
@@ -958,20 +1156,16 @@ input.mapbutton {
 }
 
 .input-validation-error {
-    border: 1px solid #ff0000;
-    background-color: #ffeeee;
+    border: 1px solid #F00;
 }
 
-.validation-summary-errors 
-{
-	margin-top: 20px;
-    font-weight: bold;
-    color: #ff0000;
+.validation-summary-errors {
+    margin-top: 1.5em;
+    color: #F00;
 }
 
-.validation-summary-errors ul 
-{
-	margin-bottom: 0;
+.validation-summary-errors ul {
+    margin-bottom: 0;
 }
 
 .validation-summary-valid {
@@ -1012,8 +1206,6 @@ input.mapbutton {
 }
 
 .selectedfield {
-    left: 0;
-    top: -0.2em;
     z-index: 1;
     border: solid 1px #ccc;
     display: none;
@@ -1245,7 +1437,7 @@ body.loading .spinner {
   text-align: right;
 }  
 
-.addprofile a
+.addprofile > a
 {
 	font-weight: bold;
 	background-repeat: no-repeat;
@@ -1259,13 +1451,13 @@ body.loading .spinner {
     -moz-border-radius: 8px;
 }
 
-.addprofile a:hover {
+.addprofile > a:hover {
     text-decoration: none;
     background-color: #326ca6;
     background-color: rgba(50, 108, 166, 0.88);
 }
 
-.addprofile a:link, .addprofile a:visited {
+.addprofile > a:link, .addprofile a:visited {
     color: #f6f6f6;
     text-decoration: none;
 }
@@ -1983,3 +2175,6 @@ input.tfs4jira-input-field,
 }
 
 /* */
+.sync-profiles-header {
+    margin-top: 3em;
+}

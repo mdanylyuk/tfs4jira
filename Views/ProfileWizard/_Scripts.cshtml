@@ -51,6 +51,25 @@
         return result.promise();
     }
 
+    function nonBlockingApiAjax(options) {
+        var result = $.Deferred();
+        var ajaxXhr = $.ajax(options);
+        ajaxXhr.done(function requestDone(data) {
+            if (data.error) {
+                showErrorMessage(data.error.ErrorMessage);
+                result.reject(data.error);
+            } else {
+                result.resolve(data);
+            }
+        });
+        ajaxXhr.fail(function requestFail(xhr) {
+            console.log(xhr);
+            showErrorMessage(getXhrErrorResponse(xhr));
+            result.reject(getXhrErrorResponse(xhr));
+        });
+        return result.promise();
+    }
+
     var blockingAjaxCounter = 0;
 
     function blockingAjax(options) {
@@ -60,6 +79,17 @@
         return nonBlockingAjax(options).always(function() {
             blockingAjaxCounter--;
 
+            if (blockingAjaxCounter == 0) {
+                hideSpinner();
+            }
+        });
+    }
+
+    function blockingApiAjax(options) {
+        showSpinner();
+        blockingAjaxCounter++;
+        return nonBlockingApiAjax(options).always(function() {
+            blockingAjaxCounter--;
             if (blockingAjaxCounter == 0) {
                 hideSpinner();
             }

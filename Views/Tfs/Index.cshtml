@@ -11,8 +11,6 @@
 }
 
 
-    <h1>Synchronization Configuration</h1>
-
     @if (@Model.Count == 0)
     {
         <div style="margin-left: auto; margin-right: auto; width: 100%; text-align: center">
@@ -21,9 +19,19 @@
     }
     else
     {
-        <div class="header-with-add-button">
+        <div class="header-with-add-button sync-profiles-header">
             <div style="float: left"><h2 class="nomargin">Synchronization profiles</h2></div>
-            <div style="float: right"><div class="addprofile"><a href="@Url.Action("Index", "ProfileWizard")">Create Synchronization Profile</a></div></div>
+            <div style="float: right">
+                <div class="addprofile">
+                    <span>
+                        <a class="inproduct-video-link" title="Watch video how to create Sync Profile" href="https://youtu.be/Kc6S7THgpSI" target="_blank">
+                            <span class="video-icon"></span>
+                            <span class="video-link-text">How To</span>
+                        </a>
+                    </span>
+                    <a href="@Url.Action("Index", "ProfileWizard")">Create Synchronization Profile</a>
+                </div>
+            </div>
             <div style="clear: both"></div>
         </div>
 

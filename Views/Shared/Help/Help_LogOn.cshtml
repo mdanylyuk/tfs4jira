@@ -1,9 +1,20 @@
-﻿<p>
-    Input host machine user's Windows credentials to log in.
+﻿<h3>What credentials should I use?</h3>
+<p>
+    Synchronizer uses Windows authentication.
+    You should use <strong>Windows User</strong> credentials from the machine where Synchronizer is installed.
 </p>
 <p>
-    To allow or deny access to TFS4JIRA Synchronizer management functions, change ACL on the following file on the host machine:<br /><br />
-    <textarea readonly="readonly" style="width: 100%">@(ViewBag.aclFile)</textarea>
-    Both <strong>Read</strong> and <strong>Write</strong> permissions are required for a user to be able to log in.
+    Note that user accounts without password cannot be used to access Synchronizer.
 </p>
-<p>Visit @HelpHelpers.LinkToOnlineDocumentation("login") for more help.</p>
+<p>
+    Domain field should be left empty for local users.
+</p>
+
+<h3>Still cannot log in?</h3>
+<p>
+    In order to log in to Synchronizer, the Windows user must have <strong>Read</strong> and <strong>Write</strong> permissions to the file located on the machine where the Synchronizer is installed:<br>
+    <span class="acl-file-dir">@(ViewBag.aclFile)</span>
+</p>
+<p>
+    Visit @HelpHelpers.LinkToOnlineDocumentation("login") for more help.
+</p>
