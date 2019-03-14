@@ -12,7 +12,7 @@
         <link href="@Url.Content("~/Content/Css/jquery.tooltipster.css")" rel="stylesheet" type="text/css" />
         <link href="@Url.Content("~/Content/Css/dropit.css")" rel="stylesheet" type="text/css" />
         <link href="@Url.Content("~/FrontendResources/static/css/app.css")" rel="stylesheet" type="text/css"/>
-        <link rel="shortcut icon" type="image/png" href="../../Content/Images/logo.png" />
+        <link rel="shortcut icon" type="image/png" href="@Url.Content("~/Content/Images/logo.png")"/>
         <script type="text/javascript">
             var contextPath = "@Url.Content("~")".replace(/\/$/, '');
             console.log("Synchronizer context path : \"" + contextPath + "\"");
@@ -59,8 +59,7 @@
         </div>
         <div id="header">
             <a href="@Url.Action("Index", "Tfs", new { id = string.Empty }, null)"><div id="applogo">TFS4JIRA Synchronizer</div></a>
-            <div id="logindisplay" style="min-height: 2em;">
-
+            <div id="logindisplay">
                 @if (ViewBag.isLogInPage == null)
                 {
                     @Html.Partial("_LogOnPartial")
@@ -71,8 +70,8 @@
                     <ul id="menu">
                         @if (ViewBag.isAuthorized != null && ViewBag.isAuthorized)
                         {
-                            <li id="menu-config">@Html.ActionLink("Synchronization Configuration", "Index", "Tfs", new {id = string.Empty}, null)</li>
-                            <li id="menu-check-ins-config">@Html.ActionLink("Check-ins Scanning", "Index", "Checkins", new { id = string.Empty }, null)</li>
+                            <li id="menu-config">@Html.ActionLink("Configuration", "Index", "Tfs", new {id = string.Empty}, null)</li>
+                            <li id="menu-check-ins-config">@Html.ActionLink("Check-ins", "Index", "Checkins", new { id = string.Empty }, null)</li>
                             <li id="menu-logging-events">@Html.ActionLink("Errors", "Index", "LoggingEvents")</li>
                             <li id="menu-settings">@Html.ActionLink("Settings", "Index", "Settings")</li>
                             <li id="menu-activity">@Html.ActionLink("Log", "Index", "Home")</li>

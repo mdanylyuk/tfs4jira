@@ -68,7 +68,7 @@
                 <input type="radio" class="mappingtype" id="mappingtype_convert" name="mappingtype" value="@(convert)" @Html.Raw(mapping.MappingMode == convert ? "checked=\"checked\"" : "" ) @Html.Raw(mapping.JiraField.Equals(SyncProfileService.JiraIssueTypeSubtaskField) ? "disabled=\"disabled\"" : "" )/>
                 Copy value (attempt type conversion)<br/>
             </label>
-            if (mapping.IsHtmlMapping) {
+            if (mapping.IsHtmlMapping || mapping.JiraType == "user") {
                 <label>
                     <input type="radio" class="mappingtype" id="mappingtype_withoutconversion" name="mappingtype" value="@(withoutconversion)" @Html.Raw(mapping.MappingMode == withoutconversion ? "checked=\"checked\"" : "")/>
                     Copy value (without conversion)<br/>

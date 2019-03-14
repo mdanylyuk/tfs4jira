@@ -9,8 +9,6 @@
 
     string createdProfileGuid = TempData[TfsController.CreatedProfileGuidKey].NullableToString();
 }
-
-
     @if (@Model.Count == 0)
     {
         <div style="margin-left: auto; margin-right: auto; width: 100%; text-align: center">
@@ -19,7 +17,7 @@
     }
     else
     {
-        <div class="header-with-add-button sync-profiles-header">
+        <div class="header-with-add-button">
             <div style="float: left"><h2 class="nomargin">Synchronization profiles</h2></div>
             <div style="float: right">
                 <div class="addprofile">
@@ -39,7 +37,7 @@
             <thead>
                 <tr>
                     <th style="width: 340px;">Profile name</th>
-                    <th style="width: 80px;">Status</th>
+                    <th class="status">Status</th>
                     <th style="width: 150px;">Last run</th>
                     <th style="width: 150px;">Last successful run</th>
                     <th style="width: 50px;">Errors</th>
@@ -72,24 +70,23 @@
                         }
                     </div>
                 </td>
-
-                @if (p.Profile.LastAttemptedScan != p.Profile.LastSuccessfulScan)
-                {
-                    <td title="Last synchronization has not finished successfully. Please refer to log for details."
-                        class="synchronization-error">
+                <td class="nowrap status">
+                    <div class="profile-state @(p.Profile.State.ToString().ToLower())">
                         @(p.Profile.State.ToString())
-                    </td>
-                }
-                else
-                {
-                    <td>
-                        @(p.Profile.State.ToString())
-                    </td>
-                }
-                <td class="nowrap">@p.Profile.LastAttemptedScan</td>
+                    </div>
+                </td>
+                <td class="nowrap">
+                    <div class="last-run">
+                        <span>
+                            @p.Profile.LastAttemptedScan
+                        </span>
+                        <span title="Last synchronization has not finished successfully. Please refer to log for details."
+                              class="@(p.Profile.LastAttemptedScan != p.Profile.LastSuccessfulScan ? "synchronization-error" : "no-errors")"></span>
+                    </div>
+                </td>
                 <td class="nowrap">@p.Profile.LastSuccessfulScan</td>
-                <td class="nowrap @(p.ErrorCount > 0 ? "error-background" : "")">
-                    <a class="showerrors" id="showerrors_@(p.Profile.Guid)" href="@Url.Action("Index", "SyncError", new { id = @p.Profile.Guid }, null)">@p.ErrorCount</a>
+                <td class="nowrap">
+                    <a class="@(p.ErrorCount > 0 ? "show-errors" : "no-errors")" id="showerrors_@(p.Profile.Guid)" href="@Url.Action("Index", "SyncError", new { id = @p.Profile.Guid }, null)">@p.ErrorCount</a>
                 </td>
                 <td class="nowrap">
                     <ul class="operations-dropdown-menu">

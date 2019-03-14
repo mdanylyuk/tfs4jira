@@ -13,7 +13,6 @@
     <td class="url">
         <a href="@Model.Url" target="_blank">@Model.Url</a>
     </td>
-    <td class="nowrap">@(Model.Enabled ? "Yes" : "No")</td>
     <td class="nowrap">@Model.Collection</td>
     
     @if (Model.GitRepo) {
@@ -28,6 +27,11 @@
     }
     
     <td class="nowrap" style="text-align: right">@Model.LastScanUtc</td>
+    <td class="nowrap status">
+        <div class="repo-state @(Model.Enabled ? "enabled" : "disabled")">
+            @(Model.Enabled ? "Enabled" : "Disabled")
+        </div>
+    </td>
     <td class="nowrap">
         <a class="tfs_edit" id="@editId" href="#">Edit</a>
         &nbsp;|&nbsp;

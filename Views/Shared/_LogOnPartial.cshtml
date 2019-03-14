@@ -1,7 +1,11 @@
-﻿@if (ViewBag.isAuthorized != null && ViewBag.isAuthorized)
-{
-    <text>Welcome <strong>@User.Identity.Name</strong>
-    @Html.ActionLink("Log Out", "LogOff", "Account")</text><br />
+﻿@if (ViewBag.isAuthorized != null && ViewBag.isAuthorized) {
+    <text>
+        <span>Welcome <strong>@User.Identity.Name</strong></span>
+        <span class="separator">|</span>
+        <a title="Log Out" href="@Url.Action("LogOff", "Account")">
+            <img src="@Url.Content("~/Content/Images/exit-icon.svg")" alt="Log Out"/>
+        </a>
+    </text><br />
 } else {
     @:@Html.ActionLink("Log In", "LogOn", "Account")
 }
