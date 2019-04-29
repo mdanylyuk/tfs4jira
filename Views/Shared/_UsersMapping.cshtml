@@ -1,0 +1,9 @@
+﻿@model synchronizer.Domain.Entity.SyncProfile
+
+<div id="profileguid" style="display: none;">@Model.Guid</div>
+<div class="vue-container" id="users-mapping">
+    <users-mapping profile-guid="@Model.Guid" load-on-init="true"></users-mapping>
+</div>
+<script type="text/javascript">
+    $('#backlink').attr('href', '@Url.Action("Index", "Tfs", Model.Guid)?mappings=1');
+</Script>

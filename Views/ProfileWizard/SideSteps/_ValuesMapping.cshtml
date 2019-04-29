@@ -1,4 +1,6 @@
 ﻿@using synchronizer.Controllers
+@using synchronizer.Domain.Entity
+@using synchronizer.Tfs4jira2.Utils
 @{
     string id = @Model.GetType().GetProperty("Id").GetValue(Model);
     string mappingComponentId = id + "-component";
@@ -50,6 +52,25 @@
                     <input type="radio" name="mapping-mode" value="2" class="mapping-mode-map-values">
                     Map values
                 </label>
+            </div>
+        </div>
+        <div id="wizard-value-mapping-users" style="display: none;">
+            <div class="tfs4jira-fieldgroup-checkbox wizard-value-mapping-radio">
+                <label>
+                    <input type="radio" name="mapping-mode" value="1">
+                    Copy values (attempt type conversion)
+                </label>
+            </div>
+            <div class="tfs4jira-fieldgroup-checkbox wizard-value-mapping-radio">
+                <label>
+                    <input type="radio" name="mapping-mode" value="3" class="mapping-mode-map-users">
+                    Map users
+                </label>
+                <div class="vue-container hidden-on-load users-mapping-notification" id="users-mapping-info">
+                    <notification class="info" icon-name="info-circle" icon-class="info-message">
+                        <p>Users mapping will be available in the next step of Profile Wizard.</p>
+                    </notification>
+                </div>
             </div>
         </div>
 
@@ -124,7 +145,7 @@
         var $tfsCustomListSeparatorContainer = $root.find('.tfs-custom-list-separator-container');
         var $mappingComponent = $root.find('#@mappingComponentId');
         var $mappingOnlyOnCreate = $root.find('#mapping-only-on-create');
-        var $tfsCustomListSeparatorInput = $tfsCustomListSeparatorContainer.find('input[name=tfs-custom-list-separator]')
+        var $tfsCustomListSeparatorInput = $tfsCustomListSeparatorContainer.find('input[name=tfs-custom-list-separator]');
 
         var mappingModeValue;
         var mappingDirectionValue;
@@ -176,9 +197,8 @@
                 url: '@Url.Action("SetMappingMode", "Tfs")?_=' + new Date().getTime(),
                 data: { guid: synchronizationProfile.Guid, mappingid: mapping.mappingId, mode: newValue }
             }).done(function () {
-                tfsUseCustomSeparator = newValue;
+                mappingModeValue = newValue;
                 updateMappingComponentVisibility();
-                updateTfsListSeparatorVisiblity();
             }).fail(function () {
                 updateMappingModeRadio();
             });
@@ -227,15 +247,18 @@
         });
 
         function updateMappingComponentVisibility() {
-            if (mappingModeValue == '2') {
+            if (mappingModeValue == @FieldMapping.MAPPING_MODE_VALUEMAP) {
                 $mappingComponentContainer.show();
             } else {
                 $mappingComponentContainer.hide();
             }
+            (mappingModeValue == @FieldMapping.MAPPING_MODE_USERMAP)
+                ? $("#users-mapping-info").show()
+                : $("#users-mapping-info").hide();
         }
 
         function updateTfsUseCustomListSeparatorVisiblity() {
-            if (mapping.isTfsTextType && mapping.isJiraFieldTypeArray && mappingModeValue == '1') {
+            if (mapping.isTfsTextType && mapping.isJiraFieldTypeArray && mappingModeValue == @FieldMapping.MAPPING_MODE_CONVERT_TYPES) {
                 $tfsCustomListSeparatorContainer.show();
             } else {
                 $tfsCustomListSeparatorContainer.hide();
@@ -243,9 +266,9 @@
         }
 
         function updateMappingModeRadio() {
-            $root.find("#wizard-value-mapping-standard").toggle(!mapping.isTreePathMapping);
-            $root.find("#wizard-value-mapping-treepath").toggle(mapping.isTreePathMapping);
-
+            $root.find("#wizard-value-mapping-standard").toggle(!mapping.isTreePathMapping && !mapping.isUserMapping);
+            $root.find("#wizard-value-mapping-treepath").toggle(mapping.isTreePathMapping && !mapping.isUserMapping);
+            $root.find("#wizard-value-mapping-users").toggle(mapping.isUserMapping);
             findElementByAttributes($root, { name: 'mapping-mode', value: mappingModeValue }).filter(':visible').prop('checked', true);
         }
 
@@ -260,7 +283,7 @@
         function updateMappingDirection() {
             $mappingComponent.trigger('@MappingEvents.UpdateMappingDirection', mappingDirectionValue);
         }
-        
+
         function updateTfsUseCustomListSeparator() {
             $tfsCustomListSeparatorInput.prop('checked', tfsUseCustomSeparator);
         }

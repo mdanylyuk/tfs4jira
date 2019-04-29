@@ -1,0 +1,28 @@
+@using synchronizer.Controllers
+@{    
+    string id = @Model.GetType().GetProperty("Id").GetValue(Model);
+    string mappingComponentId = id + "-component";
+}
+
+<div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
+    @if (Model.GetType().GetProperty("Guid") != null && @Model.GetType().GetProperty("Guid").GetValue(Model).ToString() != "00000000-0000-0000-0000-000000000000")
+    {
+        <div class="vue-container" id="users-mapping">
+            <users-mapping profile-guid="@Model.GetType().GetProperty("Guid").GetValue(Model).ToString()" load-on-init="false"></users-mapping>
+        </div>
+    }
+</div>
+
+<script>
+    $(function () {
+        var $root = $('#@id');
+
+        $root.on("@NavigationEvents.ActivateView", function activateView(event, parameters) {
+            window.Spartez.Shared.sendNotification('RefreshUsersMappingComponent', {});            
+        });
+
+        $root.on("@NavigationEvents.NextButtonClicked", function () {
+            SaveModelAndGoToNextStep();
+        });
+    })
+</script>

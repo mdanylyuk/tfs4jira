@@ -1,5 +1,6 @@
 ﻿@using synchronizer.Domain
 @using synchronizer.Domain.Entity
+@using synchronizer.Tfs4jira2.Utils
 @model synchronizer.Models.SyncProfileErrorModel
 
 @{
@@ -15,81 +16,54 @@
         <h1>Create New Synchronization Profile</h1>
         Html.RenderPartial("_SyncProfileEditor", SyncProfile.Empty);
     } else {
-        <h1>Synchronization Profile &quot;@Model.Profile.Name&quot; (@(Model.Profile.State.ToString()))
-            @{
-            if (Request.Params["mappingid"] != null) {
+        <h1>
+            Synchronization Profile &quot;@Model.Profile.Name&quot; (@(Model.Profile.State.ToString()))
+            @if (Request.Params["mappingid"] != null) {
                 @: - Value Mappings
             }
-        }
         </h1>
 
-        bool isProfileEditor = (Request.Params["mappings"] == null && Request.Params["advanced"] == null && Request.Params["filters"] == null);
-        bool isMappingEditor = (@Request.Params["mappingid"] == null && Request.Params["advanced"] == null && Request.Params["filters"] == null);
-        bool isFiltersEditor = (@Request.Params["filters"] != null);
-        bool isAdvancedEditor = (Request.Params["advanced"] != null);
+        bool isProfileEditor = Request.Params["mappings"] == null && Request.Params["advanced"] == null && Request.Params["filters"] == null && Request.Params["users"] == null;
+        bool isMappingEditor = Request.Params["mappings"] != null && Request.Params["mappingid"] == null && Request.Params["advanced"] == null && Request.Params["filters"] == null;
+        bool isFiltersEditor = Request.Params["filters"] != null;
+        bool isAdvancedEditor = Request.Params["advanced"] != null;
+        bool isUsersEditor = Request.Params["users"] != null;
+
         // Show tab switcher
-        if (isProfileEditor)
-        {
-            <div class="tabheader">
-                <div class="tabheadercurrent" id="tab-switch-settings">Settings</div> 
-                @Html.ActionLink("Field Mappings", "Index", "Tfs", new { id = @Model.Profile.Guid, mappings = 1 }, new { id = "tab-switch-field-mappings" })
-                @Html.ActionLink("Filters", "Index", "Tfs", new { id = @Model.Profile.Guid, filters = 1 }, new { id = "tab-switch-filters" })
-                @Html.ActionLink("Active Directory", "Index", "Tfs", new { id = @Model.Profile.Guid, advanced = 1 }, new { id = "tab-switch-advanced" })
+        <div class="profile-configuration-menu">
+            <div class="@(isProfileEditor ? "tabheadercurrent" : "tabheader")">
+                @Html.ActionLink("Settings", "Index", "Tfs", new {id = Model.Profile.Guid}, new {id = "tab-switch-settings"})
             </div>
-        }
-        else if (isMappingEditor)
-        {
-            <div class="tabheader">
-                @Html.ActionLink("Settings", "Index", "Tfs", new { id = @Model.Profile.Guid }, new { id = "tab-switch-settings" }) 
-                <div class="tabheadercurrent" id="tab-switch-field-mappings">Field Mappings</div>
-                @Html.ActionLink("Filters", "Index", "Tfs", new { id = @Model.Profile.Guid, filters = 1 }, new { id = "tab-switch-filters" })
-                @Html.ActionLink("Active Directory", "Index", "Tfs", new { id = @Model.Profile.Guid, advanced = 1 }, new { id = "tab-switch-advanced" })
+            <div class="@(isMappingEditor ? "tabheadercurrent" : "tabheader")">
+                @Html.ActionLink("Field Mappings", "Index", "Tfs", new {id = Model.Profile.Guid, mappings = 1}, new {id = "tab-switch-field-mappings"})
             </div>
-        }
-        else if (isFiltersEditor)
-        {
-            <div class="tabheader">
-                @Html.ActionLink("Settings", "Index", "Tfs", new { id = @Model.Profile.Guid }, new { id = "tab-switch-settings" })
-                @Html.ActionLink("Field Mappings", "Index", "Tfs", new { id = @Model.Profile.Guid, mappings = 1 }, new { id = "tab-switch-field-mappings" })
-                <div class="tabheadercurrent" id="tab-switch-filters">Filters</div>
-                @Html.ActionLink("Active Directory", "Index", "Tfs", new { id = @Model.Profile.Guid, advanced = 1 }, new { id = "tab-switch-advanced" })
+            <div class="@(isFiltersEditor ? "tabheadercurrent" : "tabheader")">
+                @Html.ActionLink("Filters", "Index", "Tfs", new {id = Model.Profile.Guid, filters = 1}, new {id = "tab-switch-filters"})
             </div>
-        }
-        else if (isAdvancedEditor)
-        {
-            <div class="tabheader">
-                @Html.ActionLink("Settings", "Index", "Tfs", new { id = @Model.Profile.Guid }, new { id = "tab-switch-settings" })
-                @Html.ActionLink("Field Mappings", "Index", "Tfs", new { id = @Model.Profile.Guid, mappings = 1 }, new { id = "tab-switch-field-mappings" })
-                @Html.ActionLink("Filters", "Index", "Tfs", new { id = @Model.Profile.Guid, filters = 1 }, new { id = "tab-switch-filters" })
-                <div class="tabheadercurrent" id="tab-switch-advanced">Active Directory</div>
+            <div class="@(isAdvancedEditor ? "tabheadercurrent" : "tabheader")">
+                @Html.ActionLink("Active Directory", "Index", "Tfs", new {id = Model.Profile.Guid, advanced = 1}, new {id = "tab-switch-advanced"})
             </div>
-        }
+            <div class="@(isUsersEditor ? "tabheadercurrent" : "tabheader")">
+                @Html.ActionLink("Users Mapping", "Index", "Tfs", new {id = Model.Profile.Guid, users = 1}, new {id = "tab-switch-users-mappings"})
+            </div>
+        </div>
 
         // Show tab content
         <div id="tabcontent">
             <div class="spinner"><!-- -- --></div>
-            @if (isProfileEditor)
-            {
-                Html.RenderPartial("_SyncProfileEditor", Model.Profile);        
-            }
-            else if (isMappingEditor)
-            {
+            @if (isProfileEditor) {
+                Html.RenderPartial("_SyncProfileEditor", Model.Profile);
+            } else if (isMappingEditor) {
                 Html.RenderPartial("_FieldMappingsEditor", Model.Profile);
-            }
-            else if (isFiltersEditor)
-            {
-                 Html.RenderPartial("_FiltersEditor", Model.Profile);
-            }
-            else if (isAdvancedEditor) 
-            {
+            } else if (isFiltersEditor) {
+                Html.RenderPartial("_FiltersEditor", Model.Profile);
+            } else if (isAdvancedEditor) {
                 Html.RenderPartial("_AdvancedSettingsEditor", Model.Profile);
-            }
-            else  
-            {
+            } else if (isUsersEditor) {
+                Html.RenderPartial("_UsersMapping", Model.Profile);
+            } else {
                 Html.RenderPartial("_ValueMappingsEditor", Model.Profile);
             }
-        </div>      
-    }    
+        </div>
+    }
 }
-
-

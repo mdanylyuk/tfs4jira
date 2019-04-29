@@ -35,9 +35,15 @@
     $(function () {
         var $root = $('#@id');
         var $enableProfileRadioButton = findElementByAttributes($root, { name: 'wizard-enable-profile' });
-
-        $root.find("#back-from-end-screen-button").click(function () {
-            GoToPreviousStep();
+        
+        $root.find("#back-from-end-screen-button").click(async function () {
+            let goToUserMappingStep = await shouldGoToUserMappingStep();
+            let currentStepIdx = getStepIndexInStepsList(currentStep);
+            if (goToUserMappingStep) {
+                GoToPreviousStep();
+            } else {
+                setCurrentStep(steps[currentStepIdx - 2]);
+            }
             return false;
         });
 

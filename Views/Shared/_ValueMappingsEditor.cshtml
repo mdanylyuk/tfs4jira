@@ -1,6 +1,7 @@
 ﻿@using synchronizer.Domain.Entity
 @using synchronizer.Mapping
 @using synchronizer.Services
+@using synchronizer.Tfs4jira2.Utils
 @model synchronizer.Domain.Entity.SyncProfile
 
 <script src="@Url.Content("~/Scripts/fieldselectors/jquery.fieldsel.js")" type="text/javascript"></script>
@@ -10,6 +11,7 @@
     var id = Request.Params["mappingid"];
     var mapping = Model.GetMappingById(int.Parse(id));
     var jiraFieldMeta = ViewBag.JiraService.GetFieldMetadata(Model, mapping);
+    var tfsFieldMeta = ViewBag.TfsService.GetFieldMetadata(Model, mapping);
 }
 
 <div id="messages"></div>
@@ -28,12 +30,13 @@
 
 
 <h5>Mapping Mode</h5>
-<p style="margin-left: 2em;">
+<p style="margin-left: 2em; margin-bottom: .5em;">
     @{
-        const int convert = FieldMapping.MAPPING_MODE_CONVERT_TYPES;
-        const int mapvalues = FieldMapping.MAPPING_MODE_VALUEMAP;
-        const int copypathend = FieldMapping.MAPPING_MODE_COPY_LAST_PATH_PART;
-        const int withoutconversion = FieldMapping.MAPPING_MODE_WITHOUT_CONVERSION;
+        const int MAPPING_MODE_CONVERT_TYPES = FieldMapping.MAPPING_MODE_CONVERT_TYPES;
+        const int MAPPING_MODE_VALUEMAP = FieldMapping.MAPPING_MODE_VALUEMAP;
+        const int MAPPING_MODE_USERMAP = FieldMapping.MAPPING_MODE_USERMAP;
+        const int MAPPING_MODE_COPY_LAST_PATH_PART = FieldMapping.MAPPING_MODE_COPY_LAST_PATH_PART;
+        const int MAPPING_MODE_WITHOUT_CONVERSION = FieldMapping.MAPPING_MODE_WITHOUT_CONVERSION;
 
         if (jiraFieldMeta.IsSprintField) {
             <span class="message-box info">
@@ -52,35 +55,55 @@
                 before changing the settings below.
            </span>
             <label>
-                <input type="radio" class="mappingtype" id="mappingtype_convert" name="mappingtype" value="@(convert)" @Html.Raw(mapping.MappingMode == convert ? "checked=\"checked\"" : "")/>
+                <input type="radio" class="mappingtype" id="mappingtype_convert" name="mappingtype" value="@(MAPPING_MODE_CONVERT_TYPES)" @Html.Raw(mapping.MappingMode == MAPPING_MODE_CONVERT_TYPES ? "checked=\"checked\"" : "")/>
                 Copy full TFS tree path<br/>
             </label>
             <label>
-                <input type="radio" class="mappingtype" id="mappingtype_copypathend" name="mappingtype" value="@(copypathend)" @Html.Raw(mapping.MappingMode == copypathend ? "checked=\"checked\"" : "")/>
+                <input type="radio" class="mappingtype" id="mappingtype_copypathend" name="mappingtype" value="@(MAPPING_MODE_COPY_LAST_PATH_PART)" @Html.Raw(mapping.MappingMode == MAPPING_MODE_COPY_LAST_PATH_PART ? "checked=\"checked\"" : "")/>
                 Copy last part of TFS tree path<br/>
             </label>
             <label>
-                <input type="radio" class="mappingtype" id="mappingtype_valuemapmode" name="mappingtype" value="@(mapvalues)" @Html.Raw(mapping.MappingMode == mapvalues ? "checked=\"checked\"" : "") @Html.Raw(jiraFieldMeta.AllowedValues == null ? "disabled=\"disabled\"" : "")/>
+                <input type="radio" class="mappingtype" id="mappingtype_valuemapmode" name="mappingtype" value="@(MAPPING_MODE_VALUEMAP)" @Html.Raw(mapping.MappingMode == MAPPING_MODE_VALUEMAP ? "checked=\"checked\"" : "") @Html.Raw(jiraFieldMeta.AllowedValues == null ? "disabled=\"disabled\"" : "")/>
                 Map values
             </label>
         } else {
             <label>
-                <input type="radio" class="mappingtype" id="mappingtype_convert" name="mappingtype" value="@(convert)" @Html.Raw(mapping.MappingMode == convert ? "checked=\"checked\"" : "" ) @Html.Raw(mapping.JiraField.Equals(SyncProfileService.JiraIssueTypeSubtaskField) ? "disabled=\"disabled\"" : "" )/>
+                <input type="radio" class="mappingtype" id="mappingtype_convert" name="mappingtype" value="@(MAPPING_MODE_CONVERT_TYPES)" @Html.Raw(mapping.MappingMode == MAPPING_MODE_CONVERT_TYPES ? "checked=\"checked\"" : "" ) @Html.Raw(mapping.JiraField.Equals(SyncProfileService.JiraIssueTypeSubtaskField) ? "disabled=\"disabled\"" : "" )/>
                 Copy value (attempt type conversion)<br/>
             </label>
             if (mapping.IsHtmlMapping || mapping.JiraType == "user") {
                 <label>
-                    <input type="radio" class="mappingtype" id="mappingtype_withoutconversion" name="mappingtype" value="@(withoutconversion)" @Html.Raw(mapping.MappingMode == withoutconversion ? "checked=\"checked\"" : "")/>
+                    <input type="radio" class="mappingtype" id="mappingtype_withoutconversion" name="mappingtype" value="@(MAPPING_MODE_WITHOUT_CONVERSION)" @Html.Raw(mapping.MappingMode == MAPPING_MODE_WITHOUT_CONVERSION ? "checked=\"checked\"" : "")/>
                     Copy value (without conversion)<br/>
                 </label>
             }
-            <label>
-                <input type="radio" class="mappingtype" id="mappingtype_valuemapmode" name="mappingtype" value="@(mapvalues)" @Html.Raw(mapping.MappingMode == mapvalues ? "checked=\"checked\"" : "") @Html.Raw(jiraFieldMeta.AllowedValues == null ? "disabled=\"disabled\"" : "")/>
-                Map values
-            </label>
+            if (mapping.IsUserMapping(jiraFieldMeta, tfsFieldMeta)) {
+                <label>
+                    <input type="radio" class="mappingtype" id="mappingtype_usermapmode" name="mappingtype" value="@(MAPPING_MODE_USERMAP)" @Html.Raw(mapping.MappingMode == MAPPING_MODE_USERMAP ? "checked=\"checked\"" : "")/>
+                    Map users
+                </label>
+            }
+            else {
+                <label>
+                    <input type="radio" class="mappingtype" id="mappingtype_valuemapmode" name="mappingtype" value="@(MAPPING_MODE_VALUEMAP)" @Html.Raw(mapping.MappingMode == MAPPING_MODE_VALUEMAP ? "checked=\"checked\"" : "") @Html.Raw(jiraFieldMeta.AllowedValues == null ? "disabled=\"disabled\"" : "")/>
+                    Map values
+                </label>
+            }
         }
     }
 </p>
+
+<div class="vue-container hidden-on-load users-mapping-notification" id="users-mapping-info">
+    <notification class="info" icon-name="info-circle" icon-class="info-message">
+        <p>
+            Please configure users synchronization on
+            <a href="@Url.Action("Index", "Tfs", new { id = Model.Guid, users = 1 })"
+               id="users-mappings-link">
+                Users Mapping tab
+            </a>
+        </p>
+    </notification>
+</div>
 
 @{
 
@@ -301,6 +324,12 @@
             $('#valuesinfo').slideDown(setHelpSizePos);
         } else {
             $('#valuesinfo').slideUp(setHelpSizePos);
+        }
+
+        if ($('#mappingtype_usermapmode').is(':checked')) {
+            $('#users-mapping-info').show();
+        } else {
+            $('#users-mapping-info').hide();
         }
     };
     showMappings = function() {
@@ -662,7 +691,7 @@
     };
 
     updateTfsUseCustomListSeparatorVisibility = function() {
-        if ($('input[name=mappingtype]:checked').val() === '@(convert)') {
+        if ($('input[name=mappingtype]:checked').val() === '@(MAPPING_MODE_CONVERT_TYPES)') {
             $('#tfs-use-custom-list-separator').show();
         } else {
             $('#tfs-use-custom-list-separator').hide();
@@ -757,7 +786,10 @@
         else if (mapping.MappingMode == FieldMapping.MAPPING_MODE_VALUEMAP)
         {
             @: $('#mappingtype_valuemapmode').attr('checked', 'checked');
-                            }
+        }
+        else if (mapping.MappingMode == FieldMapping.MAPPING_MODE_USERMAP) {
+            @: $('#mappingtype_usermapmode').attr('checked', 'checked');
+        }
         else if (mapping.MappingMode == FieldMapping.MAPPING_MODE_COPY_LAST_PATH_PART)
         {
             @: $('#mappingtype_copypathend').attr('checked', 'checked');

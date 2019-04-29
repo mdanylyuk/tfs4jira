@@ -158,20 +158,30 @@
     }
 
     function SaveModelAndGoToNextStep() {
-        var result = $.Deferred();
-        //TODO show throbber or some other progress indicator
-
         var currentStepIdx = getStepIndexInStepsList(currentStep);
-        synchronizationProfile.ProfileWizardStep = currentStepIdx + 1;
+        return SaveModelAndGoToStepWithIndex(currentStepIdx + 1);
+    }
+    
+    function shouldGoToUserMappingStep() {
+        return blockingApiAjax({
+            url: `${contextPath}/api/profiles/${synchronizationProfile.Guid}/mappings/fields/contains-user-mapping?_=${Date.now()}`,
+            type: 'GET'
+        });
+    }
+    
+    function SaveModelAndGoToStepWithIndex(indexOfDestinationStep) {
+        //TODO show throbber or some other progress indicator
+        var result = $.Deferred();
+        synchronizationProfile.ProfileWizardStep = indexOfDestinationStep;
 
         sendProfileUpdateRequest(
             function() {
 
-                if (currentStepIdx === null) {
+                if (indexOfDestinationStep === null) {
                     throw "Cannot find step: " + step.Id;
                 }
 
-                GoToNextStep();
+                setCurrentStep(steps[indexOfDestinationStep]);
                 result.resolve();
             },
             function(error) {

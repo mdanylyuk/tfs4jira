@@ -56,8 +56,14 @@
             });*@
         });
 
-        $root.on("@NavigationEvents.NextButtonClicked", function () {
-            SaveModelAndGoToNextStep();
+        $root.on("@NavigationEvents.NextButtonClicked", async function () {
+            let goToUserMappingStep = await shouldGoToUserMappingStep();
+            if (goToUserMappingStep) {
+                SaveModelAndGoToNextStep();
+            } else {
+                let indexOfStepJustAfterUsersMapping = getStepIndexInStepsList(currentStep) + 2
+                SaveModelAndGoToStepWithIndex(indexOfStepJustAfterUsersMapping);
+            }
         });
 
         @*$mapping.on("@MappingEvents.AddMappingButtonClicked", function (event, mappedValue) {
