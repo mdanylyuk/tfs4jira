@@ -712,6 +712,7 @@
             var userName = $(this).closest(".profileform").find(".tfsuser").val();
             var password = $(this).closest(".profileform").find(".tfspassword").val();
             var collection = $(this).closest(".profileform").find(".tfscoll").val();
+            var tfshosted = $(this).closest(".profileform").find(".tfshosted").prop('checked');
 
             jQuery.ajax({
                 type: 'POST',
@@ -721,6 +722,7 @@
                 '&username=' + userName +
                 '&password=' + password +
                 '&collection=' + collection +
+                '&tfshosted=' + tfshosted +
                 guid,
                 complete: function () {
                     $fetchGitRepositoryButton.show();
