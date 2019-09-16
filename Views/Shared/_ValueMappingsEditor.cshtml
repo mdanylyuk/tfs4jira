@@ -36,6 +36,7 @@
         const int MAPPING_MODE_VALUEMAP = FieldMapping.MAPPING_MODE_VALUEMAP;
         const int MAPPING_MODE_USERMAP = FieldMapping.MAPPING_MODE_USERMAP;
         const int MAPPING_MODE_COPY_LAST_PATH_PART = FieldMapping.MAPPING_MODE_COPY_LAST_PATH_PART;
+        const int MAPPING_MODE_COPY_USER_DISPLAY_NAME = FieldMapping.MAPPING_MODE_COPY_USER_DISPLAY_NAME;
         const int MAPPING_MODE_WITHOUT_CONVERSION = FieldMapping.MAPPING_MODE_WITHOUT_CONVERSION;
 
         if (jiraFieldMeta.IsSprintField) {
@@ -75,6 +76,12 @@
                 <label>
                     <input type="radio" class="mappingtype" id="mappingtype_withoutconversion" name="mappingtype" value="@(MAPPING_MODE_WITHOUT_CONVERSION)" @Html.Raw(mapping.MappingMode == MAPPING_MODE_WITHOUT_CONVERSION ? "checked=\"checked\"" : "")/>
                     Copy value (without conversion)<br/>
+                </label>
+            }
+            if (mapping.JiraType == "user") {
+                <label>
+                    <input type="radio" class="mappingtype" id="mappingtype_userdisplayname" name="mappingtype" value="@(MAPPING_MODE_COPY_USER_DISPLAY_NAME)" @Html.Raw(mapping.MappingMode == MAPPING_MODE_COPY_USER_DISPLAY_NAME ? "checked=\"checked\"" : "")/>
+                    Copy user display name (JIRA to TFS direction only)<br/>
                 </label>
             }
             if (mapping.IsUserMapping(jiraFieldMeta, tfsFieldMeta)) {
@@ -162,16 +169,19 @@
         {
             <br />
             <span style="font-size:smaller"><strong>Note:</strong> TFS Work Item Type field cannot be modified after create item, so the only reasonable setting is "Both Direction, when creating new item only".</span>
-        }
-        else if (disable_j2t || disable_t2j)
-        {
-            <br />
-            <span style="font-size:smaller"><strong>Note:</strong> Because of technical reasons this field cannot be mapped in both directions.</span>
-        }
-        else if (disable_co)
-        {
-            <br />
-            <span style="font-size:smaller"><strong>Note:</strong> Because of technical reasons this field can be mapped only upon Work Item or Issue creation.</span>
+        } else {
+            <span id="not-all-directions-available-in-mode-info" style="display: none">
+                <br/>
+                <span style="font-size:smaller"><strong>Note:</strong> Current mapping mode can be used only in one direction.</span>
+            </span>
+            <span id="not-all-directions-available-for-fields-info" style="display: none">
+                <br/>
+                <span style="font-size:smaller"><strong>Note:</strong> Because of technical reasons this field cannot be mapped in both directions.</span>
+            </span>
+            <span id="available-only-when-creating-info" style="display: none">
+                <br/>
+                <span style="font-size:smaller"><strong>Note:</strong> Because of technical reasons this field can be mapped only upon Work Item or Issue creation.</span>
+            </span>
         }
     </p>
  }
@@ -291,6 +301,12 @@
 
     var tfsField = "@mapping.TfsField";
 
+    var isFieldMappableToJira = @(mapping.IsMappableToJira(jiraFieldMeta) ? "true" : "false");
+    var isFieldMappableToTfs = @(mapping.IsMappableToTfs() ? "true" : "false");
+    var isFieldMappableAfterCreate = @(!mapping.IsMappableOnlyOnCreate(jiraFieldMeta) ? "true" : "false");
+    var isModeMappableToJira = true;
+    var isModeMappableToTfs = true;
+    
     getValueDisplayName = function(valuesArray, value) {
 
         var label = value;
@@ -698,6 +714,34 @@
         }
     }
 
+    updateMappingDirection = function () {
+        var mappingModeValue = $('input[name=mappingtype]:checked').val();
+        switch (mappingModeValue) {
+            case '@MAPPING_MODE_COPY_USER_DISPLAY_NAME':
+                isModeMappableToJira = false;
+                isModeMappableToTfs = true;
+                $('#mappingdirection_totfs').click();
+                break;
+            default:
+                isModeMappableToJira = true;
+                isModeMappableToTfs = true;
+        }
+        updateDirectionButtons();
+    }
+
+    updateDirectionButtons = function () {
+        var isToJiraDirectionAvailable = isFieldMappableToJira && isModeMappableToJira;
+        var isToTfsDirectionAvailable = isFieldMappableToTfs && isModeMappableToTfs;
+        $('#mappingdirection_tojira').attr('disabled', (isToJiraDirectionAvailable) ? null : 'disabled');
+        $('#mappingdirection_totfs').attr('disabled', (isToTfsDirectionAvailable) ? null : 'disabled');
+        $('#mappingdirection_both').attr('disabled', (isToJiraDirectionAvailable && isToTfsDirectionAvailable) ? null : 'disabled');
+        $('#mappingdirection_whencreate').attr('disabled', (isFieldMappableAfterCreate) ? null : 'disabled');
+        
+        $('#not-all-directions-available-in-mode-info').toggle(!isModeMappableToJira || !isModeMappableToTfs);
+        $('#not-all-directions-available-for-fields-info').toggle(!isFieldMappableToJira || !isFieldMappableToTfs);
+        $('#available-only-when-creating-info').toggle(!isFieldMappableAfterCreate);
+    }
+    
     updateView = function(newMappings) {
         mappings = newMappings;
         fillAvailableValues();
@@ -724,6 +768,7 @@
             }
         });
         updateTfsUseCustomListSeparatorVisibility();
+        updateMappingDirection();
     });
 
     $('input[name=tfs-use-custom-list-separator]').change(function () {
@@ -856,6 +901,7 @@
 
     updateMapButton(false);
     showHideValues();
+    updateMappingDirection();
 
     $('.fieldlist').change(function() {
         var isJiraValueSelected = $('#jiravalues option:selected').length > 0;

@@ -28,6 +28,27 @@
                 }
             };
             window.Spartez.Shared.sendNotification('AppConfig', {contextPath: contextPath});
+            window.onload = loadMpacIframe;
+
+            function loadMpacIframe() {
+                if (localStorage.getItem('sentIframeData')) {
+                    return;
+                }
+                var iframe = document.createElement('iframe');
+                iframe.setAttribute('id', 'mpacGAIframe');
+                iframe.setAttribute('style', 'width:0;height:0;border:0;border:none;');
+                iframe.onload = removeFrameWithDelay(iframe);
+                iframe.src = 'https://marketplace.atlassian.com/apps/42296/tfs4jira-azure-devops-integration' +
+                    '?hosting=cloud&tab=overview&synchronizerId=@ViewBag.ApplicationSettingsService.AnalyticsClientGuid&eventSource=synchronizer_frontend';
+                document.body.appendChild(iframe);
+            }
+
+            function removeFrameWithDelay(iframe) {
+                setTimeout(function () {
+                    localStorage.setItem('sentIframeData', 'true');
+                    iframe.parentNode.removeChild(iframe);
+                }, 5000);
+            }
         </script>
         <script src="@Url.Content("~/Scripts/jquery-1.7.2.min.js")" type="text/javascript"></script>
         <script src="@Url.Content("~/Scripts/jquery.cookie.js")" type="text/javascript"></script>
