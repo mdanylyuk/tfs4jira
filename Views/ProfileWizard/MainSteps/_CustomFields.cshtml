@@ -22,12 +22,12 @@
         <div class="tfs4jira-field-description">
             Custom field in TFS that will be used to store key of paired JIRA issue.
             See <a href="https://confluence.spartez.com/display/TFS4JIRA/Creating+a+synchronization+profile#Creatingasynchronizationprofile-CustomfieldinTFS" target="_blank">online help</a> for details.
-            This field will be inactive when 'Use TFS History' option is checked.
+            This field will be inactive when 'Use TFS Comments (History)' option is checked.
         </div>
     </div>
     <div class="tfs4jira-fieldgroup-checkbox">
         <input type="checkbox" id="tfs-history">
-        <label for="tfs-history">Use TFS History instead of custom field</label>
+        <label for="tfs-history">Use TFS Comments (History) instead of custom field</label>
         <div class="tfs4jira-field-error"></div>
         <div class="tfs4jira-field-description">
             If you're using Visual Studio Online then this option will be checked by default.
@@ -116,7 +116,7 @@
 
             clearFieldError("tfs-custom-field");
             if ($("#tfs-custom-field").select2("val") === null && !$("#tfs-history").attr("checked")) {
-                setFieldError("tfs-custom-field", "Please choose TFS Custom Field or select 'Use TFS History'.");
+                setFieldError("tfs-custom-field", "Please choose TFS Custom Field or select 'Use TFS Comments (History)'.");
                 isValid = false;
             }
 
