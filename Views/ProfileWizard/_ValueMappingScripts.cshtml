@@ -1,5 +1,5 @@
-﻿@using synchronizer.Controllers
-@using synchronizer.Services
+﻿@using SpartezSoftware.Synchronizer.Controllers
+@using SpartezSoftware.Synchronizer.Services
 @{
     string mappingComponentId = @Model.GetType().GetProperty("MappingComponentId").GetValue(Model);
     bool showDoNothingAction = @Model.GetType().GetProperty("ShowDoNothingAction").GetValue(Model);

@@ -1,5 +1,5 @@
-﻿@using synchronizer.Controllers
-@using synchronizer.Services
+@using SpartezSoftware.Synchronizer.Controllers
+@using SpartezSoftware.Synchronizer.Services
 @{    
     string id = @Model.GetType().GetProperty("Id").GetValue(Model);
     string mappingComponentId = id + "-component";
@@ -171,15 +171,15 @@
                     'If this is not the case, please use the "Map Values" option';
             }
 
-            if (mapping.jira === "@synchronizer.Services.SyncProfileService.JiraResolutionField") {
-                return 'In most of the cases JIRA <strong>Resolution</strong> field should be mapped to TFS <strong>Resolved Reason</strong> field - please <a href="https://confluence.spartez.com/display/TFS4JIRA/TFS4JIRA+FAQ#TFS4JIRAFAQ-TowhichfieldinTFSshouldImapJIRAResolutionfield?" target="_blank">refer to the documentation</a> for more informations.';
+            if (mapping.jira === "@SyncProfileService.JiraResolutionField") {
+                return 'In most of the cases Jira <strong>Resolution</strong> field should be mapped to TFS <strong>Resolved Reason</strong> field - please <a href="https://confluence.spartez.com/display/TFS4JIRA/TFS4JIRA+FAQ#TFS4JIRAFAQ-TowhichfieldinTFSshouldImapJIRAResolutionfield?" target="_blank">refer to the documentation</a> for more informations.';
             }
 
             return null;
         }
 
         function getMappingHelpForTfsField(mapping) {
-            if (mapping.tfs === "@synchronizer.Services.SyncProfileService.TfsTagsField") {
+            if (mapping.tfs === "@SyncProfileService.TfsTagsField") {
                 return "Tags field can be updated remotely since TFS 2013 Update 2 so in earlier versions of TFS this field won't be updated.";
             }
 

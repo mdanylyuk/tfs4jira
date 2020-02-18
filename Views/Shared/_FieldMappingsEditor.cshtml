@@ -1,4 +1,5 @@
-﻿@model synchronizer.Domain.Entity.SyncProfile
+@using SpartezSoftware.Synchronizer.Services
+@model SpartezSoftware.Synchronizer.Domain.Entity.SyncProfile
 
 <script src="@Url.Content("~/Scripts/fieldselectors/jquery.fieldsel.js")" type="text/javascript"></script>
 
@@ -181,17 +182,17 @@
                 'Mapping of the <strong>Project</strong> JIRA field is not recommended. ' +
                 'If you do use it, always map it to a TFS field containing a JIRA project key.<br><br>' +
                 "<strong>This field must never be used with bi-directional synchronization, because it interferes with the Synchronizer's ability to find updated JIRA issues.</strong>");
-        } else if (mapping.jiraCustomFieldName === "@synchronizer.Services.SyncProfileService.JiraEpicLinkField") {
+        } else if (mapping.jiraCustomFieldName === "@SyncProfileService.JiraEpicLinkField") {
             return wrapHelpText('Because of technical reasons <strong>Epic Link</strong> field can be mapped only upon issue/work item creation.');
-        } else if (mapping.jira === "@synchronizer.Services.SyncProfileService.JiraResolutionField") {
-            return wrapHelpText('In most of the cases JIRA <strong>Resolution</strong> field should be mapped to TFS <strong>Resolved Reason</strong> field - please <a href="https://confluence.spartez.com/display/TFS4JIRA/TFS4JIRA+FAQ#TFS4JIRAFAQ-TowhichfieldinTFSshouldImapJIRAResolutionfield?" target="_blank">refer to the documentation</a> for more informations.');
+        } else if (mapping.jira === "@SyncProfileService.JiraResolutionField") {
+            return wrapHelpText('In most of the cases Jira <strong>Resolution</strong> field should be mapped to TFS <strong>Resolved Reason</strong> field - please <a href="https://confluence.spartez.com/display/TFS4Jira/TFS4JIRA+FAQ#TFS4JIRAFAQ-TowhichfieldinTFSshouldImapJIRAResolutionfield?" target="_blank">refer to the documentation</a> for more informations.');
         }
 
         return "";
     };
 
     getTfsFieldHelp = function (mapping) {
-        if (mapping.tfs === "@synchronizer.Services.SyncProfileService.TfsTagsField") {
+        if (mapping.tfs === "@SyncProfileService.TfsTagsField") {
             return wrapHelpText("Tags field can be updated remotely since TFS 2013 Update 2 so in earlier versions of TFS this field won't be updated.");
         }
 

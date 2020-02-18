@@ -1,6 +1,5 @@
-﻿@using synchronizer.Domain
-@using synchronizer.Domain.Entity
-@model synchronizer.Domain.Entity.SyncProfile
+@using SpartezSoftware.Synchronizer.Domain.Entity
+@model SpartezSoftware.Synchronizer.Domain.Entity.SyncProfile
 
 <script src="@Url.Content("~/Scripts/fieldselectors/jquery.fieldsel.js")" type="text/javascript"> </script>
  
@@ -104,7 +103,7 @@
                         <div class="field">
                             <div class="editbox">@Html.Password("jirapassword", Model.JiraPassword, new {@class = "jira-auth"})</div>
                             <div class="field-description link-to-api-token-docs">
-                                <a href="https://confluence.spartez.com/display/TFS4JIRA/API+Token+authentication+in+Jira+Cloud?source=tfs4jirasynchronizer" target="_blank">
+                                <a href="https://confluence.spartez.com/display/TFS4Jira/API+Token+authentication+in+Jira+Cloud?source=tfs4jirasynchronizer" target="_blank">
                                     How to generate API Token?
                                 </a>
                             </div>

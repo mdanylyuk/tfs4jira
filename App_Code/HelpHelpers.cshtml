@@ -1,8 +1,8 @@
-﻿@helper LinkToOnlineDocumentation(string sectionName = null, string text = "TFS4JIRA online documentation")
+@helper LinkToOnlineDocumentation(string sectionName = null, string text = "TFS4Jira online documentation")
 {
     var url = "http://tfs4jira.spartez.com/context_help?source=tfs4jirasynchronizer" 
         + (sectionName != null ? "&section=" + sectionName : "")
-        + "&build_version=" + synchronizer.BuildInfo.Version 
-        + "&build_number=" + synchronizer.BuildInfo.BuildNumber;
+        + "&build_version=" + SpartezSoftware.Synchronizer.BuildInfo.Version 
+        + "&build_number=" + SpartezSoftware.Synchronizer.BuildInfo.BuildNumber;
     <a target="_blank" href="@(url)">@(text)</a>
 }

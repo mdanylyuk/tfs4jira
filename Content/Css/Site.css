@@ -1518,20 +1518,24 @@ body.loading .spinner {
 
 /* Log view  
 ----------------------------------------------------------*/
+.log_info {
+    color: #172B4D;
+}
+
 .log_debug {
-    color: #999999;
+    color: #6b778C;
 }
 
 .log_warn {
-    color: #ff0000;
+    color: #FF8B00;
 }
 
 .log_error {
-    color: #ff0000;
+    color: #DE350B;
 }
 
 .log_fatal {
-    color: #ff0000;   
+    color: #8B0000;   
 }
 
 #log {
@@ -1983,7 +1987,7 @@ body.loading .spinner {
     float: right;
 }
 
-/* TUI - standarized TFS4JIRA User Interface
+/* TUI - standarized TFS4Jira User Interface
 ----------------------------------------------------------*/
 
 .black-text {

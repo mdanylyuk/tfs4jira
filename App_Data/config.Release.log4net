@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <log4net>
-  <appender name="RollingFileAppender" type="synchronizer.Services.LogServiceAppender">
+  <appender name="RollingFileAppender" type="SpartezSoftware.Synchronizer.Services.LogServiceAppender">
     <file value="App_Data/log/tfssync.log"/>
     <appendToFile value="true"/>
     <rollingStyle value="Size"/>

@@ -1,11 +1,10 @@
-﻿@using synchronizer.Controllers
-@using synchronizer.Domain
-@using synchronizer.Domain.Entity
-@using synchronizer.Helpers
-@model ICollection<synchronizer.Models.SyncProfileErrorModel>
+@using SpartezSoftware.Synchronizer.Controllers
+@using SpartezSoftware.Synchronizer.Domain.Entity
+@using SpartezSoftware.Synchronizer.Helpers
+@model ICollection<SpartezSoftware.Synchronizer.Models.SyncProfileErrorModel>
 
 @{
-    ViewBag.Title = "Configuration - TFS4JIRA Synchronizer";
+    ViewBag.Title = "Configuration - TFS4Jira Synchronizer";
 
     string createdProfileGuid = TempData[TfsController.CreatedProfileGuidKey].NullableToString();
 }

@@ -1,5 +1,5 @@
-﻿@using synchronizer.Services
-@using synchronizer.Tfs4jira2.Utils
+@using SpartezSoftware.Synchronizer.Services
+@using SpartezSoftware.Synchronizer.Tfs4jira2.Services
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
     <head>
@@ -80,7 +80,7 @@
             <notification-handler></notification-handler>
         </div>
         <div id="header">
-            <a href="@Url.Action("Index", "Tfs", new { id = string.Empty }, null)"><div id="applogo">TFS4JIRA Synchronizer</div></a>
+            <a href="@Url.Action("Index", "Tfs", new { id = string.Empty }, null)"><div id="applogo">TFS4Jira Synchronizer</div></a>
             <div id="logindisplay">
                 @if (ViewBag.isLogInPage == null)
                 {
@@ -126,7 +126,7 @@
         </div>
         <div id="footer">
             <div id="footer-left"><a target="_blank" href="https://jira.spartez.com/servicedesk/customer/portal/2">Submit a feature request or report a bug</a></div>
-            <div id="footer-center">@Html.Raw(synchronizer.Services.ConfigService.FooterMessage())</div>
+            <div id="footer-center">@Html.Raw(ConfigService.FooterMessage())</div>
             <div id="footer-right">&copy; 2014-2020 <a href="https://spartez-software.com/products/tfs4jira">Spartez Software</a></div>
         </div>
     </div>

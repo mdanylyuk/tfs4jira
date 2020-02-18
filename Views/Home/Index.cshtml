@@ -1,5 +1,5 @@
-﻿@{
-    ViewBag.Title = "Log - TFS4JIRA Synchronizer";
+@{
+    ViewBag.Title = "Log - TFS4Jira Synchronizer";
 }
 
 <h1>Application Log</h1>
@@ -105,6 +105,8 @@
                 cssClass = "log_error";
             } else if (value.indexOf(" FATAL ") > 0) {
                 cssClass = "log_fatal";
+            } else {
+                cssClass = "log_info";
             }
             
             return '<span class="' + cssClass + '">' + htmlValue + '</span>';

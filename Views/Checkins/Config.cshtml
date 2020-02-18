@@ -1,10 +1,10 @@
-﻿@using System.Runtime.InteropServices
-@using synchronizer.Controllers
-@using synchronizer.Domain.scan
-@model synchronizer.Controllers.CheckinsController.CheckinsScanningProfileViewModel
+@using System.Runtime.InteropServices
+@using SpartezSoftware.Synchronizer.Controllers
+@using SpartezSoftware.Synchronizer.Domain.scan
+@model SpartezSoftware.Synchronizer.Controllers.CheckinsController.CheckinsScanningProfileViewModel
 
 @{
-    ViewBag.Title = Model.ScanningProfile == null ? "New Check-ins Scanning Configuration - TFS4JIRA Synchronizer" : "Check-ins Scanning Configuration - TFS4JIRA Synchronizer";
+    ViewBag.Title = Model.ScanningProfile == null ? "New Check-ins Scanning Configuration - TFS4Jira Synchronizer" : "Check-ins Scanning Configuration - TFS4JIRA Synchronizer";
 }
 
 @{
@@ -14,6 +14,7 @@
     var newConfig = Model.ScanningProfile == null;
     var syncProfile = Model.SyncProfile;
 }
+
 
 @Html.ActionLink("Back to check-in scanning configuration list", "Index", "Checkins", new {id = string.Empty}, null)
 
@@ -57,7 +58,7 @@
                 <div class="label"></div>
                 <div class="editbox"><a id="changepassword" href="#">Change Password</a></div>
             </div>
-            <div class="field-description">Password used for encrypting communication between JIRA and the synchronizer.<br/>Needs to match the password set up in JIRA on TFS4JIRA Settings page.</div>
+            <div class="field-description">Password used for encrypting communication between Jira and the synchronizer.<br />Needs to match the password set up in Jira on TFS4Jira Settings page.</div>
         </div>
         <div class="row">
             <div class="field">
