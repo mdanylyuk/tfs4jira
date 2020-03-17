@@ -1,6 +1,6 @@
 # README #
 
-This document is a howto for running the TFS4JIRA [Synchronizer](https://spartez.com/products/tfs4jira) as an [Azure Web App](https://azure.microsoft.com/en-us/services/app-service/web/).
+This document is a howto for running the TFS4JIRA [Synchronizer](https://spartez-software.com/products/tfs4jira) as an [Azure Web App](https://azure.microsoft.com/en-us/services/app-service/web/).
 We prepared this deployment option for those, who doesn't want to host the Stynchronizer using their own infrastructure, 
 but are OK with running it, **by themselves**, as a cloud app.
 
@@ -18,7 +18,7 @@ You have to have a basic [git](https://git-scm.com/) skills.
 * take note of your site url, look for https://some-dash-separated-code.azurewebsites.net/
 * click "Clone or push with Git" and copy the repoUrl
 * now use any git client and clone the repo - **git clone repoUrl**
-* add new remote - **git remote add tfs4jira https://bitbucket.org/spartez/tfs4jira-azure-web-app.git**
+* add new remote - **git remote add tfs4jira https://bitbucket.org/spartez-software/tfs4jira-azure-web-app.git**
 * download the synchronizer - **git fetch tfs4jira**  and **git reset --hard tfs4jira/master**
 * upload the synchronizer to Azure - **git push origin master --force**
 
