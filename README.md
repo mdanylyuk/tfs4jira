@@ -63,7 +63,7 @@ The steps below are to be executed on any machine with a git client installed.
 
 * Use git client and clone the repo - **git clone WEB_APP_GIT_URL** . 
 * Go to the newly created repo. 
-* Add a new remote - **git remote add tfs4jira https://bitbucket.org/spartez/tfs4jira-azure-web-app.git**
+* Add a new remote - **git remote add tfs4jira https://bitbucket.org/spartez-software/tfs4jira-azure-web-app.git**
 * Download the synchronizer - **git fetch tfs4jira**  and **git reset --hard tfs4jira/master**
 * Upload the synchronizer to Azure - **git push origin master**
 
