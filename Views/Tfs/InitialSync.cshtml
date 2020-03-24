@@ -125,7 +125,11 @@
                 </div>
                 <div class="initial-sync-radio">
                     <input id="mode_resync_create" type="radio" name="mode" value="resync_create">
-                    <label for="mode_resync_create">Synchronize both unpaired and already paired issues/work items (create new counterparts)</label>
+                    <label for="mode_resync_create">Synchronize both unpaired and already paired issues/work items (unlink and create new counterparts)</label>
+                </div>
+                <div class="initial-sync-radio">
+                    <input id="resync_delete_and_create" type="radio" name="mode" value="resync_delete_and_create">
+                    <label for="resync_delete_and_create">Synchronize both unpaired and already paired issues/work items (remove existing and create new counterparts)</label>
                 </div>
             </div>
         </div>
@@ -150,11 +154,17 @@
                     <div>Both unpaired and already paired TFS work items items will be processed. For each unpaired work item new corresponding JIRA issue will be created. Each already paired work item will have its corresponding issue updated.</div>
                 </div>
                 <div id="mode_resync_create_jira_to_tfs_info" class="init-sync-control-info" style="display: none">
+                    <div>Both unpaired and already paired JIRA issues will be processed. For each unpaired issue new corresponding TFS work item will be created. Each already paired issue will be unlinked from its current corresponding work item, new corresponding work item will be created.</div>
+                </div>
+                <div id="mode_resync_create_tfs_to_jira_info" class="init-sync-control-info" style="display: none">
+                    <div>Both unpaired and already paired TFS work items will be processed. For each unpaired work item new corresponding JIRA issue will be created. Each already paired work item will be unlinked from its current corresponding issue, new corresponding issue will be created.</div>
+                </div>
+                <div id="mode_resync_delete_and_create_jira_to_tfs_info" class="init-sync-control-info" style="display: none">
                     <div>Both unpaired and already paired JIRA issues will be processed. For each unpaired issue new corresponding TFS work item will be created. Each already paired issue will be unlinked from its current corresponding work item, <strong>the work item will be removed</strong> and new corresponding work item will be created.</div>
                     <br />
                     <div><strong>Warning!</strong> Please note that mode may involve deleting some TFS work items. This process cannot be reverted, so it's strongly recommended that both JIRA and TFS backup is performed before running the synchronization.</div>
                 </div>
-                <div id="mode_resync_create_tfs_to_jira_info" class="init-sync-control-info" style="display: none">
+                <div id="mode_resync_delete_and_create_tfs_to_jira_info" class="init-sync-control-info" style="display: none">
                     <div>Both unpaired and already paired TFS work items will be processed. For each unpaired work item new corresponding JIRA issue will be created. Each already paired work item will be unlinked from its current corresponding issue, <strong>the issue will be removed</strong> and new corresponding issue will be created.</div>
                     <br />
                     <div><strong>Warning!</strong> Please note that mode may involve deleting some JIRA issues (along with their subtasks, if any). This process cannot be reverted, so it's strongly recommended that both JIRA and TFS backup is performed before running the synchronization.</div>
@@ -414,6 +424,8 @@
         $("#mode_resync_update_tfs_to_jira_info").toggle(mode == "resync_update" && direction == "tfs_to_jira");
         $("#mode_resync_create_jira_to_tfs_info").toggle(mode == "resync_create" && direction == "jira_to_tfs");
         $("#mode_resync_create_tfs_to_jira_info").toggle(mode == "resync_create" && direction == "tfs_to_jira");
+        $("#mode_resync_delete_and_create_jira_to_tfs_info").toggle(mode == "resync_delete_and_create" && direction == "jira_to_tfs");
+        $("#mode_resync_delete_and_create_tfs_to_jira_info").toggle(mode == "resync_delete_and_create" && direction == "tfs_to_jira");
     }
 
     function checkStartButton() {
