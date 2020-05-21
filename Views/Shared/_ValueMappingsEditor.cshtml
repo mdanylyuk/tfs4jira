@@ -1,4 +1,4 @@
-﻿@using System.Threading
+@using System.Threading
 @using SpartezSoftware.Synchronizer.Domain.Entity
 @using SpartezSoftware.Synchronizer.Services
 @model SpartezSoftware.Synchronizer.Domain.Entity.SyncProfile
@@ -52,7 +52,7 @@
                 <span class="message-icon"></span>
                 Synchronization of TFS Tree Path fields like <i>Iteration Path</i> and <i>Area Path</i> is handled differently compared to other fields.<br />
                 Ensure that you are familiar with
-                <a href="https://confluence.spartez.com/pages/viewpage.action?pageId=25758526">documentation regarding this topic</a>
+                @HelpHelpers.LinkToIterationAndAreaPathsDocumentation("documentation regarding this topic")
                 before changing the settings below.
            </span>
             <label>

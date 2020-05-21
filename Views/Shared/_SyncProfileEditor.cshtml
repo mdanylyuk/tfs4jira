@@ -2,8 +2,8 @@
 @model SpartezSoftware.Synchronizer.Domain.Entity.SyncProfile
 
 <script src="@Url.Content("~/Scripts/fieldselectors/jquery.fieldsel.js")" type="text/javascript"> </script>
- 
-<div id="profileguid" style="display: none;">@Model.Guid</div>           
+
+<div id="profileguid" style="display: none;">@Model.Guid</div>
 
 <div id="messages"></div>
 
@@ -103,9 +103,7 @@
                         <div class="field">
                             <div class="editbox">@Html.Password("jirapassword", Model.JiraPassword, new {@class = "jira-auth"})</div>
                             <div class="field-description link-to-api-token-docs">
-                                <a href="https://confluence.spartez.com/display/TFS4Jira/API+Token+authentication+in+Jira+Cloud?source=tfs4jirasynchronizer" target="_blank">
-                                    How to generate API Token?
-                                </a>
+                                @HelpHelpers.LinkToJiraApiTokenDocumentation("How to generate API Token?")
                             </div>
                         </div>
                     </div>
@@ -139,7 +137,7 @@
                 <div class="right-col">
                     <div class="field">
                         <div class="editbox">@Html.TextBox("jiratfscustomfield", Model.JiraTfsCustomFieldId, new { @class = "input" })</div>
-                        <div class="field-description">Name of Jira issue custom field that will be used to store paired TFS work item Id. See @HelpHelpers.LinkToOnlineDocumentation("new_profile", "online help") for details.</div>
+                        <div class="field-description">Name of Jira issue custom field that will be used to store paired TFS work item Id. See @HelpHelpers.LinkToCreateNewProfileDocumentation( "online help") for details.</div>
                     </div>
                 </div>
             </div>
@@ -153,14 +151,17 @@
                     </div>
                     <div class="right-col">
                         <div class="editbox">@Html.TextBox("tfsurl", Model.TfsUrl, new { @class = "tfs-auth" })</div>
-                        <div class="field-description">TFS base URL with optional port number, e.g. http://mytfs.mycompany.com:8080/tfs. </div>
-                        <div class="editbox">@Html.CheckBox("hostedtfs", Model.HostedTfs)<label>Azure DevOps</label></div>
-                        <div class="field-description">Check this option if you want to connect with Azure DevOps (formerly VSTS).</div>
+                        <div class="field-description">TFS / Azure DevOps base URL with optional port number, e.g. http://mytfs.mycompany.com:8080/tfs. </div>
+                        <div class="editbox">@Html.CheckBox("hostedtfs", Model.HostedTfs)<label>Azure DevOps Services</label></div>
+                        <div class="field-description">Check this option if you want to connect with Azure DevOps Services (formerly VSTS).</div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="left-col">
-                        <div class="label">User Login</div>
+                        <div class="label">
+                            <span class="only-for-tfs-server">User Name</span>
+                            <span class="only-for-tfs-cloud">Email Address</span>
+                        </div>
                     </div>
                     <div class="right-col">
                         <div class="field">
@@ -179,8 +180,7 @@
                         <div class="field">
                             <div class="editbox">@Html.Password("tfspassword", Model.TfsPassword, new { @class = "tfs-auth" })</div>
                             <div class="field-description link-to-api-token-docs">
-                                <a href="https://confluence.spartez.com/pages/viewpage.action?pageId=8781995&source=tfs4jirasynchronizer" target="_blank">How to generate Personal Access Token?</a> <br />
-                                Note, you can also use Alternate Credentials Password here instead of Token.
+                                @HelpHelpers.LinkToTfsPersonalAccessTokenDocumentation("How to generate Personal Access Token?") <br />
                             </div>
                         </div>
                     </div>
@@ -237,7 +237,7 @@
                 <div class="right-col">
                     <div class="field">
                         <div class="editbox">@Html.TextBox("tfsjiracustomfield", Model.TfsJiraCustomFieldName, new {@class = "input"})</div>
-                        <div class="field-description">See @HelpHelpers.LinkToOnlineDocumentation("new_profile", "online help") for details.</div>
+                        <div class="field-description">See @HelpHelpers.LinkToCreateNewProfileDocumentation("online help") for details.</div>
                     </div>
                 </div>
             </div>
@@ -297,13 +297,13 @@
 <div id="side-container">
     <div class="vue-container" id="tfs4jira-vue-container">
         <wizard-side profile-guid="@Model.Guid"></wizard-side>
-    </div>    
+    </div>
 </div>
 
 <script type="text/javascript">
     var profileguid = $('#profileguid').html();
     var newprofile = profileguid === '00000000-0000-0000-0000-000000000000';
-    
+
     $(document).ready(function () {
         showSpinner();
 
@@ -356,7 +356,7 @@
                         }
                         let profileData = getProfileData();
                         profileData.jiraDirty = true;
-                        profileData.tfsDirty = true;                        
+                        profileData.tfsDirty = true;
                         window.Spartez.Shared.sendNotification(
                             'WizardSide', {
                                 profileDataToOverride: profileData
@@ -396,7 +396,7 @@
         fillHelp('#tfsspehelp');
         setCheckinsScanningUrl();
     });
-    
+
     @{
         if (!SyncProfile.isRelease)
         {
@@ -412,7 +412,7 @@
             @: }
         }
     }
-    
+
     getTfsCustomFields = function (complt, succ, err) {
         var hostedTfs = $('#hostedtfs')[0].checked ? "true" : "false";
         var url = encodeURIComponent($('#tfsurl').val());
@@ -456,7 +456,7 @@
             TfsIsCloud: $('#hostedtfs')[0].checked ? "true" : "false"
         }
     }
-    
+
     $('#jiratestgetterbtn').click(function() {
         var button = this;
         $(this).parent().hide();
@@ -493,12 +493,12 @@
         });
 
         let profileData = getProfileData();
-        profileData.jiraDirty = true;        
+        profileData.jiraDirty = true;
         window.Spartez.Shared.sendNotification(
             'WizardSide', {
                 profileDataToOverride: profileData
             }
-        );        
+        );
     });
 
     $('#tfstestgetterbtn').click(function() {
@@ -544,7 +544,7 @@
             'WizardSide', {
                 profileDataToOverride: profileData
             }
-        );        
+        );
     });
 
     $('#jiraproject').fieldsel({
@@ -794,7 +794,7 @@
             $('#checkins_setup').hide();
         }
     };
-    
+
     $('.jira-auth').change(function() {
         clearJiraFields();
     });

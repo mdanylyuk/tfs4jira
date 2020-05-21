@@ -1,8 +1,47 @@
-@helper LinkToOnlineDocumentation(string sectionName = null, string text = "TFS4Jira online documentation")
-{
-    var url = "http://tfs4jira.spartez.com/context_help?source=tfs4jirasynchronizer" 
-        + (sectionName != null ? "&section=" + sectionName : "")
-        + "&build_version=" + SpartezSoftware.Synchronizer.BuildInfo.Version 
-        + "&build_number=" + SpartezSoftware.Synchronizer.BuildInfo.BuildNumber;
-    <a target="_blank" href="@(url)">@(text)</a>
+@helper LinkToCreateNewProfileDocumentation(string text = "TFS4Jira online documentation") {
+    @BuildLink("https://confluence.spartez-software.com/display/TFS4JIRA/Creating+a+synchronization+profile?", text)
+}
+
+@helper LinkToEditProfileDocumentation(string text = "TFS4Jira online documentation") {
+    @BuildLink("https://confluence.spartez-software.com/display/TFS4JIRA/Editing+a+synchronization+profile?", text)
+}
+
+@helper LinkToFieldMappingsDocumentation(string text = "TFS4Jira online documentation") {
+    <a href="https://confluence.spartez-software.com/display/TFS4JIRA/Editing+a+synchronization+profile#Editingasynchronizationprofile-FieldMappings" target="_blank">@(text)</a>
+}
+
+@helper LinkToCheckinsConfigurationDocumentation(string text = "TFS4Jira online documentation") {
+    @BuildLink("https://confluence.spartez-software.com/pages/viewpage.action?pageId=18879135&", text)
+}
+
+@helper LinkToSyncErrorsDocumentation(string text = "TFS4Jira online documentation") {
+    @BuildLink("https://confluence.spartez-software.com/display/TFS4JIRA/Viewing+and+managing+errors+log?", text)
+}
+
+@helper LinkToAppAccessPermissionsDocumentation(string text = "TFS4Jira online documentation") {
+    @BuildLink("https://confluence.spartez-software.com/display/TFS4JIRA/Setting+TFS4JIRA+Synchronizer+application+access+permissions?", text)
+}
+
+@helper LinkToViewAndManageProfileDocumentation(string text = "TFS4Jira online documentation") {
+    @BuildLink("https://confluence.spartez-software.com/display/TFS4JIRA/Viewing+and+managing+profiles?", text)
+}
+
+@helper LinkToSubTasksMappingDocumentation(string text = "TFS4Jira online documentation") {
+    @BuildLink("https://confluence.spartez-software.com/pages/viewpage.action?pageId=18876354&", text)
+}
+
+@helper LinkToTfsPersonalAccessTokenDocumentation(string text = "TFS4Jira online documentation") {
+    @BuildLink("https://confluence.spartez-software.com/pages/viewpage.action?pageId=8781995&", text)
+}
+
+@helper LinkToJiraApiTokenDocumentation(string text = "TFS4Jira online documentation") {
+    @BuildLink("https://confluence.spartez-software.com/display/TFS4Jira/API+Token+authentication+in+Jira+Cloud?", text)
+}
+
+@helper LinkToIterationAndAreaPathsDocumentation(string text = "TFS4Jira online documentation") {
+    @BuildLink("https://confluence.spartez-software.com/pages/viewpage.action?pageId=25758526&", text)
+}
+
+@helper BuildLink(string url, string title) {
+    <a href="@(url)source=tfs4jirasynchronizer" target="_blank">@(title)</a>
 }

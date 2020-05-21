@@ -1,6 +1,6 @@
-﻿@using System.Runtime.InteropServices
+@using System.Runtime.InteropServices
 @model SpartezSoftware.Synchronizer.Domain.scan.TfsRepository
-           
+
 @{
     var editId = "tfsedit_" + Model.Guid;
     var testId = "tfstest_" + Model.Guid;
@@ -13,7 +13,7 @@
         <a href="@Model.Url" target="_blank">@Model.Url</a>
     </td>
     <td class="nowrap">@Model.Collection</td>
-    
+
     @if (Model.GitRepo) {
         <td class="nowrap">@Model.GitProject / @Model.GitRepoName</td>
 @*        <td class="nowrap">@Model.ChangeSets.Count</td> *@ // TODO: fetch ChangeSet count directly from DbSet somehow - TFS-1217
@@ -24,7 +24,7 @@
         <td class="nowrap" style="text-align: right">@Model.StartRevision</td>
         <td class="nowrap" style="text-align: right">@Model.LastScannedRevision</td>
     }
-    
+
     <td class="nowrap" style="text-align: right">@Model.LastScanUtc</td>
     <td class="nowrap status">
         <div class="repo-state @(Model.Enabled ? "enabled" : "disabled")">
@@ -47,7 +47,7 @@
     <td colspan="5">
         <div class="profileform tfsrepo">
             @Html.Hidden("tfsgit_" + Model.Guid, Model.GitRepo ? "true" : "false", new { @class = "tfsgit" })
-            
+
             <div class="row">
                 <div class="field">
                     <div class="label">URL</div>
@@ -57,16 +57,17 @@
             </div>
             <div class="row">
                 <div class="field">
-                    <div class="label">Azure DevOps</div>
+                    <div class="label">Azure DevOps Services</div>
                     <div class="editbox">@Html.CheckBox("tfshosted_" + Model.Guid, Model.HostedTfs, new { @class = "tfshosted" })</div>
                     <div class="field-description">
-                        Check this option if you want to connect with Azure DevOps (formerly VSTS).
+                        Check this option if you want to connect with Azure DevOps Services (formerly VSTS).
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="field">
-                    <div class="label">User Name</div>
+                    <div class="label only-for-tfs-server">User Name</div>
+                    <div class="label only-for-tfs-cloud">Email Address</div>
                     <div class="editbox">@Html.TextBox("tfsuser_" + Model.Guid, Model.UserName, new {@class = "tfsuser"})</div>
                 </div>
             </div>
@@ -76,8 +77,7 @@
                     <div class="label only-for-tfs-cloud">Personal Access Token</div>
                     <div class="editbox">@Html.Password("tfspassword_" + Model.Guid, Model.Password, new { @class = "tfspassword", @autocomplete = "new-password" })</div>
                     <div class="field-description link-to-api-token-docs">
-                        <a href="https://confluence.spartez.com/pages/viewpage.action?pageId=8781995&source=tfs4jirasynchronizer" target="_blank">How to generate Personal Access Token?</a> <br />
-                        Note, you can also use Alternate Credentials Password here instead of Token.
+                        @HelpHelpers.LinkToTfsPersonalAccessTokenDocumentation("How to generate Personal Access Token?")  <br />
                     </div>
                 </div>
             </div>
@@ -157,7 +157,7 @@
                         <div class="field-description">
                             If you started putting JIRA issue keys in check-in comments only recently then
                             specifying starting changeset is useful for improving initial repository scan time.
-                            @HelpHelpers.LinkToOnlineDocumentation("checkins_sync_ondemand_config", "More info")
+                            @HelpHelpers.LinkToCheckinsConfigurationDocumentation("More info")
                         </div>
                     </div>
                 </div>
@@ -167,7 +167,7 @@
                         <div class="editbox">@Html.TextBox("tfsscansize_" + Model.Guid, Model.ScanSize, new { @class = "tfsscansize" })</div>
                         <div class="field-description">
                             Number of changesets to scan in one scan operation.
-                            @HelpHelpers.LinkToOnlineDocumentation("checkins_sync_ondemand_config", "More info")
+                            @HelpHelpers.LinkToCheckinsConfigurationDocumentation("More info")
                         </div>
                     </div>
                 </div>
@@ -177,7 +177,7 @@
                         <div class="editbox">@Html.TextBox("tfsmaxfiles_" + Model.Guid, Model.MaxScannedFiles, new { @class = "tfsmaxfiles" })</div>
                         <div class="field-description">
                             Maximum number of files that will be scanned in each changeset.
-                            @HelpHelpers.LinkToOnlineDocumentation("checkins_sync_ondemand_config", "More info")
+                            @HelpHelpers.LinkToCheckinsConfigurationDocumentation("More info")
                         </div>
                     </div>
                 </div>
@@ -202,5 +202,5 @@
                 </div>
             </div>
         </div>
-    </td> 
+    </td>
 </tr>

@@ -1,7 +1,7 @@
-﻿<script type="text/template" id="new-repository-config-template">
+<script type="text/template" id="new-repository-config-template">
     <div class="profileform new-repository-form">
         @Html.Hidden("tfsgit_0", "", new {@class = "tfsgit"})
-        
+
         <div class="row">
             <div class="field">
                 <div class="label">URL</div>
@@ -11,16 +11,17 @@
         </div>
         <div class="row">
             <div class="field">
-                <div class="label">Azure DevOps</div>
+                <div class="label">Azure DevOps Services</div>
                 <div class="editbox">@Html.CheckBox("tfshosted_0", false, new {@class = "tfshosted"})</div>
                 <div class="field-description">
-                    Check this option if you want to connect with Azure DevOps (formerly VSTS).
+                    Check this option if you want to connect with Azure DevOps Services (formerly VSTS).
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="field">
-                <div class="label">User Name</div>
+                <div class="label only-for-tfs-server">User Name</div>
+                <div class="label only-for-tfs-cloud">Email Address</div>
                 <div class="editbox">@Html.TextBox("tfsuser_0", null, new {@class = "tfsuser"})</div>
             </div>
         </div>
@@ -30,8 +31,7 @@
                 <div class="label only-for-tfs-cloud">Personal Access Token</div>
                 <div class="editbox">@Html.Password("tfspassword_0", null, new {@class = "tfspassword", @autocomplete = "new-password"})</div>
                 <div class="field-description link-to-api-token-docs" style="display:none;">
-                    <a href="https://confluence.spartez.com/pages/viewpage.action?pageId=8781995&source=tfs4jirasynchronizer" target="_blank">How to generate Personal Access Token?</a> <br />
-                    Note, you can also use Alternate Credentials Password here instead of Token.
+                    @HelpHelpers.LinkToTfsPersonalAccessTokenDocumentation("How to generate Personal Access Token?")  <br />
                 </div>
             </div>
         </div>
@@ -109,7 +109,7 @@
                     <div class="field-description">
                         If you started putting JIRA issue keys in check-in comments only recently then
                         specifying starting changeset is useful for improving initial repository scan time.
-                        @HelpHelpers.LinkToOnlineDocumentation("checkins_sync_ondemand_config", "More info")
+                        @HelpHelpers.LinkToCheckinsConfigurationDocumentation("More info")
                     </div>
                 </div>
             </div>
@@ -119,7 +119,7 @@
                     <div class="editbox">@Html.TextBox("tfsscansize_0", 100, new {@class = "tfsscansize"})</div>
                     <div class="field-description">
                         Number of changesets to scan in one scan operation.
-                        @HelpHelpers.LinkToOnlineDocumentation("checkins_sync_ondemand_config", "More info")
+                        @HelpHelpers.LinkToCheckinsConfigurationDocumentation("More info")
                     </div>
                 </div>
             </div>
@@ -129,7 +129,7 @@
                     <div class="editbox">@Html.TextBox("tfsmaxfiles_0", 30, new {@class = "tfsmaxfiles"})</div>
                     <div class="field-description">
                         Maximum number of files that will be scanned in each changeset.
-                        @HelpHelpers.LinkToOnlineDocumentation("checkins_sync_ondemand_config", "More info")
+                        @HelpHelpers.LinkToCheckinsConfigurationDocumentation("More info")
                     </div>
                 </div>
             </div>

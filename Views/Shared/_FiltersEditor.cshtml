@@ -129,12 +129,12 @@
             var $filterRow = $(this).closest(".filter-row-edit");
             var filterId = $(this).data("filter-id");
 
-            var filter = {
-                filterType: $(this).data("filter-type"),
-                filterOperator: $filterRow.find(".filter-operators").select2("data").id,
-                fieldId: $filterRow.find(".filter-fields").select2("data").id,
-                fieldName: $filterRow.find(".filter-fields").select2("data").text,
-                fieldValue: $filterRow.find(".filter-field-value").val()
+            const filter = {
+                FilterType: $(this).data("filter-type"),
+                FilterOperator: $filterRow.find(".filter-operators").select2("data").id,
+                FieldId: $filterRow.find(".filter-fields").select2("data").id,
+                FieldName: $filterRow.find(".filter-fields").select2("data").text,
+                FieldValue: $filterRow.find(".filter-field-value").val()
             };
 
             (filterId === "new") ? addFilter(filter) : updateFilter(filterId, filter);
@@ -150,8 +150,8 @@
         $("#filters-container").on("click", ".filter-edit-button", function (event) {
             event.preventDefault();
             var filterId = $(this).data("filter-id");
-            var filterData = _.find(filters, function (filter) { return filter.filterId === filterId; });
-            editFilter($(this).closest(".filter-row-show"), filterData, getFieldList(filterData.filterType));
+            var filterData = _.find(filters, function (filter) { return filter.FilterId === filterId; });
+            editFilter($(this).closest(".filter-row-show"), filterData, getFieldList(filterData.FilterType));
         });
 
         // Filter Delete Handler
@@ -167,13 +167,7 @@
 
         function init() {
             showSpinner();
-            getAllFields()
-                .done(function () {
-                    return getFilters();
-                })
-                .done(function () {
-                    hideSpinner();
-                });
+            getFilters();
         }
 
         function createNewFilter(type, $container, fields) {
@@ -192,15 +186,15 @@
             hideAddFilterButtons();
 
             var $newFilter = $(filterEditTemplate({
-                type: filterData.filterType,
-                id: filterData.filterId
+                type: filterData.FilterType,
+                id: filterData.FilterId
             }));
             $oldFilter.replaceWith($newFilter);
             initializeFilterFields($newFilter, fields);
 
-            $newFilter.find(".filter-fields").select2("val", filterData.fieldId);
-            $newFilter.find(".filter-operators").select2("val", filterData.filterOperatorId);
-            $newFilter.find(".filter-field-value").val(filterData.fieldValue);
+            $newFilter.find(".filter-fields").select2("val", filterData.FieldId);
+            $newFilter.find(".filter-operators").select2("val", filterData.FilterOperatorId);
+            $newFilter.find(".filter-field-value").val(filterData.FieldValue);
         }
 
         function getFieldList(type) {
@@ -260,13 +254,13 @@
             $("#tfs-filters").find(".filter-row-show, .filter-row-edit").remove();
 
             _.each(filters, function (filter) {
-                var $container = getFilterContainer(filter.filterType);
+                var $container = getFilterContainer(filter.FilterType);
                 if ($container) {
                     $container.append(filterShowTemplate({
-                        filterId: filter.filterId,
-                        fieldName: filter.fieldName,
-                        fieldValue: filter.fieldValue,
-                        operatorName: filter.filterOperatorName
+                        filterId: filter.FilterId,
+                        fieldName: filter.FieldName,
+                        fieldValue: filter.FieldValue,
+                        operatorName: filter.FilterOperatorName
                     }));
                 }
             });
@@ -287,82 +281,68 @@
             }
         }
 
-        function getAllFields() {
-            return makeAjaxCall('@Url.Action("GetAllFields", "Tfs")?without-system-fields=false', {})
-                .done(function (data) {
-                    if (data.success) {
-                        jiraFields = data.result.jirafields;
-                        tfsFields = data.result.tfsfields;
-                    } else {
-                        showErrorMessage(data.error);
-                    }
-                });
-        }
-
         function getFilters() {
-            return makeAjaxCall('@Url.Action("GetSynchronizationFilters", "Tfs")', {})
-                .done(function(data) {
-                    if (data.success) {
-                        var filterData = data.result.Data;
-                        filters = filterData.filters.reverse();
-                        renderFilters(filterData.jiraFilterMatching, filterData.tfsFilterMatching);
-                        hideSpinner();
-                    }
-                });
+            $.ajax({
+                type: "GET",
+                url: `${contextPath}/api/profiles/@Model.Guid/filters`
+            }).done(data => {
+                filters = data.Filters.reverse();
+                jiraFields = data.JiraFields;
+                tfsFields = data.TfsFields;
+                renderFilters(data.JiraFilterMatching, data.TfsFilterMatching);
+                hideSpinner();
+            }).fail(xhr => {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            });
         }
 
-        function addFilter(filter) {
+        function addFilter(data) {
             showSpinner();
-            return makeAjaxCall('@Url.Action("AddSynchronizationFilter", "Tfs")', filter)
-                .done(function (data) {
-                    if (data.success) {
-                        getFilters();
-                    }
-                });
+            $.ajax({
+                type: "POST",
+                url: `${contextPath}/api/profiles/@Model.Guid/filters`,
+                data
+            }).done(() => {
+                getFilters();
+            }).fail(xhr => {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            });
         }
 
         function updateFilter(filterId, filter) {
-            var ajaxData = $.extend({ filterId: filterId }, filter);
-
             showSpinner();
-            return makeAjaxCall('@Url.Action("UpdateSynchronizationFilter", "Tfs")', ajaxData)
-                .done(function (data) {
-                    if (data.success) {
-                        getFilters();
-                    }
-                });
+            $.ajax({
+                type: "PUT",
+                url: `${contextPath}/api/profiles/@Model.Guid/filters/${filterId}`,
+                data: filter
+            }).done(() => {
+                getFilters();
+            }).fail(xhr => {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            });
         }
 
         function updateFilterMatching(filterMatching, filterType) {
-            var ajaxData = { filterMatching: filterMatching, filterType: filterType };
-
-            return makeAjaxCall('@Url.Action("UpdateFilterMatching", "Tfs")', ajaxData);
+            $.ajax({
+                type: "PUT",
+                url: `${contextPath}/api/profiles/@Model.Guid/filters/update-filter-matching`,
+                data: { FilterMatching: filterMatching, FilterType: filterType }
+            }).fail(xhr => {
+                console.log(xhr);
+                showErrorMessage(getXhrErrorResponse(xhr));
+            });
         }
 
         function deleteFilter(filterId) {
-            return makeAjaxCall('@Url.Action("RemoveSynchronizationFilter", "Tfs")', { filterId: filterId })
-                .done(function (data) {
-                    if (data.success) {
-                        getFilters();
-                    }
-                });
-        }
-
-
-        function makeAjaxCall(action, data) {
-            var ajaxData = $.extend({ guid: "@Model.Guid" }, data);
-
-            return $.ajax({
-                type: "POST",
-                url: action + (action.indexOf('?') > 0 ? '&' : '?') + '_=' + new Date().getTime(),
-                data: ajaxData
-            })
-            .done(function(data) {
-                if (!data.success) {
-                    showErrorMessage(data.error);
-                }
-            })
-            .fail(function (xhr) {
+            $.ajax({
+                type: "DELETE",
+                url: `${contextPath}/api/profiles/@Model.Guid/filters/${filterId}`
+            }).done(() => {
+                getFilters();
+            }).fail(xhr => {
                 console.log(xhr);
                 showErrorMessage(getXhrErrorResponse(xhr));
             });
