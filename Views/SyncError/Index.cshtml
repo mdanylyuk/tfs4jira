@@ -1,7 +1,7 @@
 @model SpartezSoftware.Synchronizer.Models.SyncErrorModel
 
 @{
-    ViewBag.Title = "Synchronization Errors - TFS4Jira Synchronizer";
+    ViewBag.Title = "Synchronization Errors - TFS4JIRA Synchronizer";
 }
 
 
@@ -208,7 +208,7 @@ else
         renderErrorsTable = function(data) {
             var txt = '<table id="errors">';
             txt += '<thead>';
-            txt += '<th class="nowrap">JIRA issue key</th><th class="nowrap">TFS work item id</th><th class="nowrap">Last error time</th><th>Error summary</th><th class="nowrap">Operations</th>';
+            txt += '<th class="nowrap">Jira issue key</th><th class="nowrap">TFS work item id</th><th class="nowrap">Last error time</th><th>Error summary</th><th class="nowrap">Operations</th>';
             txt += '</thead>';
             txt += '<tbody>';
             for (var i = 0; i < data.errors.length; ++i) {
@@ -231,8 +231,8 @@ else
                 var errorData = { summary: error.ErrorSummary, details: error.ErrorDetails, issueKey: error.JiraIssueKey, workItemId: error.TfsWorkItemId };
                 if (error.FieldMappingId) {
                     var mappingData = {
-                        "JIRA Field": error.JiraField,
-                        "JIRA Type": error.JiraType,
+                        "Jira Field": error.JiraField,
+                        "Jira Type": error.JiraType,
                         "TFS Field": error.TfsField,
                         "TFS Type": error.TfsType
                     };

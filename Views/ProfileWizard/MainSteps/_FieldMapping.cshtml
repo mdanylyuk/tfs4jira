@@ -139,9 +139,9 @@
         function getDirectionTooltipForMapping(mapping) {
             switch (getSynchronizationDirection(mapping.direction)) {
             case MappingDirection.FROM_TFS_TO_JIRA:
-                return 'This field will be synchronized in direction from TFS to JIRA.';
+                return 'This field will be synchronized in direction from TFS to Jira.';
             case MappingDirection.FROM_JIRA_TO_TFS:
-                return 'This field will be synchronized in direction from JIRA to TFS.';
+                return 'This field will be synchronized in direction from Jira to TFS.';
             case MappingDirection.BOTH_DIRECTIONS:
                 return 'This field will be synchronized in both directions.';
             case MappingDirection.CONFLICT:
@@ -153,21 +153,21 @@
             if (mapping.jira.indexOf('timetracking') === 0) {
                 return '<ul>' +
                     '<li>For Time Tracking fields in TFS type of <b>double</b> should be used. We assume that time in this fields will be stored in <b>hours</b>.</li>' +
-                    '<li><b>Logged time</b> in JIRA cannot be decreased so value of Logged Time in TFS that is lower than JIRA Logged Time won\'t be synchronized.</li>' +
+                    '<li><b>Logged time</b> in Jira cannot be decreased so value of Logged Time in TFS that is lower than Jira Logged Time won\'t be synchronized.</li>' +
                     '<li>For best results <b>Original Estimate</b> and <b>Remaining Estimate</b> fields should be synchronized in pair or none at all because ' +
-                    'not synchronized field will be set to the same value as synchronized field anyway (but only in JIRA).</li>' +
+                    'not synchronized field will be set to the same value as synchronized field anyway (but only in Jira).</li>' +
                     '</ul>';
             }
 
             if (mapping.jira.indexOf("project") === 0) {
-                return 'Mapping of the <strong>Project</strong> JIRA field is not recommended. ' +
-                    'If you do use it, always map it to a TFS field containing a JIRA project key.<br><br>' +
-                    "<strong>This field must never be used with bi-directional synchronization, because it interferes with the Synchronizer's ability to find updated JIRA issues.</strong>";
+                return 'Mapping of the <strong>Project</strong> Jira field is not recommended. ' +
+                    'If you do use it, always map it to a TFS field containing a Jira project key.<br><br>' +
+                    "<strong>This field must never be used with bi-directional synchronization, because it interferes with the Synchronizer's ability to find updated Jira issues.</strong>";
             }
 
             if (mapping.jiraType === "user") {
-                return 'User fields, such as <strong>assignee</strong> can be automatically mapped in JIRA and TFS, ' +
-                    'provided that both JIRA and TFS server are connected to the same Active Directory instance and therefore share their user account data. ' +
+                return 'User fields, such as <strong>assignee</strong> can be automatically mapped in Jira and TFS, ' +
+                    'provided that both Jira and TFS server are connected to the same Active Directory instance and therefore share their user account data. ' +
                     'If this is not the case, please use the "Map Values" option';
             }
 

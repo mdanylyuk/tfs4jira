@@ -18,7 +18,7 @@
 
 <h4>Mapping Between</h4>
 <ul>
-    <li>JIRA: <span class="fieldname" id="jirafieldname">"@mapping.JiraField"</span></li>
+    <li>Jira: <span class="fieldname" id="jirafieldname">"@mapping.JiraField"</span></li>
     <li>TFS: <span class="fieldname" id="tfsfieldname">"@mapping.TfsField"</span> <span id="tfsfieldnamechange">(<a href="#">Change</a>)</span>
         <span id="tfsfieldnamenote" style="font-size:smaller"><br />
             <strong>Note:</strong>
@@ -42,7 +42,7 @@
         if (jiraFieldMeta.IsSprintField) {
             <span class="message-box info">
                 <span class="message-icon"></span>
-                Because of performance reasons JIRA Sprints are cached.<br />
+                Because of performance reasons Jira Sprints are cached.<br />
                 If you've added or renamed some sprint you should <a class="clear-jira-sprints-cache-button" href="#">refresh sprints cache</a>
             </span>
         }
@@ -81,7 +81,7 @@
             if (mapping.JiraType == "user") {
                 <label>
                     <input type="radio" class="mappingtype" id="mappingtype_userdisplayname" name="mappingtype" value="@(MAPPING_MODE_COPY_USER_DISPLAY_NAME)" @Html.Raw(mapping.MappingMode == MAPPING_MODE_COPY_USER_DISPLAY_NAME ? "checked=\"checked\"" : "")/>
-                    Copy user display name (JIRA to TFS direction only)<br/>
+                    Copy user display name (Jira to TFS direction only)<br/>
                 </label>
             }
             if (isJiraUserNameField && isTfsUserNameField) {
@@ -158,9 +158,9 @@
         }
 
         <input type="radio" class="mappingdirection" id="mappingdirection_tojira" name="mappingdirection" value="@(toJira)" @Html.Raw(mappingDirection == toJira ? "checked=\"checked\"" : "") @Html.Raw(disable_t2j ? "disabled=\"disabled\"" : "") />
-        <label for="mappingdirection_tojira">TFS to JIRA</label><br />
+        <label for="mappingdirection_tojira">TFS to Jira</label><br />
         <input type="radio" class="mappingdirection" id="mappingdirection_totfs" name="mappingdirection" value="@(toTfs)" @Html.Raw(mappingDirection == toTfs ? "checked=\"checked\"" : "") @Html.Raw(disable_j2t ? "disabled=\"disabled\"" : "") />
-        <label for="mappingdirection_totfs">JIRA to TFS</label><br />
+        <label for="mappingdirection_totfs">Jira to TFS</label><br />
         <input type="radio" class="mappingdirection" id="mappingdirection_both" name="mappingdirection" value="@(both)" @Html.Raw(mappingDirection == both ? "checked=\"checked\"" : "") @Html.Raw((disable_t2j || disable_j2t) ? "disabled=\"disabled\"" : "") />
         <label for="mappingdirection_both">Both directions</label><br />
         <input type="checkbox" class="mappingdirection" id="mappingdirection_whencreate" @Html.Raw(mappingWhenCreatingOnly ? "checked=\"checked\"" : "") @Html.Raw(disable_co ? "disabled=\"disabled\"" : "") />
@@ -213,10 +213,10 @@
     <div class="fieldlistcontent @((mapping.IsTreePathMapping || mapping.IsStatusMapping) ? "fieldlist-wide" : "")">
         <div class="mappingrow">
             <div class="fieldlistleft fieldlisthead">
-                JIRA values
+                Jira values
                 @if (mapping.JiraType == "user")
                 {
-                    <div class="fieldlistheadnote">Only JIRA users with permission <i>assignable user</i> are shown in the list below.</div>
+                    <div class="fieldlistheadnote">Only Jira users with permission <i>assignable user</i> are shown in the list below.</div>
                 }
             </div>
             <div class="fieldlistmiddle"> </div>

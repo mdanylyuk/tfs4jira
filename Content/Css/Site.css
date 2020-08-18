@@ -1152,7 +1152,7 @@ input.mapbutton {
 .hierarchy-section {
     border-bottom: .3px solid lightgray;
     padding-top: 1em;
-    width: 50%;
+    width: 55%;
 }
 .hierarchy-section p {
     margin: 0;
@@ -1987,7 +1987,7 @@ body.loading .spinner {
     float: right;
 }
 
-/* TUI - standarized TFS4Jira User Interface
+/* TUI - standarized TFS4JIRA User Interface
 ----------------------------------------------------------*/
 
 .black-text {

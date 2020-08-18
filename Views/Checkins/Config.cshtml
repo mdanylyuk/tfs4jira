@@ -4,7 +4,7 @@
 @model SpartezSoftware.Synchronizer.Controllers.CheckinsController.CheckinsScanningProfileViewModel
 
 @{
-    ViewBag.Title = Model.ScanningProfile == null ? "New Check-ins Scanning Configuration - TFS4Jira Synchronizer" : "Check-ins Scanning Configuration - TFS4JIRA Synchronizer";
+    ViewBag.Title = Model.ScanningProfile == null ? "New Check-ins Scanning Configuration - TFS4JIRA Synchronizer" : "Check-ins Scanning Configuration - TFS4JIRA Synchronizer";
 }
 
 @{
@@ -41,13 +41,13 @@
             }
         }
                
-        <h3 style="margin-top: 0">JIRA Connection Configuration</h3>
+        <h3 style="margin-top: 0">Jira Connection Configuration</h3>
         <div class="row">
             <div class="field">
-                <div class="label">JIRA URL</div>
+                <div class="label">Jira URL</div>
                 <div class="editbox">@Html.TextBox("jiraurl", model.JiraUrl)</div>
             </div>
-            <div class="field-description">JIRA server base URL associated with this check-ins scanning configuration.</div>
+            <div class="field-description">Jira server base URL associated with this check-ins scanning configuration.</div>
         </div>
         <div class="row">
             <div class="field">
@@ -58,7 +58,7 @@
                 <div class="label"></div>
                 <div class="editbox"><a id="changepassword" href="#">Change Password</a></div>
             </div>
-            <div class="field-description">Password used for encrypting communication between Jira and the synchronizer.<br />Needs to match the password set up in Jira on TFS4Jira Settings page.</div>
+            <div class="field-description">Password used for encrypting communication between Jira and the synchronizer.<br />Needs to match the password set up in Jira on TFS4JIRA Settings page.</div>
         </div>
         <div class="row">
             <div class="field">

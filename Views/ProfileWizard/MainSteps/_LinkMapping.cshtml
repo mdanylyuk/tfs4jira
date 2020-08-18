@@ -6,7 +6,7 @@
     @if (Model.GetType().GetProperty("Guid") != null && @Model.GetType().GetProperty("Guid").GetValue(Model).ToString() != "00000000-0000-0000-0000-000000000000")
     {
         <div class="vue-container" id="link-mapping">
-            <link-mapping load-on-init="false" profile-guid="@Model.GetType().GetProperty("Guid").GetValue(Model).ToString()"></link-mapping>
+            <link-mapping load-on-init="false" profile-guid="@Model.GetType().GetProperty("Guid").GetValue(Model).ToString()" wizard-view="true"></link-mapping>
         </div>
     }
 </div>

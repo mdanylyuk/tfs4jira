@@ -1,4 +1,4 @@
-﻿<script>
+<script>
     var MappingDirection = {
         NOT_SYNCHRONIZED: 0,
         FROM_TFS_TO_JIRA: 1,
@@ -149,8 +149,8 @@
     }
 
     function getCurrentProfileLevelMappingDirectionText() {
-        if (synchronizationProfile.SyncDirection == MappingDirection.FROM_TFS_TO_JIRA) return 'TFS to JIRA';
-        if (synchronizationProfile.SyncDirection == MappingDirection.FROM_JIRA_TO_TFS) return 'JIRA to TFS';
+        if (synchronizationProfile.SyncDirection == MappingDirection.FROM_TFS_TO_JIRA) return 'TFS to Jira';
+        if (synchronizationProfile.SyncDirection == MappingDirection.FROM_JIRA_TO_TFS) return 'Jira to TFS';
 
         return 'both directions';
     }

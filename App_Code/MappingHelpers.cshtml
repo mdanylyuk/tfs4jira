@@ -1,4 +1,4 @@
-﻿@using SpartezSoftware.Synchronizer.Controllers
+@using SpartezSoftware.Synchronizer.Controllers
 @*
     Mapping helper component. Objects of following types are used here:
 
@@ -16,11 +16,11 @@
     }
 
     class ValueMapping {
-        jiraId: String                      - id of Value in JIRA (see Value.id),
+        jiraId: String                      - id of Value in Jira (see Value.id),
         tfsId: String                       - id of Value in TFS (see Value.id),
         mappingId: String                   - unique ID for this mapping,
         isDefault: Boolean                   - boolean value that marks default mapping in one-to-many mappings,
-        jiraHelp: String                    - optional help text for JIRA field,
+        jiraHelp: String                    - optional help text for Jira field,
         tfsHelp: String                     - optional help text for TFS field,
         showActiveEditButton: true          - should edit button be highlighted
         editTooltip: String                 - optional tooltip shown when mapping is added to page,
@@ -33,14 +33,14 @@
     * @MappingEvents.RemoveMappingButtonClicked(ValueMapping)   - the parameter is ValueMapping user intend to remove,
     * @MappingEvents.EditMappingButtonClicked(ValueMapping)     - the parameter is ValueMapping user intend to edit,
     * @MappingEvents.SetFallbackFromJiraToTfsClicked(Value.id)  - the parameter is ID of selected fallback TFS value,
-    * @MappingEvents.SetFallbackFromTfsToJiraClicked(Value.id)  - the parameter is ID of selected fallback JIRA value
+    * @MappingEvents.SetFallbackFromTfsToJiraClicked(Value.id)  - the parameter is ID of selected fallback Jira value
 
     The listed events means, that user has shown an intend to perform some action, but nothing has changed in the model yet.
     In order to change model you have to call one of following events:
     * @MappingEvents.AddMapping(ValueMapping)                   - the parameter is ValueMapping,
     * @MappingEvents.RemoveMapping(ValueMapping)                - the parameter is ValueMapping,
     * @MappingEvents.SetFallbackFromJiraToTfs(Value.id)         - the parameter is ID of selected fallback TFS value,
-    * @MappingEvents.SetFallbackFromTfsToJira(Value.id)         - the parameter is ID of selected fallback JIRA value,
+    * @MappingEvents.SetFallbackFromTfsToJira(Value.id)         - the parameter is ID of selected fallback Jira value,
 
 
     Use following event to update mapping direction. In case, when parameter is of type ValueMapping then only
@@ -56,12 +56,12 @@
         possibleTfsValues: [Value]          - an array of objects of type Value,
         mappedValues: [ValueMapping]        - an array of objects of type ValueMapping,
         fallbackActions: [Value]            - an array of objects of type Value,
-        fallbackFromTfsToJira: [Value.id]   - ID of selected fallback to JIRA,
+        fallbackFromTfsToJira: [Value.id]   - ID of selected fallback to Jira,
         fallbackFromJiraToTfs: [Value.id]   - ID of selected fallback to TFS,
         showEditButtons: Boolean            - Flag indicating whether edit buttons should be shown for each mapping
         showFallbackSelects: Boolean        - Flag indicating whether fallback selects should be shown
         tfsTreePathMode: Boolean            - Flag indicating whether tfs values should be shown in treeview, where '\' indicates tree level (e.g. TreePath fields)
-        jiraGroupMode: Boolean              - Flag indicating whether jira available values should be grouped (e.g. sprints are grouped per board),
+        jiraGroupMode: Boolean              - Flag indicating whether Jira available values should be grouped (e.g. sprints are grouped per board),
         isMappingOneToMany: Boolean         - Flag indicating whether one-to-many mapping is turned on
     }
 *@
@@ -72,7 +72,7 @@
         <div class="tfs4jira-mapping-layout">
             <div class="tfs4jira-mapping-layout-row">
                 <div class="tfs4jira-mapping-layout-column-jira">
-                    <h2>JIRA Values</h2>
+                    <h2>Jira Values</h2>
                     <div class="tfs4jira-mapping-header-note-jira"></div>
                 </div>
                 <div class="tfs4jira-mapping-layout-column-tfs">
@@ -91,11 +91,11 @@
             </div>
         </div>
 
-        <button class="tfs4jira-mapping-map-button tfs4jira-rounded-button" title="Please select values for both JIRA and TFS to map them.">Map</button>
+        <button class="tfs4jira-mapping-map-button tfs4jira-rounded-button" title="Please select values for both Jira and TFS to map them.">Map</button>
         
         <div class="tfs4jira-mapping-no-mapped-values-container">
             <span class="tfs4jira-mapping-no-mapped-values">
-                Please select JIRA and TFS values that you want to map.
+                Please select Jira and TFS values that you want to map.
             </span>
         </div>
 
@@ -104,7 +104,7 @@
         
         <div class="tfs4jira-mapping-anything-else">
             <label>
-                Map anything else from JIRA to TFS as
+                Map anything else from Jira to TFS as
             </label>
             <select class="tfs4jira-mapping-fallback-from-jira-to-tfs">
                 <optgroup label="Action" class="tfs4jira-mapping-fallback-actions"></optgroup>
@@ -114,7 +114,7 @@
 
         <div class="tfs4jira-mapping-anything-else">
             <label>
-                Map anything else from TFS to JIRA as
+                Map anything else from TFS to Jira as
             </label>
             <select class="tfs4jira-mapping-fallback-from-tfs-to-jira">
                 <optgroup label="Action" class="tfs4jira-mapping-fallback-actions"></optgroup>
@@ -155,7 +155,7 @@
                 <% } %>
 
                 <% if ( !isJiraValueValid ) { %>
-                    <div class="tfs4jira-mapping-value-invalid" title="This value does not exist in JIRA. Please remove mapping for this value."></div>
+                    <div class="tfs4jira-mapping-value-invalid" title="This value does not exist in Jira. Please remove mapping for this value."></div>
                 <% } %>
                 
                 <% if ( isMappingOneToMany && mappedValue.tfs.length === 1 ) { %>

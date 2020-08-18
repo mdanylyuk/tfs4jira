@@ -1,17 +1,17 @@
-﻿@using SpartezSoftware.Synchronizer.Domain.Entity
+@using SpartezSoftware.Synchronizer.Domain.Entity
 @model SpartezSoftware.Synchronizer.Domain.Entity.SyncProfile
 
 <div id="filters-container">
     <div class="message-box info">
         <span class="message-icon"></span>
         <p>By default synchronization profile has no filters and all issues and work items are synchronized. 
-        When there is only one filter for JIRA / TFS then these issues / work items that match this filter are synchronized.</p>
+        When there is only one filter for Jira / TFS then these issues / work items that match this filter are synchronized.</p>
     </div>
 
     <div class="filter-section">
         <div class="filter-header-container">
-            <span class="filter-header-text">JIRA filters</span>
-            <button id="add-jira-filter-button" class="button-link filter-text">+ Add JIRA Filter</button>
+            <span class="filter-header-text">Jira filters</span>
+            <button id="add-jira-filter-button" class="button-link filter-text">+ Add Jira Filter</button>
         </div>
         
         <div id="jira-filter-matching-section">
@@ -23,7 +23,7 @@
         </div>
 
         <div id="jira-filters">
-            <div class="no-filter-info filter-text">Currently there are no JIRA filters added.</div>
+            <div class="no-filter-info filter-text">Currently there are no Jira filters added.</div>
         </div>
     </div>
 
@@ -103,7 +103,7 @@
         var jiraFields = [];
         var tfsFields = [];
 
-        // Add JIRA Filter Handler
+        // Add Jira Filter Handler
         $("#add-jira-filter-button").click(function () {
             createNewFilter("@FilterType.Jira", $("#jira-filters"), jiraFields);
         });
@@ -113,7 +113,7 @@
             createNewFilter("@FilterType.Tfs", $("#tfs-filters"), tfsFields);
         });
 
-        // Change JIRA Filter Matching Handler
+        // Change Jira Filter Matching Handler
         $("#jira-filter-matching").change(function () {
             updateFilterMatching($(this).select2("data").id, "@FilterType.Jira");
 

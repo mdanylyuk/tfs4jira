@@ -1,4 +1,4 @@
-﻿@using SpartezSoftware.Synchronizer.Models
+@using SpartezSoftware.Synchronizer.Models
 @using SpartezSoftware.Synchronizer.Services
 @model SpartezSoftware.Synchronizer.Models.InitialSyncModel
 
@@ -21,7 +21,7 @@
         <div class="message-box info">
             <span class="message-icon"></span>
             <p>
-                Initial Synchronization gives you possibility to synchronize issues and work items between JIRA and TFS that was created before you installed Synchronizer.
+                Initial Synchronization gives you possibility to synchronize issues and work items between Jira and TFS that was created before you installed Synchronizer.
                 <br /><br />
                 <strong>Before starting initial synchronization please consider a few rules that are described below</strong>:
                 <ul>
@@ -32,7 +32,7 @@
                         Regular synchronization will be paused for this profile during initial synchronization run.
                     </li>
                     <li>
-                        It's strongly recommended that no changes are made to JIRA and TFS projects selected in this profile until synchronization finishes as this changes won't be synchronized.
+                        It's strongly recommended that no changes are made to Jira and TFS projects selected in this profile until synchronization finishes as this changes won't be synchronized.
                     </li>
                     <li>
                         Only issues and work items that have last update date within given range will be synchronized, others will be skipped.
@@ -41,7 +41,7 @@
                         Synchronization process will stop after more than 10 errors are ecountered. In case it happens please refer to the @Html.ActionLink("log", "", "Home", new {}, new {target = "_blank"}), address the errors and start the synchronization again.
                     </li>
                     <li>
-                        Please note that due to implementation of JIRA issue and TFS work item pairing, even when unidirectional synchronization mode is selected, entities at source side might be modified too (which will alter their last update date).
+                        Please note that due to implementation of Jira issue and TFS work item pairing, even when unidirectional synchronization mode is selected, entities at source side might be modified too (which will alter their last update date).
                     </li>
                 </ul>
             </p>
@@ -62,8 +62,8 @@
                 <span class="message-icon"></span>
                 <p>
                     <strong>You have evaluation license</strong><br />
-                    There is a limitation in using Initial Synchronization for JIRA Server
-                    evaluation licenses (it's not applicable for JIRA Cloud).<br />
+                    There is a limitation in using Initial Synchronization for Jira Server
+                    evaluation licenses (it's not applicable for Jira Cloud).<br />
                     Synchronization will stop after successful sync of 30 issue / work item pairs.
                 </p>
             </div>
@@ -84,16 +84,16 @@
             <div class="initial-sync-control">
                 <div class="initial-sync-radio">
                     <input id="direction_jira_to_tfs" type="radio" name="direction" value="jira_to_tfs">
-                    <label for="direction_jira_to_tfs">JIRA -> TFS</label>
+                    <label for="direction_jira_to_tfs">Jira -> TFS</label>
                 </div>
                 <div class="initial-sync-radio">
                     <input id="direction_tfs_to_jira" type="radio" name="direction" value="tfs_to_jira">
-                    <label for="direction_tfs_to_jira">TFS -> JIRA</label>
+                    <label for="direction_tfs_to_jira">TFS -> Jira</label>
                 </div>
             </div>
         </div>
         <div class="initial-sync-row jira-status-control" style="display: none;">
-            <div class="initial-sync-label">Read-only JIRA statuses:</div>
+            <div class="initial-sync-label">Read-only Jira statuses:</div>
             <div class="initial-sync-control">
                 <select id="jira_status" class="chosen-select" data-placeholder="select status" multiple></select>
             </div>
@@ -103,10 +103,10 @@
             <div class="initial-sync-control">
                 <div class="init-sync-control-info">
                     <div>
-                        Some JIRA statuses are read-only which means that issues being in one of them cannot be modified and so also cannot be synchronized (trying to synchronize
-                        them will lead to an error). In this field you have to select all the read-only statuses that exist in your JIRA - issues with this statuses will be skipped
-                        during synchronization. In out of the box JIRA with default workflow only Closed status is read-only. If you want to synchronize all of the issues with every
-                        possible status you can change your workflows in JIRA in a way that all of the statuses are editable - please refer
+                        Some Jira statuses are read-only which means that issues being in one of them cannot be modified and so also cannot be synchronized (trying to synchronize
+                        them will lead to an error). In this field you have to select all the read-only statuses that exist in your Jira - issues with this statuses will be skipped
+                        during synchronization. In out of the box Jira with default workflow only Closed status is read-only. If you want to synchronize all of the issues with every
+                        possible status you can change your workflows in Jira in a way that all of the statuses are editable - please refer
                         to <a href="https://confluence.atlassian.com/display/JIRA/Allow+editing+of+Closed+Issues" target="_blank">this documentation</a>.
                     </div>
                 </div>
@@ -138,36 +138,36 @@
             <div class="initial-sync-label"></div>
             <div class="initial-sync-control">
                 <div id="mode_default_jira_to_tfs_info" class="init-sync-control-info" style="display: none">
-                    <div>Only JIRA issues that are not already paired will be processed and for each such issue corresponding TFS work item will be created. Other issues will be skipped.</div>
+                    <div>Only Jira issues that are not already paired will be processed and for each such issue corresponding TFS work item will be created. Other issues will be skipped.</div>
                     <br />
                     <div>This is default and <strong>recommended</strong> initial synchronization mode.</div>
                 </div>
                 <div id="mode_default_tfs_to_jira_info" class="init-sync-control-info" style="display: none">
-                    <div>Only TFS work items that are not already paired will be processed and for each such work item corresponding JIRA issue will be created. Other work items will be skipped.</div>
+                    <div>Only TFS work items that are not already paired will be processed and for each such work item corresponding Jira issue will be created. Other work items will be skipped.</div>
                     <br />
                     <div>This is default and <strong>recommended</strong> initial synchronization mode.</div>
                 </div>
                 <div id="mode_resync_update_jira_to_tfs_info" class="init-sync-control-info" style="display: none">
-                    <div>Both unpaired and already paired JIRA issues will be processed. For each unpaired issue new corresponding TFS work item will be created. Each already paired issue will have its corresponding work item updated.</div>
+                    <div>Both unpaired and already paired Jira issues will be processed. For each unpaired issue new corresponding TFS work item will be created. Each already paired issue will have its corresponding work item updated.</div>
                 </div>
                 <div id="mode_resync_update_tfs_to_jira_info" class="init-sync-control-info" style="display: none">
-                    <div>Both unpaired and already paired TFS work items items will be processed. For each unpaired work item new corresponding JIRA issue will be created. Each already paired work item will have its corresponding issue updated.</div>
+                    <div>Both unpaired and already paired TFS work items items will be processed. For each unpaired work item new corresponding Jira issue will be created. Each already paired work item will have its corresponding issue updated.</div>
                 </div>
                 <div id="mode_resync_create_jira_to_tfs_info" class="init-sync-control-info" style="display: none">
-                    <div>Both unpaired and already paired JIRA issues will be processed. For each unpaired issue new corresponding TFS work item will be created. Each already paired issue will be unlinked from its current corresponding work item, new corresponding work item will be created.</div>
+                    <div>Both unpaired and already paired Jira issues will be processed. For each unpaired issue new corresponding TFS work item will be created. Each already paired issue will be unlinked from its current corresponding work item, new corresponding work item will be created.</div>
                 </div>
                 <div id="mode_resync_create_tfs_to_jira_info" class="init-sync-control-info" style="display: none">
-                    <div>Both unpaired and already paired TFS work items will be processed. For each unpaired work item new corresponding JIRA issue will be created. Each already paired work item will be unlinked from its current corresponding issue, new corresponding issue will be created.</div>
+                    <div>Both unpaired and already paired TFS work items will be processed. For each unpaired work item new corresponding Jira issue will be created. Each already paired work item will be unlinked from its current corresponding issue, new corresponding issue will be created.</div>
                 </div>
                 <div id="mode_resync_delete_and_create_jira_to_tfs_info" class="init-sync-control-info" style="display: none">
-                    <div>Both unpaired and already paired JIRA issues will be processed. For each unpaired issue new corresponding TFS work item will be created. Each already paired issue will be unlinked from its current corresponding work item, <strong>the work item will be removed</strong> and new corresponding work item will be created.</div>
+                    <div>Both unpaired and already paired Jira issues will be processed. For each unpaired issue new corresponding TFS work item will be created. Each already paired issue will be unlinked from its current corresponding work item, <strong>the work item will be removed</strong> and new corresponding work item will be created.</div>
                     <br />
-                    <div><strong>Warning!</strong> Please note that mode may involve deleting some TFS work items. This process cannot be reverted, so it's strongly recommended that both JIRA and TFS backup is performed before running the synchronization.</div>
+                    <div><strong>Warning!</strong> Please note that mode may involve deleting some TFS work items. This process cannot be reverted, so it's strongly recommended that both Jira and TFS backup is performed before running the synchronization.</div>
                 </div>
                 <div id="mode_resync_delete_and_create_tfs_to_jira_info" class="init-sync-control-info" style="display: none">
-                    <div>Both unpaired and already paired TFS work items will be processed. For each unpaired work item new corresponding JIRA issue will be created. Each already paired work item will be unlinked from its current corresponding issue, <strong>the issue will be removed</strong> and new corresponding issue will be created.</div>
+                    <div>Both unpaired and already paired TFS work items will be processed. For each unpaired work item new corresponding Jira issue will be created. Each already paired work item will be unlinked from its current corresponding issue, <strong>the issue will be removed</strong> and new corresponding issue will be created.</div>
                     <br />
-                    <div><strong>Warning!</strong> Please note that mode may involve deleting some JIRA issues (along with their subtasks, if any). This process cannot be reverted, so it's strongly recommended that both JIRA and TFS backup is performed before running the synchronization.</div>
+                    <div><strong>Warning!</strong> Please note that mode may involve deleting some Jira issues (along with their subtasks, if any). This process cannot be reverted, so it's strongly recommended that both Jira and TFS backup is performed before running the synchronization.</div>
                 </div>
             </div>
         </div>
@@ -203,14 +203,14 @@
             <div class="message-box warning">
                 <span class="message-icon"></span>
                 <p>
-                    Last initial synchronization was stopped because your license is not valid or you have obsolete version of plug-in installed on your JIRA.
+                    Last initial synchronization was stopped because your license is not valid or you have obsolete version of plug-in installed on your Jira.
                 </p>
             </div>
         </div>
     </div>
 
         <div class="initial-sync-section">
-            <h2>JIRA &#8658; TFS <span id="jira_to_tfs_throbber" class="throbber initial-sync-throbber"></span></h2>
+            <h2>Jira &#8658; TFS <span id="jira_to_tfs_throbber" class="throbber initial-sync-throbber"></span></h2>
             <div class="initial-sync-row">
                 <span id="jira_to_tfs_never_performed" style="display: none">Initial synchronization was never performed</span>
                 <span id="jira_to_tfs_removing_phase" style="display: none">Removing linked TFS work items in progress...</span>
@@ -244,10 +244,10 @@
         </div>
 
         <div class="initial-sync-section">
-            <h2>TFS &#8658; JIRA <span id="tfs_to_jira_throbber" class="throbber initial-sync-throbber"></span></h2>
+            <h2>TFS &#8658; Jira <span id="tfs_to_jira_throbber" class="throbber initial-sync-throbber"></span></h2>
             <div class="initial-sync-row">
                 <span id="tfs_to_jira_never_performed" style="display: none">Initial synchronization was never performed</span>
-                <span id="tfs_to_jira_removing_phase" style="display: none">Removing linked JIRA issues in progress...</span>
+                <span id="tfs_to_jira_removing_phase" style="display: none">Removing linked Jira issues in progress...</span>
                 <span id="tfs_to_jira_in_progress" style="display: none">Initial synchronization is in progress...</span>
                 <span id="tfs_to_jira_date_range" style="display: none">
                     <span>Last initial synchronization was performed on work items updated between dates: &nbsp;</span>
@@ -558,8 +558,8 @@
                 });
             },
             error: function (xhr) {
-                showErrorMessage("Synchronizer couldn't retrieve status list from JIRA. There can be number of reasons why did it happen, please check if JIRA is up " +
-                    "and running and if user that is used in Sync Profile for JIRA connection has enough privileges to access status list.");
+                showErrorMessage("Synchronizer couldn't retrieve status list from Jira. There can be number of reasons why did it happen, please check if Jira is up " +
+                    "and running and if user that is used in Sync Profile for Jira connection has enough privileges to access status list.");
                 console.log(xhr);
             },
             complete: function () {

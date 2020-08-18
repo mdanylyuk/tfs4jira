@@ -7,12 +7,12 @@
     <h1>Custom Fields</h1>
     
     <div class="tfs4jira-fieldgroup">
-        <label for="jira-custom-field">Custom field in JIRA</label>
+        <label for="jira-custom-field">Custom field in Jira</label>
         <select id="jira-custom-field" data-minimumresultsforsearch="5"></select>
         <div class="tfs4jira-field-error"></div>
         <div class="tfs4jira-field-description">
-            Custom field in JIRA that will be used to store id of paired TFS work item.
-            See <a href="https://confluence.spartez-software.com/display/TFS4Jira/Creating+a+synchronization+profile#Creatingasynchronizationprofile-CustomfieldinJira" target="_blank">online help</a> for details.
+            Custom field in Jira that will be used to store id of paired TFS work item.
+            See <a href="https://confluence.spartez-software.com/display/TFS4JIRA/Creating+a+synchronization+profile#Creatingasynchronizationprofile-CustomfieldinJira" target="_blank">online help</a> for details.
         </div>
     </div>
     <div class="tfs4jira-fieldgroup">
@@ -20,8 +20,8 @@
         <select id="tfs-custom-field" data-minimumresultsforsearch="5"></select>
         <div class="tfs4jira-field-error"></div>
         <div class="tfs4jira-field-description">
-            Custom field in TFS that will be used to store key of paired JIRA issue.
-            See <a href="https://confluence.spartez-software.com/display/TFS4Jira/Creating+a+synchronization+profile#Creatingasynchronizationprofile-CustomfieldinTFS" target="_blank">online help</a> for details.
+            Custom field in TFS that will be used to store key of paired Jira issue.
+            See <a href="https://confluence.spartez-software.com/display/TFS4JIRA/Creating+a+synchronization+profile#Creatingasynchronizationprofile-CustomfieldinTFS" target="_blank">online help</a> for details.
             This field will be inactive when 'Use TFS Comments (History)' option is checked.
         </div>
     </div>
@@ -110,7 +110,7 @@
 
             clearFieldError("jira-custom-field");
             if ($("#jira-custom-field").select2("val") === null) {
-                setFieldError("jira-custom-field", "Please choose JIRA Custom Field.");
+                setFieldError("jira-custom-field", "Please choose Jira Custom Field.");
                 isValid = false;
             }
 

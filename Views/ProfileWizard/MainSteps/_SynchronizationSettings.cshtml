@@ -1,4 +1,4 @@
-﻿@using SpartezSoftware.Synchronizer.Controllers
+@using SpartezSoftware.Synchronizer.Controllers
 @{
     string id = @Model.GetType().GetProperty("Id").GetValue(Model);
 }
@@ -9,8 +9,8 @@
     <div class="tfs4jira-fieldgroup">
         <label for="synchronization-direction">Synchronization Direction</label>
         <select id="synchronization-direction">
-            <option value="1">From TFS to JIRA</option>
-            <option value="2">From JIRA to TFS</option>
+            <option value="1">From TFS to Jira</option>
+            <option value="2">From Jira to TFS</option>
             <option value="3" selected="selected">Both Directions</option>
         </select>
     </div>
@@ -18,20 +18,20 @@
         <label for="comment-synchronization">Comment Synchronization</label>
         <select id="comment-synchronization">
             <option value="0" selected="selected">Not Synchronized</option>
-            <option value="1">From TFS to JIRA</option>
-            <option value="2">From JIRA to TFS</option>
+            <option value="1">From TFS to Jira</option>
+            <option value="2">From Jira to TFS</option>
             <option value="3">Both Directions</option>
         </select>
         <div id="comment-synchronization-not-available-message" class="hidden-on-load tfs4jira-field-description">
-            Comment synchronization is not available because it requires JIRA 6.2 or newer.
+            Comment synchronization is not available because it requires Jira 6.2 or newer.
         </div>
     </div>
     <div class="tfs4jira-fieldgroup">
         <label for="attachment-synchronization">Attachment Synchronization</label>
         <select id="attachment-synchronization">
             <option value="0" selected="selected">Not Synchronized</option>
-            <option value="1">From TFS to JIRA</option>
-            <option value="2">From JIRA to TFS</option>
+            <option value="1">From TFS to Jira</option>
+            <option value="2">From Jira to TFS</option>
             <option value="3">Both Directions</option>
         </select>
     </div>
@@ -39,15 +39,15 @@
         <label for="remotelinks-synchronization">Web Links / Hyperlinks Synchronization</label>
         <select id="remotelinks-synchronization">
             <option value="0" selected="selected">Not Synchronized</option>
-            <option value="1">From TFS to JIRA</option>
-            <option value="2">From JIRA to TFS</option>
+            <option value="1">From TFS to Jira</option>
+            <option value="2">From Jira to TFS</option>
             <option value="3">Both Directions</option>
         </select>
     </div>
     <div class="tfs4jira-horizontal-separator synchronization-settings-horizontal-separator"></div>
     
     <div class="tfs4jira-fieldgroup">
-        <label for="jira-project">JIRA Project</label>
+        <label for="jira-project">Jira Project</label>
         <select id="jira-project" data-minimumresultsforsearch="5"></select>
         <div class="tfs4jira-field-error"></div>
     </div>
@@ -190,7 +190,7 @@
 
             clearFieldError("jira-project");
             if ($("#jira-project").select2("val") === null) {
-                setFieldError("jira-project", "Please choose JIRA Project.");
+                setFieldError("jira-project", "Please choose Jira Project.");
                 isValid = false;
             }
 
