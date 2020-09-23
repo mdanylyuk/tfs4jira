@@ -5,7 +5,7 @@
     ViewBag.Title = "SyncProfile - TFS4JIRA Synchronizer";
 }
 
-<a id="backlink" href="..">Back</a>
+<a id="backlink" href=".."></a>
 
 @if (Model != null && Model.Error != null) {
     <p>@Model.Error</p>
@@ -14,37 +14,40 @@
         <h1>Create New Synchronization Profile</h1>
         Html.RenderPartial("_SyncProfileEditor", SyncProfile.Empty);
     } else {
-        <h1>
-            Synchronization Profile &quot;@Model.Profile.Name&quot; (@(Model.Profile.State.ToString()))
-            @if (Request.Params["mappingid"] != null) {
-                @: - Value Mappings
-            }
-        </h1>
-
         bool isProfileEditor = Request.Params["mappings"] == null && Request.Params["advanced"] == null && Request.Params["filters"] == null && Request.Params["users"] == null;
-        bool isMappingEditor = Request.Params["mappings"] != null && Request.Params["mappingid"] == null && Request.Params["advanced"] == null && Request.Params["filters"] == null;
+        bool isValueMappingsEditor = Request.Params["mappingid"] != null && (Request.Params["types"] == null && Request.Params["states"] == null);
+        bool isMappingEditor = (!isValueMappingsEditor) && Request.Params["mappings"] != null && Request.Params["advanced"] == null && Request.Params["filters"] == null;
         bool isFiltersEditor = Request.Params["filters"] != null;
         bool isAdvancedEditor = Request.Params["advanced"] != null;
         bool isUsersEditor = Request.Params["users"] != null;
 
+        <h1>
+            @if (isValueMappingsEditor) {
+                @:  Value Mappings
+            } else {
+                @Model.Profile.Name
+                <span class="lozenge @(Model.Profile.State.ToString() == "Enabled" ? "enabled" : "")">@(Model.Profile.State.ToString())</span>
+            }
+        </h1>
+
         // Show tab switcher
-        <div class="profile-configuration-menu">
-            <div class="@(isProfileEditor ? "tabheadercurrent" : "tabheader")">
-                @Html.ActionLink("Settings", "Index", "Tfs", new {id = Model.Profile.Guid}, new {id = "tab-switch-settings"})
-            </div>
-            <div class="@(isMappingEditor ? "tabheadercurrent" : "tabheader")">
-                @Html.ActionLink("Field Mappings", "Index", "Tfs", new {id = Model.Profile.Guid, mappings = 1}, new {id = "tab-switch-field-mappings"})
-            </div>
-            <div class="@(isFiltersEditor ? "tabheadercurrent" : "tabheader")">
-                @Html.ActionLink("Filters", "Index", "Tfs", new {id = Model.Profile.Guid, filters = 1}, new {id = "tab-switch-filters"})
-            </div>
-            <div class="@(isAdvancedEditor ? "tabheadercurrent" : "tabheader")">
-                @Html.ActionLink("Active Directory", "Index", "Tfs", new {id = Model.Profile.Guid, advanced = 1}, new {id = "tab-switch-advanced"})
-            </div>
-            <div class="@(isUsersEditor ? "tabheadercurrent" : "tabheader")">
-                @Html.ActionLink("Users Mapping", "Index", "Tfs", new {id = Model.Profile.Guid, users = 1}, new {id = "tab-switch-users-mappings"})
-            </div>
-        </div>
+<div class="profile-configuration-menu">
+    <div class="@(isProfileEditor ? "tabheadercurrent" : "tabheader")">
+        @Html.ActionLink("Connections", "Index", "Tfs", new { id = Model.Profile.Guid }, new { id = "tab-switch-settings" })
+    </div>
+    <div class="@(isMappingEditor ? "tabheadercurrent" : "tabheader")">
+        @Html.ActionLink("Mappings", "Index", "Tfs", new { id = Model.Profile.Guid, mappings = 1, basic = 1 }, new { id = "tab-switch-field-mappings" })
+    </div>
+    <div class="@(isFiltersEditor ? "tabheadercurrent" : "tabheader")">
+        @Html.ActionLink("Filters", "Index", "Tfs", new { id = Model.Profile.Guid, filters = 1 }, new { id = "tab-switch-filters" })
+    </div>
+    <div class="@(isUsersEditor ? "tabheadercurrent" : "tabheader")">
+        @Html.ActionLink("Users", "Index", "Tfs", new { id = Model.Profile.Guid, users = 1 }, new { id = "tab-switch-users-mappings" })
+    </div>
+    <div class="@(isAdvancedEditor ? "tabheadercurrent" : "tabheader")">
+        @Html.ActionLink("Active Directory", "Index", "Tfs", new { id = Model.Profile.Guid, advanced = 1 }, new { id = "tab-switch-advanced" })
+    </div>
+</div>
 
         // Show tab content
         <div id="tabcontent">

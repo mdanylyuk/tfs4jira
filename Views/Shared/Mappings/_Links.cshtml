@@ -1,0 +1,9 @@
+@model SpartezSoftware.Synchronizer.Domain.Entity.SyncProfile
+
+<div id="profileguid" style="display: none;">@Model.Guid</div>
+<section class="links">
+    <h2>Link Mappings</h2>
+    <div class="vue-container" id="tfs4jira-vue-container">
+        <link-mapping profile-guid="@Model.Guid" load-on-init="true"></link-mapping>
+    </div>
+</section>

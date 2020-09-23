@@ -1,0 +1,6 @@
+@model SpartezSoftware.Synchronizer.Domain.Entity.SyncProfile
+
+<div id="profileguid" style="display: none;">@Model.Guid</div>
+<section class="types">
+    @{ Html.RenderPartial("_ValueMappingsEditor", Model); }
+</section>

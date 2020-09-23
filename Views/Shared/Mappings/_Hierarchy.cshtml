@@ -1,0 +1,54 @@
+@model SpartezSoftware.Synchronizer.Domain.Entity.SyncProfile
+
+<div id="profileguid" style="display: none;">@Model.Guid</div>
+<section class="hierarchy">
+    <div>
+        <div class="header-video-link-group">
+            <h2>Hierarchy Mapping</h2>
+            <a class="inproduct-video-link" title="Watch video how to configure Hierarchy Synchronization" href="https://youtu.be/mkqjlfijjgA" target="_blank">
+                <span class="video-icon"></span>
+                <span class="video-link-text">How To</span>
+            </a>
+        </div>
+        <div class="mapping-section">
+            <div class="hierarchy-section" style="padding-top: 10px">
+                <div class="vue-container" id="hierarchy-vue-container">
+                    <hierarchy profile-guid="@Model.Guid" load-on-init="true"></hierarchy>
+                </div>
+            </div>
+            <div class="hierarchy-section" style="border-bottom: 0;">
+                <p>Subtasks </p>
+                <div style="padding-top: .5em;">
+                    <select id="subtasksyncdirection" disabled="disabled">
+                        <option value="0">Not Synchronized</option>
+                        <option value="1">From TFS To Jira</option>
+                        <option value="2">From Jira To TFS</option>
+                        <option value="3">Both Directions</option>
+                    </select>
+                    <div class="subtasks-details-container">
+                        <br>
+                        <div>
+                            <ul class="hidden-on-load subtasks-details">
+                                <li> TFS link type that maps to Jira subtasks <select id="subtaskslinktype"></select> </li>
+                                <li>
+                                    <a href="#" id="subtasksmapping">Subtasks Mappings</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="vue-container subtasks-details" id="subtasks-notification" style="display: none;">
+                            <notification class="hierarchy-notification info" icon-name="info-circle" icon-class="info-message">
+                                <p>
+                                    <strong>Jira REST API does not support converting issues to sub-tasks and vice-versa.</strong>
+                                </p>
+                                <p>
+                                    This means that if you link a "standalone" TFS work item to a parent work item, or unlink a TFS task from its parent work item,
+                                    the corresponding Jira issue <strong>will not</strong> be changed to/from subtask.
+                                </p>
+                            </notification>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

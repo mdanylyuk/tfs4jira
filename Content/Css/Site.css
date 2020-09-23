@@ -1,4 +1,4 @@
-﻿body {
+body {
     background-color: #fff;
     font-size: 14px;
     font-family: sans-serif;
@@ -370,6 +370,19 @@ ul#menu li.selected a {
     color: #3896CD;
     pointer-events: none;
     cursor: default;
+}
+
+#backlink {
+    display: inline-block;
+    background-image: url(../../Content/Images/arrow-circle-left.svg);
+    height: 1.2rem;
+    width: 1.2rem;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin: 0 10px 0 5px;
+    padding: 2px;
+    float: left;
 }
 /* ----------------------------------------------------------*/
 
@@ -877,12 +890,87 @@ form.config-form {
      opacity: 0.6;
 }
 
-/* ----------------------------------------------------------*/
+.lozenge {
+    background-color: rgb(223, 225, 230);
+    box-sizing: border-box;
+    color: rgb(66, 82, 110);
+    display: inline;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    text-transform: uppercase;
+    vertical-align: baseline;
+    border-radius: 3px;
+    padding: 1px 4px 2px;
+    overflow: hidden;
+    max-width: 200px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    position: relative;
+    bottom: 2px;
+    left: 5px;
+}
 
+.lozenge.enabled {
+    background-color: rgb(227, 252, 239);
+    color: rgb(0, 102, 68);
+}
+
+/* ----------------------------------------------------------*/
 /* Mappings editor
 -----------------------------------------------------------*/
-.fieldlist 
-{
+.mappings-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+ul.edit-mappings {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 200px;
+}
+
+ul.edit-mappings li a {
+    display: block;
+    color: #888;
+    background-color: #fff;
+    text-decoration: none;
+    padding: 0.55em 1em;
+}
+
+ul.edit-mappings li a:hover {
+    background-color: rgba(56, 150, 205, 0.1);
+    border-radius: 2px 2px;
+    -webkit-border-radius: 2px 2px;
+    -moz-border-radius: 2px 2px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+ul.edit-mappings li a:active {
+    text-decoration: none;
+}
+
+ul.edit-mappings li.current a {
+    font-weight: bold;
+    color: #3896CD;
+    pointer-events: none;
+    cursor: default;
+    background-color: #f5f5f5;
+    border-radius: 2px 2px;
+    -webkit-border-radius: 2px 2px;
+    -moz-border-radius: 2px 2px;
+}
+
+.mappings-container .sections {
+    padding: 0 1rem;
+    flex: 3;
+    min-height: 25rem;
+}
+
+.fieldlist {
     width: 100%;
     overflow-x: hidden;
 }
@@ -905,7 +993,6 @@ form.config-form {
 .fieldlistwrap 
 {
     position: relative;
-	background-color: #eee;
 	padding-bottom: 2em;
 }
 
@@ -935,8 +1022,8 @@ form.config-form {
     display: table-cell;
     text-align: left;
     vertical-align: middle;
-	top: 0;
-	width: 250px;
+    top: 0;
+    width: 250px;
 }
 
 .fieldlistmiddle 
@@ -949,14 +1036,23 @@ form.config-form {
 	text-align: center;
 }
 
-.fieldlistright
-{    
-	position: relative;
-	display: table-cell;
+.mapping-direction {
+    width: 100%;
+    background-size: 100px 20px;
+    background-repeat: no-repeat;
+    min-height: 10px;
+    height: 20px;
+    margin: 0;
+    display: inline-block;
+}
+
+.fieldlistright {
+    position: relative;
+    display: table-cell;
     text-align: left;
     vertical-align: middle;
-	top: 0;
-	width: 250px;
+    top: 0;
+    width: 250px;
     word-break: break-all;
 }
 
@@ -984,7 +1080,7 @@ form.config-form {
 
 .fieldlist-wide .fieldlistleft,
 .fieldlist-wide .fieldlistright {
-    width: 450px;
+    width: 400px;
 }
 
 input.mapbutton {
@@ -993,7 +1089,7 @@ input.mapbutton {
 
 .value-mapping-merged-value-label {
     display: inline-block;
-    width: 320px;
+    width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1178,8 +1274,23 @@ input.mapbutton {
   margin-right: 4em;
   font-size: 14px;
 }
-/* ----------------------------------------------------------*/
 
+.subtasks-details-container {
+    margin-left: 2em;
+    width: 100%;
+}
+
+ul.subtasks-details {
+    margin-bottom: 0;
+    display: block;
+    margin-left: 1em;
+    padding-left: 1em;
+}
+
+.hierarchy-notification {
+    max-width: 70%;
+}
+/* ----------------------------------------------------------*/
 /* Styles for validation helpers
 -----------------------------------------------------------*/
 .field-validation-error {
@@ -1870,17 +1981,16 @@ body.loading .spinner {
 /* SynchronizationFilters
 ----------------------------------------------------------*/
 
-#filters-container {
-    margin: 0 auto 50px auto;   
+.filters-container {
+    margin: 0 auto 50px auto;
     width: 800px;
 }
 
-#jira-filters, #tfs-filters {
+.profile-filters {
     margin: 15px 0;
 }
 
-#add-jira-filter-button,
-#add-tfs-filter-button {
+.add-filter-button {
     position: absolute;
     right: 0;
     bottom: 0;
@@ -1958,10 +2068,9 @@ body.loading .spinner {
     font-weight: bold;
 }
 
-#jira-filter-matching-section, #tfs-filter-matching-section {
+.filter-matching-section {
     text-align: center;
     margin: 15px 0;
-    display: none;
 }
 
 /* ----------------------------------------------------------*/

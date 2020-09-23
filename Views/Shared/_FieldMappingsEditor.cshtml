@@ -4,120 +4,59 @@
 <script src="@Url.Content("~/Scripts/fieldselectors/jquery.fieldsel.js")" type="text/javascript"></script>
 
 <div id="messages"></div>
- 
+
 <div id="profileguid" style="display:none;">@Model.Guid</div>
-@*<div id="profileguid">@Model.Guid</div>*@
 
-<h2>Basic Mappings</h2>
-<div id="basicmappings">
-    <ul class="mapping-section">
-        <li><a href="@Url.Action("MappingsLinks", "Profiles", new {guid = @Model.Guid})">Links Mapping</a></li>
-        <li>
-            <span>Synchronization Direction</span>
-            <div>
-                <select id="syncdirection" disabled="disabled">
-                    <option value="1">From TFS To Jira</option>
-                    <option value="2">From Jira To TFS</option>
-                    <option value="3">Both Directions</option>
-                </select>
-            </div>
-        </li>
-    </ul>
-</div>
-<div>
-    <div class="header-video-link-group">
-        <h2>Hierarchy Mapping</h2>
-        <a class="inproduct-video-link" title="Watch video how to configure Hierarchy Synchronization" href="https://youtu.be/mkqjlfijjgA" target="_blank">
-            <span class="video-icon"></span>
-            <span class="video-link-text">How To</span>
-        </a>
-    </div>
-    <div class="mapping-section">
-        <div class="hierarchy-section" style="padding-top: 0">
-            <div class="vue-container" id="hierarchy-vue-container">
-                <hierarchy profile-guid="@Model.Guid" load-on-init="true"></hierarchy>
-            </div>
+<div class="mappings-container">
+    @if (Model != null) {
+
+        bool isBasicEditor = Request.Params["basic"] != null;
+        bool isOtherFieldsEditor = Request.Params["otherfields"] != null;
+        bool isLinksEditor = Request.Params["links"] != null;
+        bool isHierarchyEditor = Request.Params["hierarchy"] != null;
+        bool isTypesEditor = Request.Params["types"] != null;
+        bool isStatesEditor = Request.Params["states"] != null;
+
+        <ul class="edit-mappings">
+            <li class="@(isBasicEditor ? "current" : "regular")">
+                @Html.ActionLink("Basic Settings", "Index", "Tfs", new { id = Model.Guid, mappings = 1, basic = 1 }, new { id = "fields-basic" })
+            </li>
+            <li class="@(isTypesEditor ? "current" : "regular")">
+                @Html.ActionLink("Types", "Index", "Tfs", new { id = Model.Guid, mappings = 1, types = 1 }, new { id = "fields-types" })
+            </li>
+            <li class="@(isStatesEditor ? "current" : "regular")">
+                @Html.ActionLink("States and Statuses", "Index", "Tfs", new { id = Model.Guid, mappings = 1, states = 1 }, new { id = "fields-states" })
+            </li>
+            <li class="@(isOtherFieldsEditor ? "current" : "regular")">
+                @Html.ActionLink("Fields", "Index", "Tfs", new { id = Model.Guid, mappings = 1, otherfields = 1 }, new { id = "fields-other" })
+            </li>
+            <li class="@(isHierarchyEditor ? "current" : "regular")">
+                @Html.ActionLink("Hierarchy", "Index", "Tfs", new { id = Model.Guid, mappings = 1, hierarchy = 1 }, new { id = "fields-hierarchy" })
+            </li>
+            <li class="@(isLinksEditor ? "current" : "regular")">
+                @Html.ActionLink("Links", "Index", "Tfs", new { id = Model.Guid, mappings = 1, links = 1 }, new { id = "fields-links" })
+            </li>
+        </ul>
+
+        <div class="sections">
+            @if (isBasicEditor) {
+                Html.RenderPartial("Mappings/_BasicSettings", Model);
+            } else if (isOtherFieldsEditor) {
+                Html.RenderPartial("Mappings/_OtherFields", Model);
+            } else if (isLinksEditor) {
+                Html.RenderPartial("Mappings/_Links", Model);
+            } else if (isHierarchyEditor) {
+                Html.RenderPartial("Mappings/_Hierarchy", Model);
+            } else if (isTypesEditor) {
+                Html.RenderPartial("Mappings/_Types", Model);
+            } else if (isStatesEditor) {
+                Html.RenderPartial("Mappings/_States", Model);
+            }
         </div>
-        <div class="hierarchy-section" style="border-bottom: 0;">
-            <p>Subtasks </p>
-            <div style="padding-top: .5em;">
-                <select id="subtasksyncdirection" disabled="disabled">
-                    <option value="0">Not Synchronized</option>
-                    <option value="1">From TFS To Jira</option>
-                    <option value="2">From Jira To TFS</option>
-                    <option value="3">Both Directions</option>
-                </select>
-                <div class="subtasks-details-container">
-                    <br>
-                    <div>
-                        <ul style="margin-bottom: 0" class="hidden-on-load subtasks-details">
-                            <li> TFS link type that maps to Jira subtasks <select id="subtaskslinktype"></select> </li>
-                            <li><a href="#" id="subtasksmapping">Subtasks Mappings</a></li>
-                        </ul>
-                    </div>
-                    <div class="vue-container subtasks-details" id="subtasks-notification" style="display: none;">
-                        <notification class="hierarchy-notification info" icon-name="info-circle" icon-class="info-message">
-                            <p><strong>Jira REST API does not support converting issues to sub-tasks and vice-versa.</strong></p>
-                            <p>This means that if you link a "standalone" TFS work item to a parent work item, or unlink a TFS task from its parent work item,
-                                the corresponding Jira issue <strong>will not</strong> be changed to/from subtask.</p>
-                        </notification>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    }
+
 </div>
 
-<div>
-    <h2>Comment Synchronization</h2>
-    <div class="mapping-section">
-        <select id="commentsyncdirection" class="disabled" disabled="disabled">
-            <option value="0">Not Synchronized</option>
-            <option value="1">From TFS To Jira</option>
-            <option value="2">From Jira To TFS</option>
-            <option value="3">Both Directions</option>
-        </select>
-        <div class="hidden-on-load">
-            <br><span><strong>Note: </strong>Comment synchronization is available with Jira 6.2 and newer</span>
-            <br><span><strong>Note: </strong>Comments synchronized from TFS to Jira are created as publicly available to all users</span>
-        </div>
-    </div>
-    <h2>Attachment Synchronization Mode</h2>
-    <div class="mapping-section">
-        <select id="attachmentmappingmode" disabled="disabled">
-            <option value="0">Not Synchronized</option>
-            <option value="1">From TFS To Jira</option>
-            <option value="2">From Jira To TFS</option>
-            <option value="3">Both Directions</option>
-        </select>
-        <div class="vue-container attachments-info" id="attachments-notification" style="width: 50%; display: none;">
-            <notification class="hierarchy-notification info" icon-name="info-circle" icon-class="info-message">
-                <p><strong>Attachment synchronization may not work correctly if:</strong></p>
-                <ul>
-                    <li>The "Attachment" field is hidden inside your Jira project Field Configuration screen</li>
-                    <li>The size of the file exceeds TFS and Jira attachment size limits</li>
-                </ul>
-            </notification>
-        </div>
-    </div>
-    <h2>Web links / Hyperlinks Synchronization Mode</h2>
-    <div class="mapping-section">
-        <select id="remotelinksmappingmode">
-            <option value="0">Not Synchronized</option>
-            <option value="1">From TFS To Jira</option>
-            <option value="2">From Jira To TFS</option>
-            <option value="3">Both Directions</option>
-        </select>
-    </div>
-</div>
-
-<h2>Other Mappings</h2>
-<div class="fieldlistwrap">
-    <div class="vue-container" id="fields-mapping">
-        <fields-mapping load-on-init="true" profile-guid="@Model.GetType().GetProperty("Guid").GetValue(Model).ToString()"></fields-mapping>
-    </div>
-    
-</div>
 
 <div id="tfsfmehelp" style="display:none;">
     @{Html.RenderPartial("Help/Help_EditProfileFieldMappings");}
@@ -131,6 +70,7 @@
     var remoteLinksMapping = 0;
     var commentMapping = 0;
     var subtaskSyncDirection = 0;
+    var syncDirection = 0;
     var subtaskLinkTypes = null;
     var subtaskLinkType = null;
 
@@ -141,65 +81,7 @@
         return false;
     };
 
-    getFieldName = function (mapping, which) {
-        var field = which === 'jira'? mapping.jira : mapping.tfs;
-        if (field === "defaultValue") {
-            var defaultValue = which === 'jira' ? mapping.jiraDefaultValue : mapping.tfsDefaultValue;
-            return '<div style="white-space: nowrap;"><input style="width:190px;" type="text" name="defaultValue" data-which="' + which + '" data-mappingid="'+ mapping.id + '" value="' + defaultValue + '"> '
-            + '<a href="javascript:void(0)" class="updateDefaultValue">Update</a></div>';
-        }
-        var table = which === 'jira' ? availableFields.jiraFields : availableFields.tfsFields;
-        for (var i = 0; i < table.length; ++i) {
-            if (field === table[i].Key) return table[i].Value;
-        }
-        return field;
-    };
-
-    wrapHelpText = function wrapHelpText(helpText) {
-        return '<span class="helpcontainer">' +
-                    '<span class="helplink">?</span>' +
-                    '<span class="helpinfo">' +
-                        helpText +
-                    '</span>' +
-                '</span>';
-    };
-
-    getJiraFieldHelp = function (mapping) {
-        if (mapping.jira.indexOf("timetracking") === 0) {
-            return wrapHelpText( '<ul>' +
-                    '<li>For Time Tracking fields in TFS type of <b>double</b> should be used. We assume that time in this fields will be stored in <b>hours</b>.</li>' +
-                    '<li><b>Logged time</b> in Jira cannot be decreased so value of Logged Time in TFS that is lower than Jira Logged Time won\'t be synchronized.</li>' +
-                    '<li>For best results <b>Original Estimate</b> and <b>Remaining Estimate</b> fields should be synchronized in pair or none at all because ' +
-                                        'not synchronized field will be set to the same value as synchronized field anyway (but only in Jira).</li>' +
-                    '</ul>');
-
-        } else if (mapping.jiraType === "user") {
-            return wrapHelpText(
-                    'User fields, such as <strong>assignee</strong> can be automatically mapped in Jira and TFS, provided that both Jira and TFS server are connected to the same Active Directory instance and therefore share their user account data. ' +
-                    'If this is not the case, please use the "Map Values" option');
-        } else if (mapping.jira.indexOf("project") === 0) {
-            return wrapHelpText(
-                'Mapping of the <strong>Project</strong> Jira field is not recommended. ' +
-                'If you do use it, always map it to a TFS field containing a Jira project key.<br><br>' +
-                "<strong>This field must never be used with bi-directional synchronization, because it interferes with the Synchronizer's ability to find updated Jira issues.</strong>");
-        } else if (mapping.jiraCustomFieldName === "@SyncProfileService.JiraEpicLinkField") {
-            return wrapHelpText('Because of technical reasons <strong>Epic Link</strong> field can be mapped only upon issue/work item creation.');
-        } else if (mapping.jira === "@SyncProfileService.JiraResolutionField") {
-            return wrapHelpText('In most of the cases Jira <strong>Resolution</strong> field should be mapped to TFS <strong>Resolved Reason</strong> field - please <a href="https://confluence.spartez-software.com/display/TFS4JIRA/TFS4JIRA+FAQ#TFS4JIRAFAQ-TowhichfieldinTFSshouldImapJiraResolutionfield?" target="_blank">refer to the documentation</a> for more informations.');
-        }
-
-        return "";
-    };
-
-    getTfsFieldHelp = function (mapping) {
-        if (mapping.tfs === "@SyncProfileService.TfsTagsField") {
-            return wrapHelpText("Tags field can be updated remotely since TFS 2013 Update 2 so in earlier versions of TFS this field won't be updated.");
-        }
-
-        return "";
-    }
-
-    fillAvailableFields = function() {
+    fillAvailableFields = function () {
         $('#jirafields').html('');
         $('#tfsfields').html('');
         for (var i = 0; i < availableFields.jiraFields.length; ++i) {
@@ -218,62 +100,7 @@
         }
     }
 
-    updateMapButton = function(enabled) {
-        if (enabled) {
-            $('#mapfields').removeAttr('disabled');
-        } else {
-            $('#mapfields').attr('disabled', 'disabled');
-        }
-    }
-
-    mapFields = function() {
-        var jiraField = $('#jirafields option:selected').val();
-        var tfsField = $('#tfsfields option:selected').val();
-
-        jQuery.ajax({
-            type: 'POST',
-            url: '@Url.Action("MapFields", "Tfs")?_=' + new Date().getTime(),
-            data: 'guid=@Model.Guid' + '&jira=' + encodeURIComponent(jiraField) + '&tfs=' + encodeURIComponent(tfsField),
-            success: function (data) {
-                if (data.success) {
-                    mappings = data.result.mappings;
-                    fillAvailableFields();
-                    showMappings();
-                    highlightMapping(data.result.newMappingId);
-                    updateMapButton();
-                } else {
-                    showErrorMessage(data.error);
-                }
-            },
-            error: function (xhr) {
-                console.log(xhr);
-                showErrorMessage(getXhrErrorResponse(xhr));
-            }
-        });
-    }
-
-    removeMapping = function(id) {
-        jQuery.ajax({
-            type: 'POST',
-            url: '@Url.Action("UnmapFields", "Tfs")?_=' + new Date().getTime(),
-            data: 'guid=@Model.Guid' + '&id=' + id,
-            success: function(data) {
-                if (data.success) {
-                    mappings = data.result.mappings;
-                    fillAvailableFields();
-                    showMappings();
-                    updateMapButton();
-                } else {
-                    showErrorMessage(data.error);
-                }
-            },
-            error: function(xhr) {
-                console.log(xhr);
-                showErrorMessage(getXhrErrorResponse(xhr));
-            }
-        });
-    };
-    showMappings = function() {
+    showMappings = function () {
         var txt = '';
         var issueTypeMappingHtmlElement = '';
         var statusMappingHtmlElement = '';
@@ -283,14 +110,21 @@
         for (var i = 0; i < mappings.length; ++i) {
             if (mappings[i].jira === 'issuetype') {
                 issueTypeMapping = mappings[i].id;
+                var href = $("#fields-types").attr('href');
+                if(href.toLowerCase().indexOf("&mappingid=") === -1 && href.toLowerCase().indexOf("&subtasks=") === -1 ){
+                    $("#fields-types").attr('href', href + '&mappingid=' + issueTypeMapping + '&subtasks=false');
+                }
                 issueTypeMappingHtmlElement = '<li class="dynamic-content"><a href="' + location.href.replace('#/', '') + '&mappingid=' + mappings[i].id + '&subtasks=false" class="editmapping" id="editmapping' + mappings[i].id + '">Jira Issue Type/TFS Work Item Type</a></li>';
                 window.Spartez.Shared.sendNotification('SetIssueTypeMappingId', {id: mappings[i].id });
             } else if (mappings[i].jira === '###TFS4JIRA###.JIRA.subtask.issuetype') {
                 subtaskMapping = mappings[i].id;
             } else if (mappings[i].jira === '###TFS4JIRA###.JIRA.Status') {
-                statusMappingHtmlElement = '<li class="dynamic-content"><a href="' + location.href + '&mappingid=' + mappings[i].id + '" class="editmapping" id="editmapping' + mappings[i].id + '">Jira Status/TFS State</a></li>';
+                var stateMappingId = mappings[i].id;
+                var href = $("#fields-states").attr('href');
+                if(href.toLowerCase().indexOf("&mappingid=") === -1){
+                    $("#fields-states").attr('href', href + '&mappingid=' + stateMappingId);
+                }
             } else {
-                //                console.log(mappings[i]);
                 var arrow = '';
                 switch (mappings[i].direction) {
                     case 1:
@@ -302,27 +136,9 @@
                     default:
                         arrow = '&hArr;';
                 }
-                var editmapping = '<a href="' + location.href + '&mappingid=' + mappings[i].id + '" class="editmapping" jirafield="' + mappings[i].jira + '" tfsfield="' + mappings[i].tfs + '" id="editmapping' + mappings[i].id + '">Values</a>' + '&nbsp;|&nbsp;';
-
-                txt += '<div class="mappingrow" id="mappingrow_' + mappings[i].id + '"><div class="fieldlistleft">' + getFieldName(mappings[i], 'jira') + " " + getJiraFieldHelp(mappings[i]) +
-                    '</div><div class="fieldlistmiddle">' + arrow + '</div><div class="fieldlistright">' + getFieldName(mappings[i], 'tfs') + " " + getTfsFieldHelp(mappings[i]) +
-                    '</div><div class="fieldslistrightmost">';
-                    if (mappings[i].jira != 'defaultValue' && mappings[i].tfs != 'defaultValue') {
-                        txt += editmapping;
-                        txt += '<a href="#" class="removemapping"  jirafield="' + mappings[i].jira + '" tfsfield="' + mappings[i].tfs + '" id="removemapping_' + mappings[i].id + '">Remove</a>' +
-                   '</div></div>';
-                    } else {
-
-                        txt += '<a href="#" class="removemapping" style="padding-left: 54px;" jirafield="' + mappings[i].jira + '" tfsfield="' + mappings[i].tfs + '" id="removemapping_' + mappings[i].id + '">Remove</a>' +
-                   '</div></div>';
-                    }
             }
         }
 
-        $('#mappings').html(txt);
-        $('#basicmappings > ul').find('.dynamic-content').remove();
-        $('#basicmappings > ul').prepend(statusMappingHtmlElement);
-        $('#basicmappings > ul').prepend(issueTypeMappingHtmlElement);
         $('#subtasksmapping').attr('href', location.href + '&mappingid=' + subtaskMapping);
 
         $('#attachmentmappingmode option[value="' + attachmentMapping + '"]').attr('selected', 'selected');
@@ -344,13 +160,15 @@
 
         //console.log(data.result);
         $('#subtaskslinktype').html('');
-        for (var i = 0; i < subtaskLinkTypes.length; ++i) {
-            $('#subtaskslinktype').append($('<option/>').html(subtaskLinkTypes[i].reverse + ' -> ' + subtaskLinkTypes[i].forward).val(subtaskLinkTypes[i].referenceName));
-        }
-        if (i > 0) {
-            $('#subtaskslinktype').attr('disabled', null);
-        } else {
-            $('#subtaskslinktype').attr('disabled', 'disabled');
+        if (subtaskLinkTypes) {
+            for (var i = 0; i < subtaskLinkTypes.length; ++i) {
+                $('#subtaskslinktype').append($('<option/>').html(subtaskLinkTypes[i].reverse + ' -> ' + subtaskLinkTypes[i].forward).val(subtaskLinkTypes[i].referenceName));
+            }
+            if (i > 0) {
+                $('#subtaskslinktype').attr('disabled', null);
+            } else {
+                $('#subtaskslinktype').attr('disabled', 'disabled');
+            }
         }
 
         if (subtaskSyncDirection) {
@@ -392,14 +210,6 @@
         });
     };
 
-    highlightMapping = function(mappingId) {
-        var row = $('#mappingrow_' + mappingId);
-        row.css('backgroundColor', '#ffff00');
-        row.animate({ backgroundColor: '#eeeeee' }, 2000);
-    };
-
-    updateMapButton(false);
-
     getLinkTypes = function(callback) {
         jQuery.ajax({
             type: 'POST',
@@ -407,7 +217,6 @@
             data: 'guid=@Model.Guid',
             success: function (data) {
                 if (data.success) {
-                    //console.log(data);
                     subtaskLinkTypes = data.result.linkTypes;
                     if (callback) callback();
                 } else {
@@ -435,7 +244,6 @@
             mappings = data.result.mappings;
             getAllFields();
         }).fail(function(data){
-            console.log(xhr);
             showErrorMessage(getXhrErrorResponse(xhr));
         });
     }
@@ -539,20 +347,6 @@
         });;
     });
 
-    $('.fieldlist').change(function() {
-        var enabled = $('#jirafields option:selected').length && $('#tfsfields option:selected').length;
-        updateMapButton(enabled);
-    });
-
-    $('#mapfields').click(function() {
-        mapFields();
-    });
-
-    $('.removemapping').live('click', function(e) {
-        e.preventDefault();
-        removeMapping(e.currentTarget.id.split('_')[1]);
-    });
-
     $('#syncdirection').live('change', function () {
         jQuery.ajax({
             type: 'POST',
@@ -632,7 +426,7 @@
             }
         });
     });
-    
+
     $('#remotelinksmappingmode').live('change', function() {
         jQuery.ajax({
             type: 'POST',

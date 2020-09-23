@@ -1,19 +1,63 @@
-﻿@using SpartezSoftware.Synchronizer.Controllers
+@using SpartezSoftware.Synchronizer.Controllers
 @{
     string id = @Model.GetType().GetProperty("Id").GetValue(Model);
 }
 
 <div id="@id" class="@Model.GetType().GetProperty("Class").GetValue(Model)">
-    <h1>TFS Connection</h1>
+    <h1>TFS/Azure DevOps Connection</h1>
     <div class="tfs4jira-fieldgroup">
         <label for="tfs-url">URL</label>
-        <input id="tfs-url" placeholder="TFS server URL starting with http:// or https://" />
-        <div class="tfs4jira-field-error"></div>
-        <div class="tfs4jira-field-description">TFS / Azure DevOps base URL with optional port number, e.g. http://mytfs:8080/tfs. </div>
+        <input id="tfs-url" placeholder="Enter the URL" onkeyup="validateAndToggleWarnings()"/>
+        <div id="tfs-deprecated-cloud-endpoint-warning" class="tfs4jira-field-warning" style="display: none;margin: 5px 0 0 215px;">Use https://dev.azure.com/* to avoid connection problems.</div>
+        <div id="tfs-empty-endpoint-error" class="tfs4jira-field-error" style="display: none;">The URL can't be empty.</div>
+        <div id="tfs-invalid-endpoint-error" class="tfs4jira-field-error" style="display: none;">The URL should start with protocol name ('http://' or 'https://').</div>
+        <div class="tfs4jira-field-description">For example https://dev.azure.com/* or http://*:8080/tfs.</div>
     </div>
 </div>
 
 <script>
+    function validateAndToggleWarnings() {
+        const url = $("#tfs-url").val().trim();
+
+        if (/\/\/\w+\.visualstudio.com\/?/.exec(url)) {
+            document.getElementById("tfs-deprecated-cloud-endpoint-warning").style.display = "block";
+        } else {
+            document.getElementById("tfs-deprecated-cloud-endpoint-warning").style.display = "none";
+        }
+        if (!_.isEmpty(url)) {
+            document.getElementById("tfs-empty-endpoint-error").style.display = "none";
+        }
+
+        if (url.indexOf("http://") === 0 || url.indexOf("https://") === 0) {
+            document.getElementById("tfs-invalid-endpoint-error").style.display = "none";
+        }
+
+        clearFieldError("tfs-url");
+    }
+
+    function validateAndToggleErrors() {
+        const url = $("#tfs-url").val().trim();
+
+        if (_.isEmpty(url)) {
+            document.getElementById("tfs-empty-endpoint-error").style.display = "block";
+            setFieldError("tfs-url", "Please enter TFS/Azure DevOps URL");
+            return false;
+        } else {
+            document.getElementById("tfs-empty-endpoint-error").style.display = "none";
+        }
+
+        if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0) {
+            document.getElementById("tfs-invalid-endpoint-error").style.display = "block";
+            setFieldError("tfs-url", "TFS/Azure DevOps URL should start with protocol name ('http://' or 'https://').");
+            return false;
+        } else {
+            document.getElementById("tfs-invalid-endpoint-error").style.display = "none";
+        }
+
+        clearFieldError("tfs-url");
+        return true;
+    }
+
     $(function () {
         $('#@id').on("@NavigationEvents.ActivateView", function activateView(event, parameters) {
             $("#tfs-url").focus();
@@ -21,7 +65,7 @@
         });
 
         $('#@id').on("@NavigationEvents.NextButtonClicked", function nextButtonClicked() {
-            if (validate()) {
+            if (validateAndToggleErrors()) {
                 saveFocusedElement();
                 synchronizationProfile.TfsUrl = $("#tfs-url").val().trim();
                 testTfsDeploymentType().done(function testSucceededAfterNextButtonClicked(data) {
@@ -33,20 +77,6 @@
                 });
             }
         });
-
-        function validate() {
-            var url = $("#tfs-url").val().trim();
-            if (_.isEmpty(url)) {
-                setFieldError("tfs-url", "Please enter TFS URL.");
-                return false;
-            }
-            if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0) {
-                setFieldError("tfs-url", "TFS URL should start with protocol name ('http://' or 'https://').");
-                return false;
-            }
-            clearFieldError("tfs-url");
-            return true;
-        }
 
         function testTfsDeploymentType() {
             var url = encodeURIComponent($("#tfs-url").val().trim());

@@ -1,4 +1,4 @@
-﻿/* 
+/*
     Form styles
     Note: The styles below should be moved to some external file ('Form.css'?) when we start
           to use them on other screens in Synchronizator
@@ -63,6 +63,12 @@
     cursor: pointer;
 }
 
+.tfs4jira-field-warning {
+    width: 360px;
+    color: #ff8b00;
+    font-size: 12px;
+}
+
 .tfs4jira-field-error {
     width: 360px;
     margin: 5px 0 0 215px;
@@ -88,7 +94,7 @@
 
 .tfs4jira-mapping-container {
     width: 800px;
-    margin: auto; 
+    margin: auto;
 }
 
 .tfs4jira-mapping-container h2 {
@@ -185,7 +191,7 @@ div.tfs4jira-mapping-row-direction-conflict {
     background-image: url("../images/conflict-icon.svg");
     background-size: 6px 20px;
     width: 6px;
-    margin: auto;    
+    margin: auto;
 }
 
 .tfs4jira-mapping-value-text {
@@ -299,7 +305,7 @@ div.tfs4jira-mapping-row-direction-conflict {
 .wizard-container {
     width: 800px;
     margin: auto;
-    margin-right: 30%;    
+    margin-right: 30%;
 }
 
 .wizard-step {
@@ -391,7 +397,7 @@ div.tfs4jira-mapping-row-direction-conflict {
 }
 
 .wizard-screen-info-text {
-    font-size: 140%; 
+    font-size: 140%;
     margin-bottom: 10px;
 }
 

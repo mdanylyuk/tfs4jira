@@ -1,0 +1,11 @@
+@model SpartezSoftware.Synchronizer.Domain.Entity.SyncProfile
+
+<div id="profileguid" style="display: none;">@Model.Guid</div>
+<section class="fields">
+    <h2>Field Mappings</h2>
+    <div class="fieldlistwrap">
+        <div class="vue-container" id="fields-mapping">
+            <fields-mapping load-on-init="true" profile-guid="@Model.Guid.ToString()"></fields-mapping>
+        </div>
+    </div>
+</section>

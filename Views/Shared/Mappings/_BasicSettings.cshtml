@@ -1,0 +1,56 @@
+@model SpartezSoftware.Synchronizer.Domain.Entity.SyncProfile
+
+<div id="profileguid" style="display: none;">@Model.Guid</div>
+<section class="basic">
+    <div>
+        <h2>Synchronization Direction</h2>
+        <div class="mapping-section">
+            <select id="syncdirection" disabled="disabled">
+                <option value="1">From TFS To Jira</option>
+                <option value="2">From Jira To TFS</option>
+                <option value="3">Both Directions</option>
+            </select>
+        </div>
+        <h2>Comment Synchronization</h2>
+        <div class="mapping-section">
+            <select id="commentsyncdirection" class="disabled" disabled="disabled">
+                <option value="0">Not Synchronized</option>
+                <option value="1">From TFS To Jira</option>
+                <option value="2">From Jira To TFS</option>
+                <option value="3">Both Directions</option>
+            </select>
+            <div class="hidden-on-load">
+                <br><span><strong>Note: </strong>Comment synchronization is available with Jira 6.2 and newer</span>
+                <br><span><strong>Note: </strong>Comments synchronized from TFS to Jira are created as publicly available to all users</span>
+            </div>
+        </div>
+        <h2>Attachment Synchronization Mode</h2>
+        <div class="mapping-section">
+            <select id="attachmentmappingmode" disabled="disabled">
+                <option value="0">Not Synchronized</option>
+                <option value="1">From TFS To Jira</option>
+                <option value="2">From Jira To TFS</option>
+                <option value="3">Both Directions</option>
+            </select>
+            <div class="vue-container attachments-info" id="attachments-notification" style="width: 70%; display: none;">
+                <notification class="hierarchy-notification info" icon-name="info-circle" icon-class="info-message">
+                    <p><strong>Please make sure that:</strong></p>
+                    <ul>
+                        <li>The "Attachment" field is not hidden in your Jira project Field Configuration screen</li>
+                        <li>The files do not exceed attachment size limits neither in Azure DevOps/TFS nor in Jira</li>
+                        <li>Jira has access to the Azure DevOps/TFS location, as images synced to Jira are stored as references to physical files in Azure DevOps/TFS</li>
+                    </ul>
+                </notification>
+            </div>
+        </div>
+        <h2>Web links / Hyperlinks Synchronization Mode</h2>
+        <div class="mapping-section">
+            <select id="remotelinksmappingmode">
+                <option value="0">Not Synchronized</option>
+                <option value="1">From TFS To Jira</option>
+                <option value="2">From Jira To TFS</option>
+                <option value="3">Both Directions</option>
+            </select>
+        </div>
+    </div>
+</section>

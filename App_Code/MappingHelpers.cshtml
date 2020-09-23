@@ -92,7 +92,7 @@
         </div>
 
         <button class="tfs4jira-mapping-map-button tfs4jira-rounded-button" title="Please select values for both Jira and TFS to map them.">Map</button>
-        
+
         <div class="tfs4jira-mapping-no-mapped-values-container">
             <span class="tfs4jira-mapping-no-mapped-values">
                 Please select Jira and TFS values that you want to map.
@@ -101,7 +101,7 @@
 
         <table class="tfs4jira-mapping-table">
         </table>
-        
+
         <div class="tfs4jira-mapping-anything-else">
             <label>
                 Map anything else from Jira to TFS as
@@ -157,14 +157,14 @@
                 <% if ( !isJiraValueValid ) { %>
                     <div class="tfs4jira-mapping-value-invalid" title="This value does not exist in Jira. Please remove mapping for this value."></div>
                 <% } %>
-                
+
                 <% if ( isMappingOneToMany && mappedValue.tfs.length === 1 ) { %>
                     <div class="value-inline-menu-add-button value-inline-link-button" data-value-mapping-id="<%- mappedValue.id[0] %>" data-type="jira" style="display: none;">+ add selected value</div>
                 <% } %>
             </td>
 
             <td class="tfs4jira-mapping-row-direction"><div class="<%- directionClass %>" title="<%- directionTooltip %>"> </div></td>
-            
+
             <td class="tfs4jira-mapping-row-right">
                 <% if ( !isMappingOneToMany ) { %>
                     <button class="tfs4jira-mapping-row-operation tfs4jira-mapping-remove tfs4jira-rounded-button" title="Remove">
@@ -209,11 +209,11 @@
                         <% } %>
                     <% } %>
                 </div>
-                
+
                 <% if ( !isTfsValueValid ) { %>
                     <div class="tfs4jira-mapping-value-invalid" title="This value does not exist in TFS. Please remove mapping for this value."></div>
                 <% } %>
-                
+
                 <% if ( isMappingOneToMany && mappedValue.jira.length === 1 ) { %>
                     <div class="value-inline-menu-add-button value-inline-link-button" data-value-mapping-id="<%- mappedValue.id[0] %>" data-type="tfs" style="display: none;">+ add selected value</div>
                 <% } %>
@@ -261,7 +261,7 @@
                 assertParameter(parameters, "fallbackFromTfsToJira");
                 assertParameter(parameters, "fallbackFromJiraToTfs");
             }
-            
+
             possibleJiraValues = _.filter(parameters.possibleJiraValues, function (value) { return value.id != null; });
             possibleTfsValues = _.filter(parameters.possibleTfsValues, function (value) { return value.id != null; });
             mappedValues = parameters.mappedValues;
@@ -457,7 +457,7 @@
             $jiraSelect.empty();
             $tfsSelect.empty();
             $mappings.empty();
-            
+
             _.chain(possibleTfsValues).sortBy(functional.labelUpperCase).each(addTfsValueToSelectComponent);
 
             if (jiraGroupMode) {
@@ -509,10 +509,10 @@
             $jiraSelect.append($("<option>", {
                 text: element.text,
                 value: element.id
-            }));            
+            }));
         }
 
-        function addTfsValueToSelectComponent(element) {            
+        function addTfsValueToSelectComponent(element) {
             var isAlreadyMapped = _.findWhere(mappedValues, { tfsId: element.id }) != undefined;
 
             if (!tfsTreePathMode && isAlreadyMapped) {
@@ -523,7 +523,7 @@
                 $tfsSelect.append($("<option>", {
                     text: element.text,
                     value: element.id
-                }));                
+                }));
             }
 
             if(tfsTreePathMode) {
@@ -543,7 +543,7 @@
 
                 findTfsOptionElement(element.id).attr('data-is-already-mapped', isAlreadyMapped);
             }
-        }        
+        }
 
         function addMappedValueToTableComponent(mappedValue) {
             var jiraValue = _.find(possibleJiraValues, function (value) { return value.id == (mappedValue.jiraId || mappedValue.jira[0].value); });
@@ -655,7 +655,7 @@
             if (direction == MappingDirection.CONFLICT) return 'tfs4jira-mapping-row-direction-conflict';
 
             return 'tfs4jira-mapping-row-direction-both';
-        }        
+        }
 
         function initializeFallbackSelect2($fallbackSelect, possibleValues) {
             $fallbackSelect.select2({
@@ -676,7 +676,7 @@
 
             $values.empty();
             $actions.empty();
-            
+
             _.each(fallbackActions, function (element) {
                 $actions.append($("<option>", {
                     text: element.text,

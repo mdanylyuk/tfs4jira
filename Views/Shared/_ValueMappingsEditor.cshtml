@@ -247,7 +247,9 @@
                 <div class="fieldlistleft">
                     <select class="defaultvalue" id="tfsvaluedefault"></select>
                 </div>
-                <div class="fieldlistmiddle mappingdirectionarrow">&lArr;</div>
+                <div class="fieldlistmiddle">
+                    <div class="mapping-direction tfs4jira-mapping-row-direction-tfs-to-jira"></div>
+                    </div>
                 <div class="fieldlistright"><i>anything else</i></div>
                 <div class="fieldslistrightmost"></div>
             </div>
@@ -256,7 +258,9 @@
         <div id="default-mappings-jira">
             <div class="mappingrow">
                 <div class="fieldlistleft"><i>anything else</i></div>
-                <div class="fieldlistmiddle mappingdirectionarrow">&rArr;</div>
+                <div class="fieldlistmiddle">
+                    <div class="mapping-direction tfs4jira-mapping-row-direction-jira-to-tfs"></div>
+                </div>
                 <div class="fieldlistright">
                     <select class="defaultvalue" id="jiravaluedefault"></select>
                 </div>
@@ -285,7 +289,7 @@
 </div>
 
 <script type="text/javascript">
-    $('#backlink').attr('href', '@Url.Action("Index", "Tfs", @Model.Guid)?mappings=1');
+    $('#backlink').attr('href', '@Url.Action("Index", "Tfs", @Model.Guid)?mappings=1&otherfields=1');
     var mappingId = '@Request.Params["mappingid"]';
 
     var isStatusesMapping = "@mapping.IsStatusMapping" === "True";
@@ -348,12 +352,14 @@
             $('#users-mapping-info').hide();
         }
     };
-    showMappings = function() {
+    showValueMappings = function() {
         if (availableValues.jiraValues === undefined || availableValues.tfsValues === undefined) {
             return;
         }
 
         var arrowSign = (mappingDirection == '@toJira' ? '&lArr;' : (mappingDirection == '@toTfs' ? '&rArr;' : '&hArr;'));
+        var mappingDirectionClass = ((mappingDirection == '@toJira') ? 'tfs4jira-mapping-row-direction-tfs-to-jira' :
+                                    ((mappingDirection == '@toTfs') ? 'tfs4jira-mapping-row-direction-jira-to-tfs' : 'tfs4jira-mapping-row-direction-both'));
 
         var mergedMappings = getMergedMappings(mappings);
 
@@ -365,7 +371,7 @@
                 '<div class="fieldlistleft">' +
                 (isStatusesMapping ? getMergedValues(mergedMappings[i].jira, mergedMappings[i].tfs.length > 1, mergedMappings[i].id, "jira") : getValueDisplayName(availableValues.jiraValues, mergedMappings[i].jira[0].value)) +
                 '</div>' +
-                '<div class="fieldlistmiddle mappingdirectionarrow">' + arrowSign + '</div>' +
+                '<div class="fieldlistmiddle"><div class="mapping-direction '+ mappingDirectionClass +'"></div></div>' +
                 '<div class="fieldlistright">' +
                 (isStatusesMapping ? getMergedValues(mergedMappings[i].tfs, mergedMappings[i].jira.length > 1, mergedMappings[i].id, "tfs") : getValueDisplayName(availableValues.tfsValues, mergedMappings[i].tfs[0].value)) +
                 '</div>' +
@@ -406,8 +412,8 @@
         var mergedValues = "";
 
         for (var i = 0; i < values.length; ++i) {
-            mergedValues += "<div class='value-mapping-merged-value'>";
             mergedValues += "<span class='value-mapping-merged-value-label'>";
+            mergedValues += "<div class='value-mapping-merged-value'>";
             mergedValues += values[i].isDefault ? ("<strong>" + values[i].value + "</strong>") : values[i].value;
             mergedValues += "</span>";
             if (!disableValueInlineMenu) {
@@ -745,7 +751,7 @@
     updateView = function(newMappings) {
         mappings = newMappings;
         fillAvailableValues();
-        showMappings();
+        showValueMappings();
         updateMapButton();
         updateTfsUseCustomListSeparatorVisibility();
     }
@@ -810,7 +816,7 @@
                 if (data.success) {
                     mappingDirection = selectedDirection & @(both);
                     mapWhenCreatingOnly = mappingWhenCreateingChecked;
-                    showMappings();
+                    showValueMappings();
                 } else {
                     showErrorMessage(data.error);
                 }
@@ -876,7 +882,7 @@
                     showGroupedJiraAvailableValues = _.some(availableValues.jiraValues, function(value) { return value && value.Group !== ''; });
 
                     fillAvailableValues();
-                    showMappings();
+                    showValueMappings();
                     showHideValues();
 
                     @if (mapping.IsIssueTypeMapping) {

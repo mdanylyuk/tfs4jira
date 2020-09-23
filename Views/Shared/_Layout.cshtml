@@ -92,7 +92,7 @@
                     <ul id="menu">
                         @if (ViewBag.isAuthorized != null && ViewBag.isAuthorized)
                         {
-                            <li id="menu-config">@Html.ActionLink("Configuration", "Index", "Tfs", new {id = string.Empty}, null)</li>
+                            <li id="menu-config">@Html.ActionLink("Profiles", "Index", "Tfs", new {id = string.Empty}, null)</li>
                             <li id="menu-check-ins-config">@Html.ActionLink("Check-ins", "Index", "Checkins", new { id = string.Empty }, null)</li>
                             <li id="menu-logging-events">@Html.ActionLink("Errors", "Index", "LoggingEvents")</li>
                             <li id="menu-settings">@Html.ActionLink("Settings", "Index", "Settings")</li>
