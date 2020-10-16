@@ -75,7 +75,7 @@
                 <div class="field">
                     <div class="label only-for-tfs-server">Password</div>
                     <div class="label only-for-tfs-cloud">Personal Access Token</div>
-                    <div class="editbox">@Html.Password("tfspassword_" + Model.Guid, Model.Password, new { @class = "tfspassword", @autocomplete = "new-password" })</div>
+                    <div class="editbox">@Html.Password("tfspassword_" + Model.Guid, Model.PasswordSuppressException, new { @class = "tfspassword", @autocomplete = "new-password" })</div>
                     <div class="field-description link-to-api-token-docs">
                         @HelpHelpers.LinkToTfsPersonalAccessTokenDocumentation("How to generate Personal Access Token?")  <br />
                     </div>

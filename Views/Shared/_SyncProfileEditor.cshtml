@@ -101,7 +101,7 @@
                     </div>
                     <div class="right-col">
                         <div class="field">
-                            <div class="editbox">@Html.Password("jirapassword", Model.JiraPassword, new {@class = "jira-auth"})</div>
+                            <div class="editbox">@Html.Password("jirapassword", Model.JiraPasswordSuppressException, new {@class = "jira-auth"})</div>
                             <div class="field-description link-to-api-token-docs">
                                 @HelpHelpers.LinkToJiraApiTokenDocumentation("How to generate API Token?")
                             </div>
@@ -179,7 +179,7 @@
                     </div>
                     <div class="right-col">
                         <div class="field">
-                            <div class="editbox">@Html.Password("tfspassword", Model.TfsPassword, new { @class = "tfs-auth" })</div>
+                            <div class="editbox">@Html.Password("tfspassword", Model.TfsPasswordSuppressException, new { @class = "tfs-auth" })</div>
                             <div class="field-description link-to-api-token-docs">
                                 @HelpHelpers.LinkToTfsPersonalAccessTokenDocumentation("How to generate Personal Access Token?") <br />
                             </div>
