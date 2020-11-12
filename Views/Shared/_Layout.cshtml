@@ -134,10 +134,6 @@
     <div class="vue-container" id="message-box">
         <message-box></message-box>
     </div>
-    @if (ViewBag.SendTrackingStatsFromFrontend == true && 
-         ViewBag.ApplicationSettingsService != null && ((IApplicationSettingsService) ViewBag.ApplicationSettingsService).IsAnalyticsOn) {
-        <img src="@CustomerTrackingService.TRACKING_ENDPOINT_URL_FOR_FRONTEND?eventSource=synchronizer_frontend&synchronizerId=@ViewBag.ApplicationSettingsService.AnalyticsClientGuid" width="0" height="0"/>
-    }
     </body>
     
     <script src="@Url.Content("~/FrontendResources/static/js/manifest.js")" type="text/javascript"></script>
