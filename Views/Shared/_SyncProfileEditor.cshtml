@@ -477,13 +477,14 @@
         var url = encodeURIComponent($('#jiraurl').val());
         var user = encodeURIComponent($('#jirauser').val());
         var pwd = encodeURIComponent($('#jirapassword').val());
+        var isJiraCloud = encodeURIComponent($('#jiraondemand')[0].checked ? "true" : "false");
 
         clearMessages();
 
         jQuery.ajax({
             type: 'POST',
             url: '@Url.Action("TestJira", "Tfs")?_=' + new Date().getTime(),
-            data: 'user=' + user + '&password=' + pwd + '&url=' + url,
+            data: 'user=' + user + '&password=' + pwd + '&isJiraCloud=' + isJiraCloud + '&url=' + url,
             complete: function() {
                 $(button).parent().show();
                 $('#jiratestworker').hide();
@@ -564,11 +565,13 @@
             var url = encodeURIComponent($('#jiraurl').val());
             var user = encodeURIComponent($('#jirauser').val());
             var pwd = encodeURIComponent($('#jirapassword').val());
+            var isJiraCloud = encodeURIComponent($('#jiraondemand')[0].checked ? "true" : "false");
+
             showInfoMessage('Loading projects...');
 
             getKvps(
                 '@Url.Action("GetJiraProjects", "Tfs")?_=' + new Date().getTime(),
-                'user=' + user + '&password=' + pwd + '&url=' + url,
+                'user=' + user + '&password=' + pwd + '&isJiraCloud=' + isJiraCloud + '&url=' + url,
                 function(data) { succ(data.projects); }, err, complt
             );
         }

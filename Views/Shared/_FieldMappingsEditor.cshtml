@@ -69,8 +69,10 @@
     var attachmentMapping = 0;
     var remoteLinksMapping = 0;
     var commentMapping = 0;
+    var commentSyncServiceDeskMode = 0;
     var subtaskSyncDirection = 0;
     var syncDirection = 0;
+    var jiraProjectTypeKey = 0;
     var subtaskLinkTypes = null;
     var subtaskLinkType = null;
 
@@ -99,6 +101,10 @@
             }
         }
     }
+
+    isProjectSoftwareDesk = function (jiraProjectTypeKey) {
+            return jiraProjectTypeKey === 0;
+         }
 
     showMappings = function () {
         var txt = '';
@@ -144,6 +150,7 @@
         $('#attachmentmappingmode option[value="' + attachmentMapping + '"]').attr('selected', 'selected');
         $('#syncdirection option[value="' + syncDirection + '"]').attr('selected', 'selected');
         $('#commentsyncdirection option[value="' + commentMapping + '"]').attr('selected', 'selected');
+        $('#comment-service-desk-sync-mode-dropdown option[value="' + commentSyncServiceDeskMode + '"]').attr('selected', 'selected');
         $('#remotelinksmappingmode option[value="' + remoteLinksMapping + '"]').attr('selected', 'selected');
         $('#subtasksyncdirection option[value="' + subtaskSyncDirection + '"]').attr('selected', 'selected');
 
@@ -190,15 +197,15 @@
             data: 'guid=@Model.Guid',
             success: function (data) {
                 var info = jQuery.parseJSON(data.result);
+                var parentDiv =  $('#commentsyncdirection').parent().find('div');
                 if (info && info.buildNumber && !isNaN(info.buildNumber) && (info.buildNumber >= 6252)) {
-                    $('#commentsyncdirection').attr('disabled', null);
-                    $('#commentsyncdirection').removeClass('disabled');
-                    $('#commentsyncdirection').parent().find('div').hide();
+                    toggleCommentDropdownVisibility(true, $('#commentsyncdirection'));
+                    toggleCommentDropdownVisibility(true, $('#comment-service-desk-sync-mode-dropdown'));
+                    parentDiv.hide();
                 } else {
-                    $('#commentsyncdirection').attr('disabled', 'disabled');
-                    $('#commentsyncdirection').addClass('disabled');
-                    $('#commentsyncdirection').parent().find('div').show();
-
+                    toggleCommentDropdownVisibility(false, $('#commentsyncdirection'));
+                    toggleCommentDropdownVisibility(false, $('#comment-service-desk-sync-mode-dropdown'));
+                    parentDiv.show();
                     // fix for users who have turned on comments synchronization in wizard
                     if ($('#commentsyncdirection').val() != 0) {
                         console.log("This is Jira version older than 6.2 - turning off comment synchronization");
@@ -208,7 +215,26 @@
                 }
             }
         });
+
+        if (!isProjectSoftwareDesk(jiraProjectTypeKey)) {
+            $('#comment-service-desk-sync-mode-section').hide();
+        }
+        else {
+            toggleCommentSyncModeNotificationVisibility();
+        }
     };
+
+
+    toggleCommentDropdownVisibility = function(enabled, dropdownElement) {
+        if (enabled) {
+            dropdownElement.attr('disabled', null);
+            dropdownElement.removeClass('disabled');
+        }
+        else {
+            dropdownElement.attr('disabled', 'disabled');
+            dropdownElement.addClass('disabled');
+        }
+    }
 
     getLinkTypes = function(callback) {
         jQuery.ajax({
@@ -260,9 +286,11 @@
                     attachmentMapping = data.result.attachmentMapping ? data.result.attachmentMapping : 0;
                     syncDirection = data.result.syncDirection ? data.result.syncDirection : 3;
                     commentMapping = data.result.commentMapping ? data.result.commentMapping : 0;
+                    commentSyncServiceDeskMode = data.result.commentSyncServiceDeskMode ? data.result.commentSyncServiceDeskMode : 0;
                     remoteLinksMapping = data.result.remoteLinksMapping ? data.result.remoteLinksMapping : 0;
                     subtaskSyncDirection = data.result.subtaskMapping ? data.result.subtaskMapping : 0;
                     subtaskLinkType = data.result.subtaskLinkType;
+                    jiraProjectTypeKey = data.result.jiraProjectTypeKey;
 
                     if (subtaskLinkType === null && subtaskLinkTypes.length > 0) {
                         subtaskLinkType = subtaskLinkTypes[0].referenceName;
@@ -383,7 +411,6 @@
             data: 'guid=@Model.Guid&commentsyncdirection=' + $('#commentsyncdirection').val(),
             success: function (data) {
                 if (data.success) {
-                    //console.log(data, data.result.commentMapping);
                     commentMapping = data.result.commentMapping ? data.result.commentMapping : 0;
                     showMappings();
                 } else {
@@ -396,7 +423,43 @@
             }
         });
     };
+
+    function saveCommentServiceDeskSyncMode() {
+            jQuery.ajax({
+                type: 'POST',
+                url: '@Url.Action("SetCommentServiceDeskMode", "Tfs")?_=' + new Date().getTime(),
+                data: 'guid=@Model.Guid&commentVisibilityMode=' + $('#comment-service-desk-sync-mode-dropdown').val(),
+                success: function (data) {
+                    if (data.success) {
+                        commentSyncServiceDeskMode = data.result.commentSyncServiceDeskMode ? data.result.commentSyncServiceDeskMode : 0;
+                        showMappings();
+                    } else {
+                        showErrorMessage(data.error);
+                    }
+                },
+                error: function (xhr) {
+                    console.log(xhr);
+                    showErrorMessage(getXhrErrorResponse(xhr));
+                }
+            });
+        };
+
+     function toggleCommentSyncModeNotificationVisibility() {
+            let commentSyncModeValue = $('#comment-service-desk-sync-mode-dropdown').val();
+            //show notification if mode is set to "private"
+            if (commentSyncModeValue === "1") {
+                $('#comment-internal-notes-mode-notification').show();
+            }
+            else {
+                $('#comment-internal-notes-mode-notification').hide();
+            }
+      };
+
     $('#commentsyncdirection').live('change', saveCommentSynchronizationDirection);
+
+    $('#comment-service-desk-sync-mode-dropdown').live('change', saveCommentServiceDeskSyncMode);
+
+    $('#comment-service-desk-sync-mode-dropdown').live('change', toggleCommentSyncModeNotificationVisibility);
 
     $('#subtasksyncdirection').live('change', function () {
         setSubtaskSyncDirection();
@@ -454,4 +517,4 @@
     });
 
     getLinkTypes(getMappedFields);
-</script>          
+</script>

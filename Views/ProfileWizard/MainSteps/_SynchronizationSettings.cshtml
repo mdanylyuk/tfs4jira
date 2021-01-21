@@ -159,7 +159,7 @@
         function getJiraProjects() {
             blockingAjax({
                 url: '@Url.Action("GetJiraProjects", "Tfs")?_=' + new Date().getTime(),
-                data: { user: synchronizationProfile.JiraUser, password: synchronizationProfile.JiraPassword, url: synchronizationProfile.JiraUrl }
+                data: { user: synchronizationProfile.JiraUser, password: synchronizationProfile.JiraPassword, url: synchronizationProfile.JiraUrl, isJiraCloud: synchronizationProfile.OnDemandJira }
             }).done(function (data) {
                 $("#jira-project").empty();
                 data.projects.forEach(function (project) {

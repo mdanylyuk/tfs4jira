@@ -12,13 +12,29 @@
             </select>
         </div>
         <h2>Comment Synchronization</h2>
-        <div class="mapping-section">
-            <select id="commentsyncdirection" class="disabled" disabled="disabled">
-                <option value="0">Not Synchronized</option>
-                <option value="1">From TFS To Jira</option>
-                <option value="2">From Jira To TFS</option>
-                <option value="3">Both Directions</option>
-            </select>
+        <div class="mapping-section basic-mapping-comment-section">
+            <div>
+                <select id="commentsyncdirection" class="disabled" disabled="disabled">
+                    <option value="0">Not Synchronized</option>
+                    <option value="1">From TFS To Jira</option>
+                    <option value="2">From Jira To TFS</option>
+                    <option value="3">Both Directions</option>
+                </select>
+            </div>
+            <div id="comment-service-desk-sync-mode-section">
+                <p class="comment-service-desk-mode-message">Create Jira comments as:</p>
+                <select id="comment-service-desk-sync-mode-dropdown" class="disabled" disabled="disabled">
+                    <option value="0">Replies to customer (public)</option>
+                    <option value="1">Internal notes (private)</option>
+                </select>
+            </div>
+            <div class="vue-container hidden-on-load" id="comment-internal-notes-mode-notification">
+                <notification class="hierarchy-notification info" icon-name="info-circle" icon-class="info-message">
+                    <p>
+                        This option will work for all mapped Jira issues with non-empty "Request type" field.
+                    </p>
+                </notification>
+            </div>
             <div class="hidden-on-load">
                 <br><span><strong>Note: </strong>Comment synchronization is available with Jira 6.2 and newer</span>
                 <br><span><strong>Note: </strong>Comments synchronized from TFS to Jira are created as publicly available to all users</span>
@@ -34,7 +50,9 @@
             </select>
             <div class="vue-container attachments-info" id="attachments-notification" style="width: 70%; display: none;">
                 <notification class="hierarchy-notification info" icon-name="info-circle" icon-class="info-message">
-                    <p><strong>Please make sure that:</strong></p>
+                    <p>
+                        <strong>Please make sure that:</strong>
+                    </p>
                     <ul>
                         <li>The "Attachment" field is not hidden in your Jira project Field Configuration screen</li>
                         <li>The files do not exceed attachment size limits neither in Azure DevOps/TFS nor in Jira</li>
